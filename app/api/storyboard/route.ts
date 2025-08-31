@@ -85,7 +85,7 @@ const ANIMATION_JSON_SCHEMA = {
                                                             y: { type: 'number' },
                                                             scale: { type: 'number' }
                                                         },
-                                                        required: ['x', 'y'],
+                                                        required: ['x', 'y', 'scale'],
                                                         additionalProperties: false
                                                     },
                                                     tracks: {

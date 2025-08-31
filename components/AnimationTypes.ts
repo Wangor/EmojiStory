@@ -21,7 +21,7 @@ export type EmojiActor = {
 export type CompositeActor = {
   id: string;
   type: 'composite';
-  parts: EmojiActor[]; // grouped emoji parts
+  parts: EmojiActor[]; // grouped emoji parts with relative offsets and scale
   start?: { x: number; y: number; scale?: number };
   tracks: Keyframe[];
   loop?: 'float' | 'none';
