@@ -1,0 +1,561 @@
+import { NextRequest } from 'next/server';
+import { z } from 'zod';
+import { openai } from '../../../lib/openai';
+import { STORYBOARD_PROMPT } from '../../../lib/prompt/storyboardPrompt';
+import { animationSchema } from '../../../lib/schema';
+
+const Body = z.object({ story: z.string().min(1) });
+
+// Prompt-only schema to anchor outputs
+const ANIMATION_JSON_SCHEMA = {
+    type: 'object',
+    properties: {
+        title: { type: 'string' },
+        fps: { type: 'number' },
+        scenes: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    duration_ms: { type: 'number' },
+                    background: { type: 'string' },
+                    caption: { type: 'string' },
+                    actors: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                type: { const: 'emoji' },
+                                emoji: { type: 'string' },
+                                start: {
+                                    type: 'object',
+                                    properties: {
+                                        x: { type: 'number' },
+                                        y: { type: 'number' },
+                                        scale: { type: 'number' }
+                                    },
+                                    required: ['x', 'y'],
+                                    additionalProperties: false
+                                },
+                                tracks: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            t: { type: 'number' },
+                                            x: { type: 'number' },
+                                            y: { type: 'number' },
+                                            rotate: { type: 'number' },
+                                            scale: { type: 'number' },
+                                            ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
+                                        },
+                                        required: ['t', 'x', 'y'],
+                                        additionalProperties: false
+                                    },
+                                    minItems: 1
+                                },
+                                loop: { type: 'string', enum: ['float', 'none'] },
+                                z: { type: 'number' },
+                                ariaLabel: { type: 'string' }
+                            },
+                            required: ['id', 'type', 'emoji', 'tracks'],
+                            additionalProperties: false
+                        }
+                    },
+                    sfx: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                at_ms: { type: 'number' },
+                                type: { type: 'string', enum: ['pop', 'whoosh', 'ding'] }
+                            },
+                            required: ['at_ms', 'type'],
+                            additionalProperties: false
+                        }
+                    }
+                },
+                // Make caption required
+                required: ['id', 'duration_ms', 'actors', 'caption'],
+                additionalProperties: false
+            }
+        }
+    },
+    required: ['title', 'fps', 'scenes'],
+    additionalProperties: false
+};
+
+// 2) Add small helper utilities for captions
+function toSentenceCase(s: string): string {
+  const trimmed = s.trim().replace(/\s+/g, ' ');
+  if (!trimmed) return '';
+  const c = trimmed[0].toUpperCase() + trimmed.slice(1);
+  return /[.!?]$/.test(c) ? c : c + '.';
+}
+
+function isCaptionClear(caption: any): boolean {
+  if (typeof caption !== 'string') return false;
+  const c = caption.trim();
+
+  // Length and word count check
+  const words = c.split(/\s+/).filter(Boolean);
+  if (words.length < 4 || words.length > 24) return false;
+
+  // Must contain letters (basic Latin + extended Latin ranges as an approximation)
+  if (!/[A-Za-zÀ-ÖØ-öø-ÿ\u00C0-\u024F\u1E00-\u1EFF]/.test(c)) return false;
+
+  // Estimate emoji/symbol ratio without Unicode property escapes
+  // - Emoji/misc symbols blocks (BMP + SMP)
+  const emojiLike = c.match(/[\u2600-\u27BF\u{1F000}-\u{1FAFF}]/gu)?.length ?? 0;
+  // - ASCII punctuation and symbols
+  const asciiPunctOrSymbols = c.match(/[!-/:-@[-`{-~]/g)?.length ?? 0;
+
+  const symbolRatio = (emojiLike + asciiPunctOrSymbols) / Math.max(1, c.length);
+  if (symbolRatio > 0.5) return false;
+
+  // Reject placeholders and obvious junk
+  const lower = c.toLowerCase();
+  const banned = ['lorem', 'ipsum', 'asdf', 'qwer', 'placeholder', 'random', 'blah', 'foo', 'bar'];
+  if (banned.some(b => lower.includes(b))) return false;
+
+  // Avoid repeated characters like "aaaaa"
+  if (/(.)\1{3,}/.test(lower)) return false;
+
+  return true;
+}
+
+function guessSceneVerb(loop?: 'float' | 'none'): string {
+  return loop === 'float' ? 'drifts' : 'moves';
+}
+
+function describeActor(actor: any): string {
+  const label = typeof actor?.ariaLabel === 'string' && actor.ariaLabel.trim()
+    ? actor.ariaLabel.trim()
+    : (typeof actor?.emoji === 'string' && actor.emoji.trim() ? 'emoji' : 'character');
+  return label;
+}
+
+function backgroundPhrase(bg?: string): string {
+  if (!bg || typeof bg !== 'string' || !bg.trim()) return '';
+  // Keep simple to avoid locale dependencies
+  return ` on a ${bg} background`;
+}
+
+function synthesizeCaption(scene: any): string {
+  const actors = Array.isArray(scene?.actors) ? scene.actors : [];
+  const subjects = actors.slice(0, 2).map(describeActor);
+  let subject: string;
+  if (subjects.length === 0) subject = 'An emoji';
+  else if (subjects.length === 1) subject = `The ${subjects[0]}`;
+  else subject = `The ${subjects[0]} and ${subjects[1]}`;
+
+  const verb = guessSceneVerb(actors[0]?.loop);
+  const bg = backgroundPhrase(scene?.background);
+
+  const text = `${subject} ${verb}${bg}`;
+  return toSentenceCase(text);
+}
+
+// A minimal few-shot that exactly matches the schema, to reduce omissions
+const FEW_SHOT_EXAMPLE = {
+    title: 'Sample Animation',
+    fps: 30,
+    scenes: [
+        {
+            id: 'scene-1',
+            duration_ms: 3000,
+            background: '🌇',
+            caption: 'Sunset intro',
+            actors: [
+                {
+                    id: 'actor-1',
+                    type: 'emoji',
+                    emoji: '😀',
+                    start: { x: 0.1, y: 0.8, scale: 1 },
+                    tracks: [
+                        { t: 0, x: 0.1, y: 0.8, scale: 1, rotate: 0, ease: 'linear' },
+                        { t: 1500, x: 0.5, y: 0.5, scale: 1.2, rotate: 10, ease: 'easeInOut' },
+                        { t: 3000, x: 0.9, y: 0.2, scale: 1, rotate: 0, ease: 'easeOut' }
+                    ],
+                    loop: 'none',
+                    z: 0,
+                    ariaLabel: 'happy face'
+                }
+            ],
+            sfx: [{ at_ms: 500, type: 'ding' }]
+        }
+    ]
+};
+
+// 3) Make caption guidance explicit in the instruction the model sees
+const STRICT_JSON_INSTRUCTION = [
+    'Return ONLY a single valid JSON object (no markdown, no code fences, no comments).',
+    'The JSON MUST include all required fields and conform to this JSON Schema:',
+    JSON.stringify(ANIMATION_JSON_SCHEMA),
+    'Use this example as a structural reference (values may differ, but required keys must be present):',
+    JSON.stringify(FEW_SHOT_EXAMPLE),
+    'You MUST include at least one scene in "scenes" and at least one track per actor.',
+    'If any value is unknown, provide a reasonable default that satisfies the schema.',
+    // Caption rules:
+    'Caption rules:',
+    '- scenes[i].caption MUST be a clear, grammatical sentence (4–24 words) that describes what happens in that scene.',
+    '- It MUST NOT be random strings, placeholders, or mostly emojis/symbols.',
+    '- Prefer the same language as the user story.',
+    '- Avoid repeated characters and filler like "lorem", "asdf", or "placeholder".'
+].join('\n');
+
+// Safe stringify utility for logging, with size limit
+function safeStringify(obj: unknown, limit = 20000) {
+    try {
+        const str = JSON.stringify(obj, null, 2);
+        return str.length > limit ? str.slice(0, limit) + '... [truncated]' : str;
+    } catch {
+        return '[unserializable]';
+    }
+}
+
+// Scan a string for the first balanced JSON object and return it as string
+function findFirstJsonObjectString(input: string): string | undefined {
+    let inString = false, escape = false, depth = 0, start = -1;
+    for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (inString) {
+            if (escape) escape = false;
+            else if (ch === '\\') escape = true;
+            else if (ch === '"') inString = false;
+            continue;
+        }
+        if (ch === '"') { inString = true; continue; }
+        if (ch === '{') { if (depth === 0) start = i; depth++; }
+        else if (ch === '}') { depth--; if (depth === 0 && start !== -1) return input.slice(start, i + 1); }
+    }
+    return undefined;
+}
+
+// Extract text or JSON robustly from Responses API for different shapes
+function extractOutputText(resp: any): string | undefined {
+    if (typeof resp?.output_text === 'string' && resp.output_text.trim()) {
+        return resp.output_text.trim();
+    }
+    const out = resp?.output;
+    if (Array.isArray(out)) {
+        const chunks: string[] = [];
+        for (const o of out) {
+            const content = o?.content;
+            if (!Array.isArray(content)) continue;
+            for (const c of content) {
+                if (typeof c?.text === 'string') chunks.push(c.text);
+                if (c?.type === 'json' && c?.json_object) {
+                    try { chunks.push(JSON.stringify(c.json_object)); } catch {}
+                }
+                if (Array.isArray(c?.content)) {
+                    for (const inner of c.content) {
+                        if (typeof inner?.text === 'string') chunks.push(inner.text);
+                        if (inner?.type === 'json' && inner?.json_object) {
+                            try { chunks.push(JSON.stringify(inner.json_object)); } catch {}
+                        }
+                    }
+                }
+            }
+        }
+        const joined = chunks.join('').trim();
+        if (joined) return joined;
+    }
+    const chatLike = resp?.choices?.[0]?.message?.content;
+    if (typeof chatLike === 'string' && chatLike.trim()) return chatLike.trim();
+    if (Array.isArray(chatLike)) {
+        const joined = chatLike.map((p: any) => (typeof p === 'string' ? p : p?.text ?? '')).join('').trim();
+        if (joined) return joined;
+    }
+    try {
+        const raw = JSON.stringify(resp);
+        const jsonStr = findFirstJsonObjectString(raw);
+        if (jsonStr) return jsonStr;
+    } catch {}
+    return undefined;
+}
+
+// Add these small helpers near the top of the file (e.g., below STRICT_JSON_INSTRUCTION)
+function clamp01(n: any): number {
+  const x = typeof n === 'number' && Number.isFinite(n) ? n : 0.5;
+  return Math.max(0, Math.min(1, x));
+}
+function clamp(n: any, min: number, max: number, fallback: number): number {
+  const x = typeof n === 'number' && Number.isFinite(n) ? n : fallback;
+  return Math.max(min, Math.min(max, x));
+}
+function sanitizeEase(ease: any): 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' {
+  return ['linear', 'easeIn', 'easeOut', 'easeInOut'].includes(ease) ? ease : 'linear';
+}
+function sanitizeKeyframe(
+  k: any,
+  defaults: { x: number; y: number; scale: number },
+  durationMs: number
+) {
+  const t = clamp(k?.t, 0, Math.max(0, durationMs), 0);
+  const x = clamp01(k?.x ?? defaults.x);
+  const y = clamp01(k?.y ?? defaults.y);
+  const rotate = typeof k?.rotate === 'number' && Number.isFinite(k.rotate) ? k.rotate : 0;
+  const scale = clamp(k?.scale, 0.05, 10, defaults.scale);
+  const ease = sanitizeEase(k?.ease);
+  return { t, x, y, rotate, scale, ease };
+}
+
+// 4) Ensure we always produce/repair a readable caption in normalizeAnimation
+function normalizeAnimation(candidate: any) {
+  const anim: any = typeof candidate === 'object' && candidate ? candidate : {};
+  if (typeof anim.title !== 'string' || !anim.title.trim()) anim.title = 'Untitled Animation';
+  if (typeof anim.fps !== 'number' || !Number.isFinite(anim.fps)) anim.fps = 30;
+
+  if (!Array.isArray(anim.scenes)) anim.scenes = [];
+  if (anim.scenes.length === 0) {
+    anim.scenes = [
+      {
+        id: 'scene-1',
+        duration_ms: 3000,
+        background: '🌇',
+        caption: 'Auto-generated scene.',
+        actors: [
+          {
+            id: 'actor-1',
+            type: 'emoji',
+            emoji: '😀',
+            start: { x: 0.5, y: 0.5, scale: 1 },
+            tracks: [
+              { t: 0, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' },
+              { t: 3000, x: 0.8, y: 0.5, rotate: 0, scale: 1, ease: 'easeOut' }
+            ],
+            loop: 'none',
+            z: 0,
+            ariaLabel: 'emoji actor'
+          }
+        ],
+        sfx: [{ at_ms: 500, type: 'ding' }]
+      }
+    ];
+  }
+
+  anim.scenes = anim.scenes.map((scene: any, i: number) => {
+    const s: any = typeof scene === 'object' && scene ? scene : {};
+    if (typeof s.id !== 'string' || !s.id.trim()) s.id = `scene-${i + 1}`;
+    if (typeof s.duration_ms !== 'number' || !Number.isFinite(s.duration_ms)) s.duration_ms = 3000;
+
+    if (!Array.isArray(s.actors) || s.actors.length === 0) {
+      s.actors = [
+        {
+          id: 'actor-1',
+          type: 'emoji',
+          emoji: '😀',
+          start: { x: 0.5, y: 0.5, scale: 1 },
+          tracks: [
+            { t: 0, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' },
+            { t: s.duration_ms, x: 0.8, y: 0.5, rotate: 0, scale: 1, ease: 'easeOut' }
+          ],
+          loop: 'none',
+          z: 0,
+          ariaLabel: 'emoji actor'
+        }
+      ];
+    }
+
+    s.actors = s.actors.map((actor: any, j: number) => {
+      const a: any = typeof actor === 'object' && actor ? actor : {};
+      if (typeof a.id !== 'string' || !a.id.trim()) a.id = `actor-${j + 1}`;
+      a.type = 'emoji';
+      if (typeof a.emoji !== 'string' || !a.emoji.trim()) a.emoji = '😀';
+
+      if (typeof a.start !== 'object' || !a.start) a.start = {};
+      a.start.x = clamp01(a.start.x);
+      a.start.y = clamp01(a.start.y);
+      a.start.scale = clamp(a.start.scale, 0.05, 10, 1);
+
+      if (!Array.isArray(a.tracks) || a.tracks.length === 0) {
+        a.tracks = [
+          sanitizeKeyframe(
+            { t: 0, x: a.start.x, y: a.start.y, rotate: 0, scale: a.start.scale, ease: 'linear' },
+            { x: a.start.x, y: a.start.y, scale: a.start.scale },
+            s.duration_ms
+          )
+        ];
+      } else {
+        const defaults = { x: a.start.x, y: a.start.y, scale: a.start.scale };
+        a.tracks = a.tracks.map((k: any) => sanitizeKeyframe(k, defaults, s.duration_ms));
+      }
+
+      if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
+      if (typeof a.z !== 'number') a.z = 0;
+      if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'emoji actor';
+      return a;
+    });
+
+    if (!Array.isArray(s.sfx)) s.sfx = [];
+    s.sfx = s.sfx.map((fx: any) => {
+      const f: any = typeof fx === 'object' && fx ? fx : {};
+      if (typeof f.at_ms !== 'number' || !Number.isFinite(f.at_ms)) f.at_ms = 0;
+      if (!['pop', 'whoosh', 'ding'].includes(f.type)) f.type = 'ding';
+      return f;
+    });
+
+    if (typeof s.background !== 'string') s.background = undefined;
+
+    // Ensure caption existence and clarity
+    if (typeof s.caption !== 'string' || !isCaptionClear(s.caption)) {
+      s.caption = synthesizeCaption(s);
+    } else {
+      s.caption = toSentenceCase(s.caption);
+    }
+
+    return s;
+  });
+
+  return anim;
+}
+
+// Wrap Responses API call with logging and text.format=json_object
+async function callModel(
+  inputMessages: Array<{ role: 'system' | 'user'; content: string }>,
+  _opts?: { previousErrors?: string; lastRaw?: string; attempt?: number }
+) {
+  // Build request body using any to avoid over-strict typings in some SDK versions
+  const requestBody: any = {
+    model: 'gpt-5-nano',
+    input: inputMessages,
+    // Use text.format in Responses API (response_format is not supported here)
+    text: {
+      format: { type: 'json_object' }, // valid values: 'json_object' | 'text' | 'json_schema'
+      verbosity: 'low'
+    },
+    // Reduce reasoning so tokens go to the JSON output instead of hidden chain-of-thought
+    reasoning: { effort: 'low' as const },
+    // Keep a modest cap to avoid hitting incomplete due to reasoning tokens
+    max_output_tokens: 12000
+  };
+
+  console.info('[storyboard] OpenAI request input:', safeStringify(inputMessages));
+  console.info('[storyboard] OpenAI request options:', safeStringify(requestBody));
+
+  const response = await openai.responses.create(requestBody);
+
+  console.info('[storyboard] OpenAI raw response:', safeStringify(response));
+
+  return response;
+}
+
+async function generateAnimationJson(story: string, previousErrors?: string, lastRaw?: string) {
+    const baseMessages = [
+        { role: 'system', content: `${STORYBOARD_PROMPT}\n\n${STRICT_JSON_INSTRUCTION}` },
+        { role: 'user', content: story }
+    ] as const;
+
+    const retryNote = previousErrors
+        ? [
+            {
+                role: 'system' as const,
+                content:
+                    'Your previous output failed validation. Return a corrected JSON object that fully conforms to the schema. Do not omit required keys.'
+            },
+            lastRaw
+                ? ({
+                    role: 'user' as const,
+                    content:
+                        `Here were the validation errors:\n${previousErrors}\n\nThis was your previous JSON (fix it):\n${lastRaw}`
+                })
+                : ({ role: 'user' as const, content: `Validation errors:\n${previousErrors}` } as const)
+        ]
+        : [];
+
+    // First call
+    let response = await callModel([...baseMessages, ...retryNote], { previousErrors, lastRaw, attempt: 1 });
+
+    // If incomplete or no content, retry with a shorter, stricter system prompt
+    let content = extractOutputText(response);
+    if (!content || response?.status === 'incomplete') {
+        console.warn('[storyboard] Incomplete or empty output detected. Retrying with stricter/shorter prompt.');
+        const minimalSystem = [
+            'Output ONLY a single valid JSON object.',
+            'It MUST conform to this JSON Schema and include all required keys.',
+            'No markdown. No extra text.'
+        ].join(' ');
+        const minimalMessages = [
+            { role: 'system' as const, content: minimalSystem + '\n' + JSON.stringify(ANIMATION_JSON_SCHEMA) },
+            { role: 'user' as const, content: story }
+        ];
+        response = await callModel(minimalMessages, { previousErrors, lastRaw, attempt: 2 });
+        content = extractOutputText(response);
+    }
+
+    // Last-resort: scan response JSON for first object
+    if (!content) {
+        const raw = JSON.stringify(response);
+        const jsonStr = findFirstJsonObjectString(raw);
+        if (jsonStr) content = jsonStr;
+    }
+
+    console.info('[storyboard] Extracted content:', content ? (content.length > 20000 ? content.slice(0, 20000) + '... [truncated]' : content) : 'undefined');
+
+    if (!content) throw new Error('Model did not return content');
+
+    if (content.startsWith('```')) {
+        content = content.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
+    }
+    return content;
+}
+
+export async function POST(req: NextRequest) {
+    try {
+        const json = await req.json();
+        const { story } = Body.parse(json);
+
+        // Log incoming request
+        console.info('[storyboard] HTTP request body:', safeStringify(json));
+
+        // First attempt
+        let raw = await generateAnimationJson(story);
+
+        let parsedJson: unknown;
+        try {
+            parsedJson = JSON.parse(raw);
+        } catch {
+            // Retry with explicit repair instruction including the raw text
+            raw = await generateAnimationJson(
+                story,
+                'Invalid JSON syntax (failed to parse). Return a single valid JSON object.',
+                raw
+            );
+            parsedJson = JSON.parse(raw);
+        }
+
+        // Normalize to ensure required keys exist and at least one scene
+        const normalized = normalizeAnimation(parsedJson);
+
+        // Validate with Zod; retry once with feedback if needed
+        try {
+            const parsed = animationSchema.parse(normalized);
+            return new Response(JSON.stringify({ animation: parsed }), {
+                headers: { 'content-type': 'application/json' },
+                status: 200
+            });
+        } catch (zerr: any) {
+            // Log zod failure
+            console.warn('[storyboard] Zod validation failed:', safeStringify(zerr?.errors ?? zerr?.issues ?? zerr));
+            const errors = JSON.stringify(zerr?.errors ?? zerr?.issues ?? zerr, null, 2);
+            const repairedRaw = await generateAnimationJson(story, errors, raw);
+            const repairedJson = JSON.parse(repairedRaw);
+            const repairedNormalized = normalizeAnimation(repairedJson);
+            const parsed = animationSchema.parse(repairedNormalized);
+
+            return new Response(JSON.stringify({ animation: parsed }), {
+                headers: { 'content-type': 'application/json' },
+                status: 200
+            });
+        }
+    } catch (err: any) {
+        console.error('[storyboard] Error:', err);
+        return new Response(JSON.stringify({ error: err.message || 'Unexpected error' }), {
+            headers: { 'content-type': 'application/json' },
+            status: 400
+        });
+    }
+}

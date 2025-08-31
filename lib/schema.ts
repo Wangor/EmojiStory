@@ -1,0 +1,38 @@
+import { z } from 'zod';
+
+export const keyframeSchema = z.object({
+  t: z.number().nonnegative(),
+  x: z.number().min(0).max(1),
+  y: z.number().min(0).max(1),
+  rotate: z.number().optional(),
+  scale: z.number().optional(),
+  ease: z.enum(['linear','easeIn','easeOut','easeInOut']).optional()
+});
+
+export const emojiActorSchema = z.object({
+  id: z.string(),
+  type: z.literal('emoji'),
+  emoji: z.string(),
+  start: z.object({ x: z.number(), y: z.number(), scale: z.number().optional() }).optional(),
+  tracks: z.array(keyframeSchema).min(1),
+  loop: z.enum(['float','none']).optional(),
+  z: z.number().optional(),
+  ariaLabel: z.string().optional()
+});
+
+export const actorSchema = emojiActorSchema;
+
+export const sceneSchema = z.object({
+  id: z.string(),
+  duration_ms: z.number().positive(),
+  background: z.string().optional(),
+  caption: z.string().optional(),
+  actors: z.array(actorSchema),
+  sfx: z.array(z.object({ at_ms: z.number().nonnegative(), type: z.enum(['pop','whoosh','ding']) })).optional()
+});
+
+export const animationSchema = z.object({
+  title: z.string(),
+  fps: z.number().positive(),
+  scenes: z.array(sceneSchema).min(1)
+});
