@@ -18,7 +18,18 @@ export type EmojiActor = {
   ariaLabel?: string;
 };
 
-export type Actor = EmojiActor;
+export type CompositeActor = {
+  id: string;
+  type: 'composite';
+  parts: EmojiActor[]; // grouped emoji parts
+  start?: { x: number; y: number; scale?: number };
+  tracks: Keyframe[];
+  loop?: 'float' | 'none';
+  z?: number;
+  ariaLabel?: string;
+};
+
+export type Actor = EmojiActor | CompositeActor;
 
 export type Scene = {
   id: string;

@@ -265,5 +265,33 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
       </motion.span>
     );
   }
+  if (actor.type === 'composite') {
+    const size = Math.round(48 * (actor.start?.scale ?? 1));
+    return (
+      <motion.span
+        role="img"
+        aria-label={actor.ariaLabel ?? 'composite'}
+        style={{ position: 'absolute', fontSize: size, transformOrigin: 'center center', display: 'inline-block' }}
+        initial={{ x: x[0], y: y[0], rotate: rotate[0], scale: scale[0] }}
+        animate={controls}
+      >
+        {actor.parts.map((p) => {
+          const partScale = p.start?.scale ?? 1;
+          const partSize = size * partScale;
+          const offsetX = (p.start?.x ?? 0) * size;
+          const offsetY = (p.start?.y ?? 0) * size;
+          return (
+            <span
+              key={p.id}
+              aria-label={p.ariaLabel ?? p.emoji}
+              style={{ position: 'absolute', left: offsetX, top: offsetY, fontSize: partSize, transformOrigin: 'center center' }}
+            >
+              {p.emoji}
+            </span>
+          );
+        })}
+      </motion.span>
+    );
+  }
   return null;
 }

@@ -20,7 +20,18 @@ export const emojiActorSchema = z.object({
   ariaLabel: z.string().optional()
 });
 
-export const actorSchema = emojiActorSchema;
+export const compositeActorSchema = z.object({
+  id: z.string(),
+  type: z.literal('composite'),
+  parts: z.array(emojiActorSchema),
+  start: z.object({ x: z.number(), y: z.number(), scale: z.number().optional() }).optional(),
+  tracks: z.array(keyframeSchema).min(1),
+  loop: z.enum(['float','none']).optional(),
+  z: z.number().optional(),
+  ariaLabel: z.string().optional()
+});
+
+export const actorSchema = z.union([emojiActorSchema, compositeActorSchema]);
 
 export const sceneSchema = z.object({
   id: z.string(),
