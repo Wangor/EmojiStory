@@ -38,9 +38,10 @@ const ANIMATION_JSON_SCHEMA = {
                                                 y: { type: 'number' },
                                                 scale: { type: 'number' }
                                             },
-                                            required: ['x', 'y'],
+                                            required: ['x', 'y', 'scale'],
                                             additionalProperties: false
                                         },
+                                        flipX: { type: 'boolean' },
                                         tracks: {
                                             type: 'array',
                                             items: {
@@ -62,9 +63,9 @@ const ANIMATION_JSON_SCHEMA = {
                                         z: { type: 'number' },
                                         ariaLabel: { type: 'string' }
                                     },
-                                    required: ['id', 'type', 'emoji', 'tracks'],
-                                    additionalProperties: false
-                                },
+                                      required: ['id', 'type', 'emoji', 'start', 'tracks'],
+                                      additionalProperties: false
+                                  },
                                 {
                                     type: 'object',
                                     properties: {
@@ -78,17 +79,18 @@ const ANIMATION_JSON_SCHEMA = {
                                                     id: { type: 'string' },
                                                     type: { const: 'emoji' },
                                                     emoji: { type: 'string' },
-                                                    start: {
-                                                        type: 'object',
-                                                        properties: {
-                                                            x: { type: 'number' },
-                                                            y: { type: 'number' },
-                                                            scale: { type: 'number' }
-                                                        },
-                                                        required: ['x', 'y', 'scale'],
-                                                        additionalProperties: false
-                                                    },
-                                                    tracks: {
+                                                  start: {
+                                                      type: 'object',
+                                                      properties: {
+                                                          x: { type: 'number' },
+                                                          y: { type: 'number' },
+                                                          scale: { type: 'number' }
+                                                      },
+                                                      required: ['x', 'y', 'scale'],
+                                                      additionalProperties: false
+                                                  },
+                                                  flipX: { type: 'boolean' },
+                                                  tracks: {
                                                         type: 'array',
                                                         items: {
                                                             type: 'object',
@@ -109,22 +111,23 @@ const ANIMATION_JSON_SCHEMA = {
                                                     z: { type: 'number' },
                                                     ariaLabel: { type: 'string' }
                                                 },
-                                                required: ['id', 'type', 'emoji', 'tracks'],
-                                                additionalProperties: false
-                                            },
+                                                  required: ['id', 'type', 'emoji', 'start', 'tracks'],
+                                                  additionalProperties: false
+                                              },
                                             minItems: 1
                                         },
-                                        start: {
-                                            type: 'object',
-                                            properties: {
-                                                x: { type: 'number' },
-                                                y: { type: 'number' },
-                                                scale: { type: 'number' }
-                                            },
-                                            required: ['x', 'y'],
-                                            additionalProperties: false
-                                        },
-                                        tracks: {
+                                          start: {
+                                              type: 'object',
+                                              properties: {
+                                                  x: { type: 'number' },
+                                                  y: { type: 'number' },
+                                                  scale: { type: 'number' }
+                                              },
+                                              required: ['x', 'y', 'scale'],
+                                              additionalProperties: false
+                                          },
+                                          flipX: { type: 'boolean' },
+                                          tracks: {
                                             type: 'array',
                                             items: {
                                                 type: 'object',
@@ -145,9 +148,9 @@ const ANIMATION_JSON_SCHEMA = {
                                         z: { type: 'number' },
                                         ariaLabel: { type: 'string' }
                                     },
-                                    required: ['id', 'type', 'parts', 'tracks'],
-                                    additionalProperties: false
-                                }
+                                      required: ['id', 'type', 'parts', 'start', 'tracks'],
+                                      additionalProperties: false
+                                  }
                             ]
                         }
                     },
@@ -488,6 +491,7 @@ function normalizeAnimation(candidate: any) {
           if (typeof p.loop !== 'string' || !['float', 'none'].includes(p.loop)) p.loop = 'none';
           if (typeof p.z !== 'number') p.z = 0;
           if (typeof p.ariaLabel !== 'string') p.ariaLabel = 'emoji actor';
+          p.flipX = p.flipX === true;
           return p;
         });
 
@@ -510,6 +514,7 @@ function normalizeAnimation(candidate: any) {
         if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
         if (typeof a.z !== 'number') a.z = 0;
         if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'composite actor';
+        a.flipX = a.flipX === true;
         return a;
       } else {
         a.type = 'emoji';
@@ -536,6 +541,7 @@ function normalizeAnimation(candidate: any) {
         if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
         if (typeof a.z !== 'number') a.z = 0;
         if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'emoji actor';
+        a.flipX = a.flipX === true;
         return a;
       }
     });
