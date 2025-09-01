@@ -61,9 +61,50 @@ export async function getMoviesByUser() {
 export async function getAllMovies() {
   const { data, error } = await supabase
     .from('movies')
-    .select('*')
+    .select(`
+      *,
+      channels!movies_user_id_fkey(
+        name
+      )
+    `)
     .order('created_at', { ascending: false });
-  if (error) throw error;
+
+  if (error) {
+    // If the foreign key approach doesn't work, fall back to manual join
+    const { data: moviesData, error: moviesError } = await supabase
+      .from('movies')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (moviesError) throw moviesError;
+
+    if (!moviesData || moviesData.length === 0) {
+      return [];
+    }
+
+    // Get unique user IDs from movies
+    const userIds = [...new Set(moviesData.map(movie => movie.user_id))];
+
+    // Fetch channels for these users
+    const { data: channelsData, error: channelsError } = await supabase
+      .from('channels')
+      .select('user_id, name')
+      .in('user_id', userIds);
+
+    if (channelsError) throw channelsError;
+
+    // Create a map of user_id to channel for quick lookup
+    const channelsMap = new Map(
+      (channelsData || []).map(channel => [channel.user_id, channel])
+    );
+
+    // Combine movies with their corresponding channels
+    return moviesData.map(movie => ({
+      ...movie,
+      channels: channelsMap.get(movie.user_id) || null
+    }));
+  }
+
   return data;
 }
 
@@ -124,4 +165,3 @@ export async function getChannelWithMovies(name: string) {
   if (moviesError) throw moviesError;
   return { channel, movies };
 }
-

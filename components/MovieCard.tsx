@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import type {
   Animation,
   Scene,
@@ -134,19 +135,39 @@ function SceneThumbnail({ scene }: { scene: Scene }) {
 export function MovieCard({
   movie,
 }: {
-  movie: { title?: string; description?: string; story: string; animation: Animation };
+  movie: {
+    title?: string;
+    description?: string;
+    story: string;
+    animation: Animation;
+    channels?: {
+      name: string;
+      user_id: string;
+    };
+  };
 }) {
   const firstScene = movie.animation?.scenes?.[0];
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       {firstScene ? <SceneThumbnail scene={firstScene} /> : null}
-      <div className="text-sm font-medium truncate">
-        {movie.title || movie.story.slice(0, 30)}
+      <div className="space-y-1">
+        <div className="text-sm font-medium truncate">
+          {movie.title || movie.story.slice(0, 30)}
+        </div>
+        {movie.description && (
+          <div className="text-xs text-gray-500 truncate">{movie.description}</div>
+        )}
+        {movie.channels && (
+          <Link
+            href={`/channel/${encodeURIComponent(movie.channels.name)}`}
+            className="group inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 hover:border-blue-300 rounded-full text-xs font-medium text-blue-700 hover:text-blue-800 transition-all duration-200 shadow-sm hover:shadow-md max-w-fit"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="text-blue-500 group-hover:text-blue-600">📺</span>
+            <span className="truncate">@{movie.channels.name}</span>
+          </Link>
+        )}
       </div>
-      {movie.description && (
-        <div className="text-xs text-gray-500 truncate">{movie.description}</div>
-      )}
     </div>
   );
 }
-

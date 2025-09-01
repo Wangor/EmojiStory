@@ -190,13 +190,19 @@ export default function Page() {
             <h2 className="text-2xl font-bold mb-4 text-center">Latest Movies</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {movies.map((m) => (
-                <button
+                <div
                   key={m.id}
-                  onClick={() => setAnimation(m.animation as Animation)}
-                  className="text-left"
+                  onClick={(e) => {
+                    // Only set animation if the click wasn't on the channel link
+                    const target = e.target as HTMLElement;
+                    if (!target.closest('a')) {
+                      setAnimation(m.animation as Animation);
+                    }
+                  }}
+                  className="cursor-pointer"
                 >
                   <MovieCard movie={m} />
-                </button>
+                </div>
               ))}
             </div>
           </div>
