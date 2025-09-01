@@ -37,6 +37,8 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
 
   const frameMs = 1000 / fps;
 
+  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+
   function lerp(a: number, b: number, t: number) {
     return a + (b - a) * t;
   }
@@ -87,16 +89,16 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   const handleDragEnd = (actorId: string, info: any) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const x = (info.point.x - rect.left) / rect.width;
-    const y = (info.point.y - rect.top) / rect.height;
-    const t = currentFrame * frameMs;
+    const x = clamp01((info.point.x - rect.left) / rect.width);
+    const y = clamp01((info.point.y - rect.top) / rect.height);
+    const t = Math.round(currentFrame * frameMs);
     const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
     updateActor(actorId, { t, x, y, scale: pose.scale });
   };
 
   const handleScaleStart = (e: React.PointerEvent, actorId: string) => {
     e.stopPropagation();
-    const t = currentFrame * frameMs;
+    const t = Math.round(currentFrame * frameMs);
     const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
     scaleRef.current = {
       id: actorId,
@@ -114,7 +116,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     const s = scaleRef.current;
     if (!s) return;
     const diff = e.clientY - s.startY;
-    const t = currentFrame * frameMs;
+    const t = Math.round(currentFrame * frameMs);
     const newScale = Math.max(0.1, s.startScale + diff / 100);
     updateActor(s.id, { t, x: s.x, y: s.y, scale: newScale });
   };
@@ -127,7 +129,13 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
 
   const selectedActor = scene.actors.find((a) => a.id === selected);
   const pathPoints = selectedActor
-    ? selectedActor.tracks.map((k) => `${k.x * size.w},${k.y * size.h}`).join(' ')
+    ? [
+        selectedActor.start && { x: selectedActor.start.x, y: selectedActor.start.y },
+        ...selectedActor.tracks
+      ]
+        .filter(Boolean)
+        .map((k) => `${(k as any).x * size.w},${(k as any).y * size.h}`)
+        .join(' ')
     : '';
 
   return (
