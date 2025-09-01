@@ -12,11 +12,11 @@ export const SAMPLE_ANIMATION: Animation = {
           id: 'bg-1',
           type: 'emoji',
           emoji: '🌆',
-          start: { x: 0.5, y: 0.65, scale: 1.2 },
+          start: { x: 0.5, y: 0.65, scale: 3.5 },
           tracks: [
-            { t: 0, x: 0.5, y: 0.65, scale: 1.2 },
-            { t: 3000, x: 0.5, y: 0.63, scale: 1.2 },
-            { t: 6000, x: 0.5, y: 0.65, scale: 1.2 }
+            { t: 0, x: 0.5, y: 0.65, scale: 3.5 },
+            { t: 3000, x: 0.5, y: 0.63, scale: 3.5 },
+            { t: 6000, x: 0.5, y: 0.65, scale: 3.5 }
           ],
           loop: 'float',
           z: -100
@@ -57,11 +57,11 @@ export const SAMPLE_ANIMATION: Animation = {
           id: 'bg-2',
           type: 'emoji',
           emoji: '🌬️',
-          start: { x: 0.5, y: 0.5, scale: 1.1 },
+          start: { x: 0.5, y: 0.5, scale: 3 },
           tracks: [
-            { t: 0, x: 0.5, y: 0.5, scale: 1.1 },
-            { t: 2500, x: 0.5, y: 0.52, scale: 1.1 },
-            { t: 5000, x: 0.5, y: 0.5, scale: 1.1 }
+            { t: 0, x: 0.5, y: 0.5, scale: 3 },
+            { t: 2500, x: 0.5, y: 0.52, scale: 3 },
+            { t: 5000, x: 0.5, y: 0.5, scale: 3 }
           ],
           loop: 'float',
           z: -100

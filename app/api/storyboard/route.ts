@@ -462,42 +462,42 @@ function pickBackgroundActors(text: string, durationMs: number) {
     {
       keys: ['forest', 'woods', 'tree', 'jungle', 'park'],
       actors: [
-        make('🌳', 0.2, 0.8, 1),
-        make('🌲', 0.5, 0.75, 1.2),
-        make('🌳', 0.8, 0.8, 1)
+        make('🌳', 0.2, 0.8, 3),
+        make('🌲', 0.5, 0.75, 3.5),
+        make('🌳', 0.8, 0.8, 3)
       ]
     },
     {
       keys: ['city', 'street', 'town', 'building', 'skyscraper'],
       actors: [
-        make('🏙️', 0.25, 0.72, 1.1),
-        make('🏢', 0.5, 0.7, 1.2),
-        make('🏬', 0.75, 0.72, 1.1)
+        make('🏙️', 0.25, 0.72, 3.5),
+        make('🏢', 0.5, 0.7, 4),
+        make('🏬', 0.75, 0.72, 3.5)
       ]
     },
     {
       keys: ['beach', 'ocean', 'sea', 'sand', 'shore', 'wave'],
-      actors: [make('🏖️', 0.5, 0.8, 1.1), make('🌴', 0.2, 0.8, 1)]
+      actors: [make('🏖️', 0.5, 0.8, 4), make('🌴', 0.2, 0.8, 3)]
     },
     {
       keys: ['mountain', 'hill', 'cliff', 'peak'],
-      actors: [make('🏔️', 0.5, 0.7, 1.3), make('⛰️', 0.8, 0.72, 1.1)]
+      actors: [make('🏔️', 0.5, 0.7, 4), make('⛰️', 0.8, 0.72, 3)]
     },
     {
       keys: ['night', 'moon', 'star', 'dark'],
-      actors: [make('🌃', 0.5, 0.55, 1.3), make('🌙', 0.8, 0.3, 0.8)]
+      actors: [make('🌃', 0.5, 0.55, 4), make('🌙', 0.8, 0.3, 2.5)]
     },
     {
       keys: ['space', 'planet', 'galaxy', 'astronaut', 'rocket'],
-      actors: [make('🌌', 0.5, 0.5, 1.3), make('🪐', 0.8, 0.35, 0.9)]
+      actors: [make('🌌', 0.5, 0.5, 4), make('🪐', 0.8, 0.35, 3)]
     },
     {
       keys: ['desert', 'cactus', 'dune', 'camel'],
-      actors: [make('🏜️', 0.5, 0.75, 1.2), make('🌵', 0.2, 0.78, 1)]
+      actors: [make('🏜️', 0.5, 0.75, 4), make('🌵', 0.2, 0.78, 3)]
     },
     {
       keys: ['castle'],
-      actors: [make('🏰', 0.5, 0.72, 1.2)]
+      actors: [make('🏰', 0.5, 0.72, 4)]
     }
   ];
   for (const r of rules) {
@@ -531,8 +531,10 @@ function sanitizeEmojiActor(actor: any, index: number, durationMs: number, prefi
   if (typeof a.start !== 'object' || !a.start) a.start = {};
   a.start.x = clamp01(a.start.x);
   a.start.y = clamp01(a.start.y);
-  const maxScale = prefix === 'bg' ? 1.5 : 10;
-  a.start.scale = clamp(a.start.scale, 0.05, maxScale, 1);
+  const maxScale = prefix === 'bg' ? 8 : 10;
+  const minScale = prefix === 'bg' ? 2 : 0.05;
+  const defaultScale = prefix === 'bg' ? 3 : 1;
+  a.start.scale = clamp(a.start.scale, minScale, maxScale, defaultScale);
   if (!Array.isArray(a.tracks) || a.tracks.length === 0) {
     a.tracks = [
       sanitizeKeyframe(
