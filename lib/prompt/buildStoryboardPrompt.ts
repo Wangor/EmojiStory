@@ -18,6 +18,9 @@ export function buildStoryboardPrompt(config: PromptConfig) {
   const systemPrompt = `You support the following visual effects that run at scene start and may be applied to scenes or actors via an "effects" array:\n${effectsList}\nUse only these names. Add effects when they enhance the story; omit otherwise.`;
 
   const storyboardPrompt = `You convert a short story into an animated storyboard JSON.
+The JSON must include:
+ - "title": a concise movie title describing the whole story (no scene numbers or names).
+ - "description": a summary of the entire movie of at most 50 words.
 You may use any emoji for actors or backgrounds. These examples show common emoji with suggested default scales:
 Actors:\n${actorsExamples}\nBackgrounds:\n${backgroundsExamples}\nConstraints:
  - Max ${config.maxScenes} scenes, max ${config.maxActorsPerScene} actors per scene, total duration <= ${config.maxTotalDurationMs} ms.

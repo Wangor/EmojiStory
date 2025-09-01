@@ -53,6 +53,8 @@ export type Scene = {
 
 export type Animation = {
   title: string;
+  /** Short summary describing the movie */
+  description: string;
   fps: number; // for time normalization if needed
   scenes: Scene[];
 };

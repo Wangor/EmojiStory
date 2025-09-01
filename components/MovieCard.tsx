@@ -134,15 +134,18 @@ function SceneThumbnail({ scene }: { scene: Scene }) {
 export function MovieCard({
   movie,
 }: {
-  movie: { title?: string; story: string; animation: Animation };
+  movie: { title?: string; description?: string; story: string; animation: Animation };
 }) {
   const firstScene = movie.animation?.scenes?.[0];
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {firstScene ? <SceneThumbnail scene={firstScene} /> : null}
       <div className="text-sm font-medium truncate">
         {movie.title || movie.story.slice(0, 30)}
       </div>
+      {movie.description && (
+        <div className="text-xs text-gray-500 truncate">{movie.description}</div>
+      )}
     </div>
   );
 }

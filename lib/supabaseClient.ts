@@ -26,7 +26,7 @@ export async function getUser() {
   return data.user;
 }
 
-export async function insertMovie(movie: { title: string; story: string; animation: any; }) {
+export async function insertMovie(movie: { title: string; description: string; story: string; animation: any; }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
@@ -34,6 +34,7 @@ export async function insertMovie(movie: { title: string; story: string; animati
     .insert({
       user_id: user.id,
       title: movie.title,
+      description: movie.description,
       story: movie.story,
       animation: movie.animation,
     })

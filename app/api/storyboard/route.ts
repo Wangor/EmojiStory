@@ -96,9 +96,21 @@ function synthesizeCaption(scene: any): string {
   return toSentenceCase(text);
 }
 
+function synthesizeDescription(anim: any): string {
+  const captions = Array.isArray(anim?.scenes)
+    ? anim.scenes
+        .map((s: any) => (typeof s.caption === 'string' ? s.caption.trim() : ''))
+        .join(' ')
+    : '';
+  const sentence = toSentenceCase(captions).trim();
+  const words = sentence.split(/\s+/).filter(Boolean).slice(0, 50).join(' ');
+  return words;
+}
+
 // A minimal few-shot that exactly matches the schema, to reduce omissions
 const FEW_SHOT_EXAMPLE = {
     title: 'Sample Animation',
+    description: 'A simple animation demonstrating structure.',
     fps: 30,
     scenes: [
         {
@@ -359,6 +371,9 @@ function sanitizeEmojiActor(actor: any, index: number, durationMs: number, prefi
 function normalizeAnimation(candidate: any) {
   const anim: any = typeof candidate === 'object' && candidate ? candidate : {};
   if (typeof anim.title !== 'string' || !anim.title.trim()) anim.title = 'Untitled Animation';
+  else if (/^scene\s*\d*/i.test(anim.title)) {
+    anim.title = anim.title.replace(/^scene\s*\d*[:\-]?\s*/i, '') || 'Untitled Animation';
+  }
   if (typeof anim.fps !== 'number' || !Number.isFinite(anim.fps)) anim.fps = 30;
 
   if (!Array.isArray(anim.scenes)) anim.scenes = [];
@@ -531,6 +546,13 @@ function normalizeAnimation(candidate: any) {
 
     return s;
   });
+
+  if (typeof anim.description !== 'string' || !anim.description.trim()) {
+    anim.description = synthesizeDescription(anim);
+  } else {
+    const words = anim.description.split(/\s+/).filter(Boolean).slice(0, 50);
+    anim.description = words.join(' ');
+  }
 
   return anim;
 }
