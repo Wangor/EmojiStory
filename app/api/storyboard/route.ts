@@ -4,6 +4,7 @@ import { openai } from '../../../lib/openai';
 import { buildStoryboardPrompt } from '../../../lib/prompt/buildStoryboardPrompt';
 import { defaultPromptConfig } from '../../../lib/prompt/config';
 import { animationSchema } from '../../../lib/schema';
+import { animationJsonSchema } from '../../../lib/schema/json';
 import { BACKGROUNDS } from '../../../lib/assets/backgrounds';
 
 const Body = z.object({ story: z.string().min(1) });
@@ -11,240 +12,6 @@ const Body = z.object({ story: z.string().min(1) });
 const { systemPrompt, storyboardPrompt } = buildStoryboardPrompt(defaultPromptConfig);
 
 const VALID_EFFECTS = defaultPromptConfig.effects.map((e) => e.name) as readonly string[];
-
-// Prompt-only schema to anchor outputs
-const ANIMATION_JSON_SCHEMA = {
-    type: 'object',
-    properties: {
-        title: { type: 'string' },
-        fps: { type: 'number' },
-        scenes: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    id: { type: 'string' },
-                    duration_ms: { type: 'number' },
-                    backgroundActors: {
-                        type: 'array',
-                        items: {
-                            type: 'object',
-                            properties: {
-                                id: { type: 'string' },
-                                type: { const: 'emoji' },
-                                emoji: { type: 'string' },
-                                start: {
-                                    type: 'object',
-                                    properties: {
-                                        x: { type: 'number' },
-                                        y: { type: 'number' },
-                                        scale: { type: 'number', minimum: 0 }
-                                    },
-                                    required: ['x', 'y', 'scale'],
-                                    additionalProperties: false
-                                },
-                                flipX: { type: 'boolean' },
-                                tracks: {
-                                    type: 'array',
-                                    items: {
-                                        type: 'object',
-                                        properties: {
-                                            t: { type: 'number' },
-                                            x: { type: 'number' },
-                                            y: { type: 'number' },
-                                            rotate: { type: 'number' },
-                                            scale: { type: 'number', minimum: 0 },
-                                            ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
-                                        },
-                                        required: ['t', 'x', 'y'],
-                                        additionalProperties: false
-                                    },
-                                    minItems: 1
-                                },
-                                loop: { type: 'string', enum: ['float', 'none'] },
-                                z: { type: 'number' },
-                                ariaLabel: { type: 'string' },
-                                effects: {
-                                    type: 'array',
-                                    items: { type: 'string', enum: VALID_EFFECTS }
-                                }
-                            },
-                            required: ['id', 'type', 'emoji', 'start', 'tracks'],
-                            additionalProperties: false
-                        }
-                    },
-                    caption: { type: 'string' },
-                    actors: {
-                        type: 'array',
-                        items: {
-                            oneOf: [
-                                {
-                                    type: 'object',
-                                    properties: {
-                                        id: { type: 'string' },
-                                        type: { const: 'emoji' },
-                                        emoji: { type: 'string' },
-                                        start: {
-                                            type: 'object',
-                                            properties: {
-                                                x: { type: 'number' },
-                                                y: { type: 'number' },
-                                                scale: { type: 'number', minimum: 0 }
-                                            },
-                                            required: ['x', 'y', 'scale'],
-                                            additionalProperties: false
-                                        },
-                                        flipX: { type: 'boolean' },
-                                        tracks: {
-                                            type: 'array',
-                                            items: {
-                                                type: 'object',
-                                                properties: {
-                                                    t: { type: 'number' },
-                                                    x: { type: 'number' },
-                                                    y: { type: 'number' },
-                                                    rotate: { type: 'number' },
-                                                    scale: { type: 'number', minimum: 0 },
-                                                    ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
-                                                },
-                                                required: ['t', 'x', 'y'],
-                                                additionalProperties: false
-                                            },
-                                            minItems: 1
-                                        },
-                                        loop: { type: 'string', enum: ['float', 'none'] },
-                                        z: { type: 'number' },
-                                        ariaLabel: { type: 'string' },
-                                        effects: {
-                                            type: 'array',
-                                            items: { type: 'string', enum: VALID_EFFECTS }
-                                        }
-                                    },
-                                      required: ['id', 'type', 'emoji', 'start', 'tracks'],
-                                      additionalProperties: false
-                                  },
-                                {
-                                    type: 'object',
-                                    properties: {
-                                        id: { type: 'string' },
-                                        type: { const: 'composite' },
-                                        parts: {
-                                            type: 'array',
-                                            items: {
-                                                type: 'object',
-                                                properties: {
-                                                    id: { type: 'string' },
-                                                    type: { const: 'emoji' },
-                                                    emoji: { type: 'string' },
-                                                  start: {
-                                                      type: 'object',
-                                                      properties: {
-                                                          x: { type: 'number' },
-                                                          y: { type: 'number' },
-                                                          scale: { type: 'number', minimum: 0 }
-                                                      },
-                                                      required: ['x', 'y', 'scale'],
-                                                      additionalProperties: false
-                                                  },
-                                                  flipX: { type: 'boolean' },
-                                                  tracks: {
-                                                        type: 'array',
-                                                        items: {
-                                                            type: 'object',
-                                                            properties: {
-                                                                t: { type: 'number' },
-                                                                x: { type: 'number' },
-                                                                y: { type: 'number' },
-                                                                rotate: { type: 'number' },
-                                                                scale: { type: 'number', minimum: 0 },
-                                                                ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
-                                                            },
-                                                            required: ['t', 'x', 'y'],
-                                                            additionalProperties: false
-                                                        },
-                                                        minItems: 1
-                                                    },
-                                                    loop: { type: 'string', enum: ['float', 'none'] },
-                                                    z: { type: 'number' },
-                                                    ariaLabel: { type: 'string' },
-                                                    effects: {
-                                                        type: 'array',
-                                                        items: { type: 'string', enum: VALID_EFFECTS }
-                                                    }
-                                                },
-                                                  required: ['id', 'type', 'emoji', 'start', 'tracks'],
-                                                  additionalProperties: false
-                                              },
-                                            minItems: 1
-                                        },
-                                          start: {
-                                              type: 'object',
-                                              properties: {
-                                                  x: { type: 'number' },
-                                                  y: { type: 'number' },
-                                                  scale: { type: 'number', minimum: 0 }
-                                              },
-                                              required: ['x', 'y', 'scale'],
-                                              additionalProperties: false
-                                          },
-                                          flipX: { type: 'boolean' },
-                                          tracks: {
-                                            type: 'array',
-                                            items: {
-                                                type: 'object',
-                                                properties: {
-                                                    t: { type: 'number' },
-                                                    x: { type: 'number' },
-                                                    y: { type: 'number' },
-                                                    rotate: { type: 'number' },
-                                                    scale: { type: 'number', minimum: 0 },
-                                                    ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
-                                                },
-                                                required: ['t', 'x', 'y'],
-                                                additionalProperties: false
-                                            },
-                                            minItems: 1
-                                        },
-                                        loop: { type: 'string', enum: ['float', 'none'] },
-                                        z: { type: 'number' },
-                                        ariaLabel: { type: 'string' },
-                                        effects: {
-                                            type: 'array',
-                                            items: { type: 'string', enum: VALID_EFFECTS }
-                                        }
-                                    },
-                                      required: ['id', 'type', 'parts', 'start', 'tracks'],
-                                      additionalProperties: false
-                                  }
-                            ]
-                        }
-                    },
-                    effects: {
-                        type: 'array',
-                        items: { type: 'string', enum: VALID_EFFECTS }
-                    },
-                    sfx: {
-                        type: 'array',
-                        items: {
-                            type: 'object',
-                            properties: {
-                                at_ms: { type: 'number' },
-                                type: { type: 'string', enum: ['pop', 'whoosh', 'ding'] }
-                            },
-                            required: ['at_ms', 'type'],
-                            additionalProperties: false
-                        }
-                    }
-                },
-                // Make caption required
-                required: ['id', 'duration_ms', 'actors', 'caption'],
-                additionalProperties: false
-            }
-        }
-    },
-    required: ['title', 'fps', 'scenes'],
-    additionalProperties: false
-};
 
 // 2) Add small helper utilities for captions
 function toSentenceCase(s: string): string {
@@ -375,7 +142,7 @@ const FEW_SHOT_EXAMPLE = {
 const STRICT_JSON_INSTRUCTION = [
     'Return ONLY a single valid JSON object (no markdown, no code fences, no comments).',
     'The JSON MUST include all required fields and conform to this JSON Schema:',
-    JSON.stringify(ANIMATION_JSON_SCHEMA),
+    JSON.stringify(animationJsonSchema),
     'Use this example as a structural reference (values may differ, but required keys must be present):',
     JSON.stringify(FEW_SHOT_EXAMPLE),
     'You MUST include at least one scene in "scenes" and at least one track per actor.',
@@ -835,7 +602,7 @@ async function generateAnimationJson(story: string, previousErrors?: string, las
             'No markdown. No extra text.'
         ].join(' ');
         const minimalMessages = [
-            { role: 'system' as const, content: minimalSystem + '\n' + JSON.stringify(ANIMATION_JSON_SCHEMA) },
+            { role: 'system' as const, content: minimalSystem + '\n' + JSON.stringify(animationJsonSchema) },
             { role: 'user' as const, content: story }
         ];
         response = await callModel(minimalMessages, { previousErrors, lastRaw, attempt: 2 });
