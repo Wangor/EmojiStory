@@ -1,12 +1,15 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { openai } from '../../../lib/openai';
-import { STORYBOARD_PROMPT, EFFECTS_SYSTEM_PROMPT } from '../../../lib/prompt/storyboardPrompt';
+import { buildStoryboardPrompt } from '../../../lib/prompt/buildStoryboardPrompt';
+import { defaultPromptConfig } from '../../../lib/prompt/config';
 import { animationSchema } from '../../../lib/schema';
 
 const Body = z.object({ story: z.string().min(1) });
 
-const VALID_EFFECTS = ['fade-in', 'bounce'] as const;
+const { systemPrompt, storyboardPrompt } = buildStoryboardPrompt(defaultPromptConfig);
+
+const VALID_EFFECTS = defaultPromptConfig.effects.map((e) => e.name) as readonly string[];
 
 // Prompt-only schema to anchor outputs
 const ANIMATION_JSON_SCHEMA = {
@@ -62,7 +65,7 @@ const ANIMATION_JSON_SCHEMA = {
                                 ariaLabel: { type: 'string' },
                                 effects: {
                                     type: 'array',
-                                    items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                    items: { type: 'string', enum: VALID_EFFECTS }
                                 }
                             },
                             required: ['id', 'type', 'emoji', 'start', 'tracks'],
@@ -113,7 +116,7 @@ const ANIMATION_JSON_SCHEMA = {
                                         ariaLabel: { type: 'string' },
                                         effects: {
                                             type: 'array',
-                                            items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                            items: { type: 'string', enum: VALID_EFFECTS }
                                         }
                                     },
                                       required: ['id', 'type', 'emoji', 'start', 'tracks'],
@@ -165,7 +168,7 @@ const ANIMATION_JSON_SCHEMA = {
                                                     ariaLabel: { type: 'string' },
                                                     effects: {
                                                         type: 'array',
-                                                        items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                                        items: { type: 'string', enum: VALID_EFFECTS }
                                                     }
                                                 },
                                                   required: ['id', 'type', 'emoji', 'start', 'tracks'],
@@ -206,7 +209,7 @@ const ANIMATION_JSON_SCHEMA = {
                                         ariaLabel: { type: 'string' },
                                         effects: {
                                             type: 'array',
-                                            items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                            items: { type: 'string', enum: VALID_EFFECTS }
                                         }
                                     },
                                       required: ['id', 'type', 'parts', 'start', 'tracks'],
@@ -217,7 +220,7 @@ const ANIMATION_JSON_SCHEMA = {
                     },
                     effects: {
                         type: 'array',
-                        items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                        items: { type: 'string', enum: VALID_EFFECTS }
                     },
                     sfx: {
                         type: 'array',
@@ -791,8 +794,8 @@ async function callModel(
 
 async function generateAnimationJson(story: string, previousErrors?: string, lastRaw?: string) {
     const baseMessages = [
-        { role: 'system', content: EFFECTS_SYSTEM_PROMPT },
-        { role: 'system', content: `${STORYBOARD_PROMPT}\n\n${STRICT_JSON_INSTRUCTION}` },
+        { role: 'system', content: systemPrompt },
+        { role: 'system', content: `${storyboardPrompt}\n\n${STRICT_JSON_INSTRUCTION}` },
         { role: 'user', content: story }
     ] as const;
 
