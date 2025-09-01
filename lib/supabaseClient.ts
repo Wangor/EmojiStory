@@ -74,8 +74,8 @@ export async function getChannel() {
     .from('channels')
     .select('*')
     .eq('user_id', user.id)
-    .single();
-  if (error && error.code !== 'PGRST116') throw error;
+    .maybeSingle();
+  if (error) throw error;
   return data;
 }
 
@@ -113,8 +113,9 @@ export async function getChannelWithMovies(name: string) {
     .from('channels')
     .select('*')
     .eq('name', name)
-    .single();
+    .maybeSingle();
   if (channelError) throw channelError;
+  if (!channel) return { channel: null, movies: [] };
   const { data: movies, error: moviesError } = await supabase
     .from('movies')
     .select('*')
