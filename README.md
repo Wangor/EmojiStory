@@ -13,3 +13,6 @@ Open http://localhost:3000 and click **Generate with AI**.
 ## Notes
 - Uses OpenAI Responses API with `gpt-5-nano` and JSON Schema to guarantee valid output.
 - Server validates with Zod before sending to the client.
+- Emoji actors and backgrounds can use any Unicode emoji. The `lib/assets` module
+  contains example emoji with suggested default scales, but the model is free to
+  infer real-world size relationships when new emoji are used.

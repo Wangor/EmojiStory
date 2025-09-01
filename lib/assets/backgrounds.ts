@@ -1,5 +1,7 @@
 import { AssetDefinition } from './actors';
 
+// Common background emoji with suggested scales. These are examples only;
+// the model may use any emoji and choose scales based on real‑world context.
 export const BACKGROUNDS: readonly AssetDefinition[] = [
   { id: 'tree', emoji: '🌳', scale: 3, description: 'deciduous tree' },
   { id: 'pine', emoji: '🌲', scale: 3.5, description: 'evergreen tree' },

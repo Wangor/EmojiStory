@@ -1,3 +1,5 @@
+// Common actor emoji with suggested default scales. This list is not exhaustive;
+// the AI may use any emoji and infer reasonable scales based on real‑world size.
 export interface AssetDefinition {
   id: string;
   emoji: string;
