@@ -164,7 +164,24 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
     setSceneIndex((i) => Math.min(totalScenes - 1, i + 1));
   };
 
-  const handlePlayPause = () => setPlaying((p) => !p);
+  const handlePlayPause = () => {
+    setPlaying((p) => {
+      if (p) {
+        // going from playing -> paused: capture elapsed time and stop clock immediately
+        clearRaf();
+        if (startedAtRef.current != null) {
+          const now = performance.now();
+          elapsedRef.current = now - startedAtRef.current;
+        }
+        startedAtRef.current = null;
+        return false;
+      } else {
+        // resume from paused
+        startedAtRef.current = null;
+        return true;
+      }
+    });
+  };
 
   return (
     <div className="w-full">
@@ -180,6 +197,21 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
 
         {scene && (
           <SceneView key={scene.id + ':' + sceneIndex} scene={scene} width={width} height={height} />
+        )}
+
+        {/* Pause overlay */}
+        {!playing && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+            <div className="bg-black/50 rounded-full p-6">
+              <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
         )}
 
         {/* Scene counter */}
