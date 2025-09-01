@@ -19,6 +19,12 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   const [currentFrame, setCurrentFrame] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
 
+  const dragRef = useRef<{
+    id: string;
+    startX: number;
+    startY: number;
+  } | null>(null);
+
   const scaleRef = useRef<{
     id: string;
     startScale: number;
@@ -99,14 +105,23 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     onSceneChange({ ...scene, actors });
   }
 
+  const handleDragStart = (actorId: string) => {
+    setSelected(actorId);
+    const t = Math.round(currentFrame * frameMs);
+    const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
+    dragRef.current = { id: actorId, startX: pose.x, startY: pose.y };
+  };
+
   const handleDragEnd = (actorId: string, info: any) => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !dragRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const x = clamp01((info.point.x - rect.left) / rect.width);
-    const y = clamp01((info.point.y - rect.top) / rect.height);
+    const start = dragRef.current;
+    const x = clamp01(start.startX + info.offset.x / rect.width);
+    const y = clamp01(start.startY + info.offset.y / rect.height);
     const t = Math.round(currentFrame * frameMs);
     const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
     updateActor(actorId, { t, x, y, scale: pose.scale });
+    dragRef.current = null;
   };
 
   const handleScaleStart = (e: React.PointerEvent, actorId: string) => {
@@ -143,10 +158,11 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   const selectedActor = scene.actors.find((a) => a.id === selected);
   const pathPoints = selectedActor
     ? [
-        selectedActor.start && { x: selectedActor.start.x, y: selectedActor.start.y },
+        selectedActor.start && { t: 0, x: selectedActor.start.x, y: selectedActor.start.y },
         ...selectedActor.tracks
       ]
         .filter(Boolean)
+        .sort((a, b) => (a as any).t - (b as any).t)
         .map((k) => `${(k as any).x * size.w},${(k as any).y * size.h}`)
         .join(' ')
     : '';
@@ -158,7 +174,8 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
           {selectedActor && <polyline points={pathPoints} fill="none" stroke="blue" />}
         </svg>
         {scene.actors.map((a) => {
-          const pose = sample(a, currentFrame * frameMs);
+          const t = Math.round(currentFrame * frameMs);
+          const pose = sample(a, t);
           const style: React.CSSProperties = {
             left: pose.x * 100 + '%',
             top: pose.y * 100 + '%',
@@ -170,7 +187,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
               drag
               dragMomentum={false}
               dragConstraints={containerRef}
-              onDragStart={() => setSelected(a.id)}
+              onDragStart={() => handleDragStart(a.id)}
               onDragEnd={(e, info) => handleDragEnd(a.id, info)}
               className={`absolute cursor-move select-none ${selected === a.id ? 'ring-2 ring-blue-500' : ''}`}
               style={style}
