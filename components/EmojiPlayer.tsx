@@ -2,7 +2,36 @@
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { motion, useAnimationControls } from 'framer-motion';
-import type { Actor, Animation, Scene } from './AnimationTypes';
+import type { Actor, Animation, Scene, Effect } from './AnimationTypes';
+
+const EFFECT_VARIANTS: Record<Effect, { hidden: any; show: any }> = {
+  'fade-in': {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { duration: 0.6 } }
+  },
+  bounce: {
+    hidden: { scale: 0.8, opacity: 0 },
+    show: { scale: 1, opacity: 1, transition: { type: 'spring', bounce: 0.4 } }
+  }
+};
+
+function wrapWithEffects(
+  element: React.ReactElement,
+  effects: Effect[] | undefined,
+  tag: 'div' | 'span'
+): React.ReactElement {
+  const effs = effects ?? [];
+  return effs.reduce((child, eff) => {
+    const variant = EFFECT_VARIANTS[eff];
+    if (!variant) return child;
+    const MotionTag = tag === 'div' ? motion.div : motion.span;
+    return (
+      <MotionTag variants={variant} initial="hidden" animate="show">
+        {child}
+      </MotionTag>
+    );
+  }, element);
+}
 
 export const EmojiPlayer = forwardRef(function EmojiPlayer(
   {
@@ -191,7 +220,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
 });
 
 function SceneView({ scene, width, height }: { scene: Scene; width: number; height: number }) {
-  return (
+  const content = (
     <div style={{ position: 'relative', width, height }}>
       {scene.backgroundActors
         .slice()
@@ -229,6 +258,7 @@ function SceneView({ scene, width, height }: { scene: Scene; width: number; heig
       )}
     </div>
   );
+  return wrapWithEffects(content, scene.effects, 'div');
 }
 
 function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: number; duration: number }) {
@@ -250,7 +280,7 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
 
   if (actor.type === 'emoji') {
     const size = Math.round(48 * (actor.start?.scale ?? 1));
-    return (
+    const node = (
       <motion.span
         role="img"
         aria-label={actor.ariaLabel ?? actor.emoji}
@@ -263,6 +293,7 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
         </span>
       </motion.span>
     );
+    return wrapWithEffects(node, actor.effects, 'span');
   }
   if (actor.type === 'composite') {
     if (actor.parts.length === 0) return null;
@@ -292,7 +323,7 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
     const width = (bbox.maxX - bbox.minX) * unitSize;
     const height = (bbox.maxY - bbox.minY) * unitSize;
 
-    return (
+    const node = (
       <motion.span
         role="img"
         aria-label={actor.ariaLabel ?? 'composite'}
@@ -341,6 +372,7 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
         </span>
       </motion.span>
     );
+    return wrapWithEffects(node, actor.effects, 'span');
   }
   return null;
 }

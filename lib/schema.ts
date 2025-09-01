@@ -9,6 +9,8 @@ export const keyframeSchema = z.object({
   ease: z.enum(['linear','easeIn','easeOut','easeInOut']).optional()
 });
 
+export const effectSchema = z.enum(['fade-in','bounce']);
+
 export const emojiActorSchema = z.object({
   id: z.string(),
   type: z.literal('emoji'),
@@ -18,7 +20,8 @@ export const emojiActorSchema = z.object({
   tracks: z.array(keyframeSchema).min(1),
   loop: z.enum(['float','none']).optional(),
   z: z.number().optional(),
-  ariaLabel: z.string().optional()
+  ariaLabel: z.string().optional(),
+  effects: z.array(effectSchema).optional()
 });
 
 export const compositeActorSchema = z.object({
@@ -30,7 +33,8 @@ export const compositeActorSchema = z.object({
   tracks: z.array(keyframeSchema).min(1),
   loop: z.enum(['float','none']).optional(),
   z: z.number().optional(),
-  ariaLabel: z.string().optional()
+  ariaLabel: z.string().optional(),
+  effects: z.array(effectSchema).optional()
 });
 
 export const actorSchema = z.union([emojiActorSchema, compositeActorSchema]);
@@ -41,6 +45,7 @@ export const sceneSchema = z.object({
   backgroundActors: z.array(emojiActorSchema).default([]),
   caption: z.string().optional(),
   actors: z.array(actorSchema),
+  effects: z.array(effectSchema).optional(),
   sfx: z.array(z.object({ at_ms: z.number().nonnegative(), type: z.enum(['pop','whoosh','ding']) })).optional()
 });
 
