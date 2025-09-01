@@ -418,6 +418,23 @@ function ActorView({
     );
     return wrapWithEffects(node, actor.effects, 'span');
   }
+  if (actor.type === 'text') {
+    const size = actor.fontSize ?? Math.round(32 * (actor.start?.scale ?? 1));
+    const node = (
+      <span
+        style={{
+          position: 'absolute',
+          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`,
+          color: actor.color ?? 'white',
+          fontSize: size,
+          whiteSpace: 'pre'
+        }}
+      >
+        {actor.text}
+      </span>
+    );
+    return wrapWithEffects(node, actor.effects, 'span');
+  }
   if (actor.type === 'composite') {
     if (actor.parts.length === 0) return null;
 

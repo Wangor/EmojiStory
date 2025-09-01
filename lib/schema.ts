@@ -37,7 +37,19 @@ export const compositeActorSchema = z.object({
   effects: z.array(effectSchema).optional()
 });
 
-export const actorSchema = z.union([emojiActorSchema, compositeActorSchema]);
+export const textActorSchema = z.object({
+  id: z.string(),
+  type: z.literal('text'),
+  text: z.string(),
+  start: z.object({ x: z.number(), y: z.number(), scale: z.number().positive() }),
+  tracks: z.array(keyframeSchema).min(1),
+  color: z.string().optional(),
+  fontSize: z.number().positive().optional(),
+  z: z.number().optional(),
+  effects: z.array(effectSchema).optional()
+});
+
+export const actorSchema = z.union([emojiActorSchema, compositeActorSchema, textActorSchema]);
 
 export const sceneSchema = z.object({
   id: z.string(),

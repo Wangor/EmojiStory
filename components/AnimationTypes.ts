@@ -39,7 +39,19 @@ export type CompositeActor = {
   effects?: Effect[];
 };
 
-export type Actor = EmojiActor | CompositeActor;
+export type TextActor = {
+  id: string;
+  type: 'text';
+  text: string;
+  start?: { x: number; y: number; scale: number };
+  tracks: Keyframe[];
+  color?: string;
+  fontSize?: number;
+  z?: number;
+  effects?: Effect[];
+};
+
+export type Actor = EmojiActor | CompositeActor | TextActor;
 
 export type Scene = {
   id: string;
