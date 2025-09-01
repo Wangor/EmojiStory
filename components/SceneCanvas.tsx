@@ -82,7 +82,20 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   }
 
   function updateActor(id: string, kf: Keyframe) {
-    const actors = scene.actors.map((a) => (a.id === id ? upsert(a, kf) : a));
+    const actors = scene.actors.map((a) => {
+      if (a.id !== id) return a;
+      let updated = upsert(a, kf);
+      if (kf.t === 0) {
+        const start = {
+          ...(updated.start ?? { x: kf.x, y: kf.y, scale: kf.scale ?? 1 }),
+          x: kf.x,
+          y: kf.y,
+          scale: kf.scale ?? updated.start?.scale ?? 1
+        };
+        updated = { ...updated, start };
+      }
+      return updated;
+    });
     onSceneChange({ ...scene, actors });
   }
 
