@@ -105,3 +105,20 @@ export async function upsertChannel(params: { name: string; description: string;
   return data;
 }
 
+
+export async function getChannelWithMovies(name: string) {
+  const { data: channel, error: channelError } = await supabase
+    .from('channels')
+    .select('*')
+    .eq('name', name)
+    .single();
+  if (channelError) throw channelError;
+  const { data: movies, error: moviesError } = await supabase
+    .from('movies')
+    .select('*')
+    .eq('user_id', channel.user_id)
+    .order('created_at', { ascending: false });
+  if (moviesError) throw moviesError;
+  return { channel, movies };
+}
+
