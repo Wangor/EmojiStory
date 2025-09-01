@@ -6,6 +6,8 @@ import { animationSchema } from '../../../lib/schema';
 
 const Body = z.object({ story: z.string().min(1) });
 
+const VALID_EFFECTS = ['fade-in', 'bounce'] as const;
+
 // Prompt-only schema to anchor outputs
 const ANIMATION_JSON_SCHEMA = {
     type: 'object',
@@ -57,7 +59,11 @@ const ANIMATION_JSON_SCHEMA = {
                                 },
                                 loop: { type: 'string', enum: ['float', 'none'] },
                                 z: { type: 'number' },
-                                ariaLabel: { type: 'string' }
+                                ariaLabel: { type: 'string' },
+                                effects: {
+                                    type: 'array',
+                                    items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                }
                             },
                             required: ['id', 'type', 'emoji', 'start', 'tracks'],
                             additionalProperties: false
@@ -104,7 +110,11 @@ const ANIMATION_JSON_SCHEMA = {
                                         },
                                         loop: { type: 'string', enum: ['float', 'none'] },
                                         z: { type: 'number' },
-                                        ariaLabel: { type: 'string' }
+                                        ariaLabel: { type: 'string' },
+                                        effects: {
+                                            type: 'array',
+                                            items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                        }
                                     },
                                       required: ['id', 'type', 'emoji', 'start', 'tracks'],
                                       additionalProperties: false
@@ -152,7 +162,11 @@ const ANIMATION_JSON_SCHEMA = {
                                                     },
                                                     loop: { type: 'string', enum: ['float', 'none'] },
                                                     z: { type: 'number' },
-                                                    ariaLabel: { type: 'string' }
+                                                    ariaLabel: { type: 'string' },
+                                                    effects: {
+                                                        type: 'array',
+                                                        items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                                    }
                                                 },
                                                   required: ['id', 'type', 'emoji', 'start', 'tracks'],
                                                   additionalProperties: false
@@ -189,13 +203,21 @@ const ANIMATION_JSON_SCHEMA = {
                                         },
                                         loop: { type: 'string', enum: ['float', 'none'] },
                                         z: { type: 'number' },
-                                        ariaLabel: { type: 'string' }
+                                        ariaLabel: { type: 'string' },
+                                        effects: {
+                                            type: 'array',
+                                            items: { type: 'string', enum: ['fade-in', 'bounce'] }
+                                        }
                                     },
                                       required: ['id', 'type', 'parts', 'start', 'tracks'],
                                       additionalProperties: false
                                   }
                             ]
                         }
+                    },
+                    effects: {
+                        type: 'array',
+                        items: { type: 'string', enum: ['fade-in', 'bounce'] }
                     },
                     sfx: {
                         type: 'array',
@@ -552,6 +574,8 @@ function sanitizeEmojiActor(actor: any, index: number, durationMs: number, prefi
   if (typeof a.z !== 'number') a.z = 0;
   if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'emoji actor';
   a.flipX = a.flipX === true;
+  if (!Array.isArray(a.effects)) a.effects = [];
+  else a.effects = a.effects.filter((e: any) => VALID_EFFECTS.includes(e));
   return a;
 }
 
@@ -704,6 +728,8 @@ function normalizeAnimation(candidate: any) {
         if (typeof a.z !== 'number') a.z = 0;
         if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'composite actor';
         a.flipX = a.flipX === true;
+        if (!Array.isArray(a.effects)) a.effects = [];
+        else a.effects = a.effects.filter((e: any) => VALID_EFFECTS.includes(e));
         return a;
       } else {
         return sanitizeEmojiActor(a, j, s.duration_ms, 'actor');
@@ -718,6 +744,8 @@ function normalizeAnimation(candidate: any) {
       return f;
     });
 
+    if (!Array.isArray(s.effects)) s.effects = [];
+    else s.effects = s.effects.filter((e: any) => VALID_EFFECTS.includes(e));
     // Ensure caption existence and clarity
     if (typeof s.caption !== 'string' || !isCaptionClear(s.caption)) {
       s.caption = synthesizeCaption(s);

@@ -7,6 +7,8 @@ export type Keyframe = {
   ease?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 };
 
+export type Effect = 'fade-in' | 'bounce';
+
 export type EmojiActor = {
   id: string;
   type: 'emoji';
@@ -17,6 +19,7 @@ export type EmojiActor = {
   loop?: 'float' | 'none';
   z?: number; // layering
   ariaLabel?: string;
+  effects?: Effect[];
 };
 
 export type CompositeActor = {
@@ -33,6 +36,7 @@ export type CompositeActor = {
     /** Overrides automatic group sizing in pixels for manual tuning */
     sizeOverride?: number;
   };
+  effects?: Effect[];
 };
 
 export type Actor = EmojiActor | CompositeActor;
@@ -43,6 +47,7 @@ export type Scene = {
   backgroundActors: EmojiActor[]; // actors rendered behind foreground
   caption?: string;
   actors: Actor[];
+  effects?: Effect[];
   sfx?: { at_ms: number; type: 'pop' | 'whoosh' | 'ding' }[];
 };
 
