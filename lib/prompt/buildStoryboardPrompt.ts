@@ -1,15 +1,25 @@
 import { PromptConfig } from './config';
+import { ACTORS } from '../assets/actors';
+import { BACKGROUNDS } from '../assets/backgrounds';
 
 export function buildStoryboardPrompt(config: PromptConfig) {
   const effectsList = config.effects
     .map((e) => `- "${e.name}": ${e.description}`)
     .join('\n');
 
+  const actorsList = ACTORS
+    .map((a) => `- "${a.id}" (${a.emoji}) scale ${a.scale}: ${a.description}`)
+    .join('\n');
+
+  const backgroundsList = BACKGROUNDS
+    .map((b) => `- "${b.id}" (${b.emoji}) scale ${b.scale}: ${b.description}`)
+    .join('\n');
+
   const systemPrompt = `You support the following visual effects that run at scene start and may be applied to scenes or actors via an "effects" array:\n${effectsList}\nUse only these names. Add effects when they enhance the story; omit otherwise.`;
 
   const storyboardPrompt = `You convert a short story into an animated storyboard JSON.
-Constraints:
-- Max ${config.maxScenes} scenes, max ${config.maxActorsPerScene} actors per scene, total duration <= ${config.maxTotalDurationMs} ms.
+Actors you may use:\n${actorsList}\nBackground elements you may use:\n${backgroundsList}\nConstraints:
+ - Max ${config.maxScenes} scenes, max ${config.maxActorsPerScene} actors per scene, total duration <= ${config.maxTotalDurationMs} ms.
 - Use Unicode emoji for actors (type: 'emoji') or composite actors (type: 'composite' with "parts" listing emoji actors that move together).
 - Coordinates x,y are normalized 0..1.
 - For composite actors, each part has its own {x,y,scale} offset; always specify scale to reflect realistic proportions (e.g., a horse larger than its rider).

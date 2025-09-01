@@ -4,6 +4,7 @@ import { openai } from '../../../lib/openai';
 import { buildStoryboardPrompt } from '../../../lib/prompt/buildStoryboardPrompt';
 import { defaultPromptConfig } from '../../../lib/prompt/config';
 import { animationSchema } from '../../../lib/schema';
+import { BACKGROUNDS } from '../../../lib/assets/backgrounds';
 
 const Body = z.object({ story: z.string().min(1) });
 
@@ -470,59 +471,64 @@ function clamp(n: any, min: number, max: number, fallback: number): number {
 
 function pickBackgroundActors(text: string, durationMs: number) {
   const t = text.toLowerCase();
-  const make = (emoji: string, x: number, y: number, scale = 1) => ({
-    type: 'emoji',
-    emoji,
-    start: { x, y, scale },
-    tracks: [
-      { t: 0, x, y, rotate: 0, scale, ease: 'linear' },
-      { t: durationMs / 2, x, y: y - 0.02, rotate: 0, scale, ease: 'linear' },
-      { t: durationMs, x, y, rotate: 0, scale, ease: 'linear' }
-    ],
-    loop: 'float',
-    z: -100,
-    ariaLabel: 'background'
-  });
+  const make = (id: string, x: number, y: number, scale?: number) => {
+    const def = BACKGROUNDS.find((b) => b.id === id);
+    const sc = scale ?? def?.scale ?? 1;
+    const emoji = def?.emoji ?? '❓';
+    return {
+      type: 'emoji',
+      emoji,
+      start: { x, y, scale: sc },
+      tracks: [
+        { t: 0, x, y, rotate: 0, scale: sc, ease: 'linear' },
+        { t: durationMs / 2, x, y: y - 0.02, rotate: 0, scale: sc, ease: 'linear' },
+        { t: durationMs, x, y, rotate: 0, scale: sc, ease: 'linear' }
+      ],
+      loop: 'float',
+      z: -100,
+      ariaLabel: 'background'
+    };
+  };
   const rules: Array<{ keys: string[]; actors: any[] }> = [
     {
       keys: ['forest', 'woods', 'tree', 'jungle', 'park'],
       actors: [
-        make('🌳', 0.2, 0.8, 3),
-        make('🌲', 0.5, 0.75, 3.5),
-        make('🌳', 0.8, 0.8, 3)
+        make('tree', 0.2, 0.8),
+        make('pine', 0.5, 0.75),
+        make('tree', 0.8, 0.8)
       ]
     },
     {
       keys: ['city', 'street', 'town', 'building', 'skyscraper'],
       actors: [
-        make('🏙️', 0.25, 0.72, 3.5),
-        make('🏢', 0.5, 0.7, 4),
-        make('🏬', 0.75, 0.72, 3.5)
+        make('city', 0.25, 0.72),
+        make('office', 0.5, 0.7),
+        make('store', 0.75, 0.72)
       ]
     },
     {
       keys: ['beach', 'ocean', 'sea', 'sand', 'shore', 'wave'],
-      actors: [make('🏖️', 0.5, 0.8, 4), make('🌴', 0.2, 0.8, 3)]
+      actors: [make('beach', 0.5, 0.8), make('palm', 0.2, 0.8)]
     },
     {
       keys: ['mountain', 'hill', 'cliff', 'peak'],
-      actors: [make('🏔️', 0.5, 0.7, 4), make('⛰️', 0.8, 0.72, 3)]
+      actors: [make('snowy-mountain', 0.5, 0.7), make('mountain', 0.8, 0.72)]
     },
     {
       keys: ['night', 'moon', 'star', 'dark'],
-      actors: [make('🌃', 0.5, 0.55, 4), make('🌙', 0.8, 0.3, 2.5)]
+      actors: [make('night-city', 0.5, 0.55), make('moon', 0.8, 0.3)]
     },
     {
       keys: ['space', 'planet', 'galaxy', 'astronaut', 'rocket'],
-      actors: [make('🌌', 0.5, 0.5, 4), make('🪐', 0.8, 0.35, 3)]
+      actors: [make('milky-way', 0.5, 0.5), make('planet', 0.8, 0.35)]
     },
     {
       keys: ['desert', 'cactus', 'dune', 'camel'],
-      actors: [make('🏜️', 0.5, 0.75, 4), make('🌵', 0.2, 0.78, 3)]
+      actors: [make('desert', 0.5, 0.75), make('cactus', 0.2, 0.78)]
     },
     {
       keys: ['castle'],
-      actors: [make('🏰', 0.5, 0.72, 4)]
+      actors: [make('castle', 0.5, 0.72)]
     }
   ];
   for (const r of rules) {
