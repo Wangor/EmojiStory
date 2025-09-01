@@ -108,6 +108,53 @@ export async function getAllMovies() {
   return data;
 }
 
+export async function searchMovies(query: string) {
+  const { data, error } = await supabase
+    .from('movies')
+    .select(`
+      *,
+      channels!movies_user_id_fkey(
+        name
+      )
+    `)
+    .or(`title.ilike.%${query}%,story.ilike.%${query}%`)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    const { data: moviesData, error: moviesError } = await supabase
+      .from('movies')
+      .select('*')
+      .or(`title.ilike.%${query}%,story.ilike.%${query}%`)
+      .order('created_at', { ascending: false });
+
+    if (moviesError) throw moviesError;
+
+    if (!moviesData || moviesData.length === 0) {
+      return [];
+    }
+
+    const userIds = [...new Set(moviesData.map(movie => movie.user_id))];
+
+    const { data: channelsData, error: channelsError } = await supabase
+      .from('channels')
+      .select('user_id, name')
+      .in('user_id', userIds);
+
+    if (channelsError) throw channelsError;
+
+    const channelsMap = new Map(
+      (channelsData || []).map(channel => [channel.user_id, channel])
+    );
+
+    return moviesData.map(movie => ({
+      ...movie,
+      channels: channelsMap.get(movie.user_id) || null,
+    }));
+  }
+
+  return data;
+}
+
 export async function getChannel() {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
