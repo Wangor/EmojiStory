@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { openai } from '../../../lib/openai';
-import { STORYBOARD_PROMPT } from '../../../lib/prompt/storyboardPrompt';
+import { STORYBOARD_PROMPT, EFFECTS_SYSTEM_PROMPT } from '../../../lib/prompt/storyboardPrompt';
 import { animationSchema } from '../../../lib/schema';
 
 const Body = z.object({ story: z.string().min(1) });
@@ -791,6 +791,7 @@ async function callModel(
 
 async function generateAnimationJson(story: string, previousErrors?: string, lastRaw?: string) {
     const baseMessages = [
+        { role: 'system', content: EFFECTS_SYSTEM_PROMPT },
         { role: 'system', content: `${STORYBOARD_PROMPT}\n\n${STRICT_JSON_INSTRUCTION}` },
         { role: 'user', content: story }
     ] as const;
