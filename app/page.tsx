@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable import/no-unresolved */
+import { FilmSlate, MagicWand, Play, Stop } from '@phosphor-icons/react';
 import { useState, useRef } from 'react';
 import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
@@ -35,22 +37,47 @@ export default function Page() {
   }
 
   return (
-    <main style={{ maxWidth: 960, margin: '24px auto', padding: '0 16px' }}>
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>🎬 Emoji Movie MVP</h1>
+    <main className="max-w-3xl mx-auto p-4 space-y-4">
+      <h1 className="text-3xl font-bold flex items-center gap-2">
+        <FilmSlate weight="bold" size={32} /> Emoji Movie MVP
+      </h1>
       <textarea
         value={storyText}
         onChange={(e) => setStoryText(e.target.value)}
         rows={5}
-        style={{ width: '100%', padding: 12, fontSize: 16 }}
+        className="w-full p-3 text-lg border rounded-md"
       />
-      <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button onClick={() => setAnimation(SAMPLE_ANIMATION)}>Use Sample</button>
-        <button onClick={generateWithAI} disabled={loading}>{loading ? 'Generating…' : 'Generate with AI'}</button>
-        <button onClick={() => playerRef.current?.play()} disabled={!canPlay}>Play</button>
-        <button onClick={() => playerRef.current?.stop()} disabled={!canPlay}>Stop</button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          onClick={() => setAnimation(SAMPLE_ANIMATION)}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 flex items-center gap-2"
+        >
+          <FilmSlate weight="bold" /> Use Sample
+        </button>
+        <button
+          onClick={generateWithAI}
+          disabled={loading}
+          className="px-4 py-2 bg-blue-600 text-white rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
+        >
+          <MagicWand weight="bold" /> {loading ? 'Generating…' : 'Generate with AI'}
+        </button>
+        <button
+          onClick={() => playerRef.current?.play()}
+          disabled={!canPlay}
+          className="px-4 py-2 bg-green-600 text-white rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700"
+        >
+          <Play weight="bold" /> Play
+        </button>
+        <button
+          onClick={() => playerRef.current?.stop()}
+          disabled={!canPlay}
+          className="px-4 py-2 bg-red-600 text-white rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700"
+        >
+          <Stop weight="bold" /> Stop
+        </button>
       </div>
-      {error && <p style={{ color: '#b91c1c', marginTop: 8 }}>Error: {error}</p>}
-      <div style={{ marginTop: 20 }}>
+      {error && <p className="text-red-700 mt-2">Error: {error}</p>}
+      <div className="mt-5">
         {animation && (
           <EmojiPlayer
             ref={playerRef}
