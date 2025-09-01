@@ -5,7 +5,7 @@ export const keyframeSchema = z.object({
   x: z.number().min(0).max(1),
   y: z.number().min(0).max(1),
   rotate: z.number().optional(),
-  scale: z.number().optional(),
+  scale: z.number().positive().optional(),
   ease: z.enum(['linear','easeIn','easeOut','easeInOut']).optional()
 });
 
@@ -13,14 +13,27 @@ export const emojiActorSchema = z.object({
   id: z.string(),
   type: z.literal('emoji'),
   emoji: z.string(),
-  start: z.object({ x: z.number(), y: z.number(), scale: z.number().optional() }).optional(),
+  start: z.object({ x: z.number(), y: z.number(), scale: z.number().positive() }),
+  flipX: z.boolean().optional(),
   tracks: z.array(keyframeSchema).min(1),
   loop: z.enum(['float','none']).optional(),
   z: z.number().optional(),
   ariaLabel: z.string().optional()
 });
 
-export const actorSchema = emojiActorSchema;
+export const compositeActorSchema = z.object({
+  id: z.string(),
+  type: z.literal('composite'),
+  parts: z.array(emojiActorSchema),
+  start: z.object({ x: z.number(), y: z.number(), scale: z.number().positive() }),
+  flipX: z.boolean().optional(),
+  tracks: z.array(keyframeSchema).min(1),
+  loop: z.enum(['float','none']).optional(),
+  z: z.number().optional(),
+  ariaLabel: z.string().optional()
+});
+
+export const actorSchema = z.union([emojiActorSchema, compositeActorSchema]);
 
 export const sceneSchema = z.object({
   id: z.string(),

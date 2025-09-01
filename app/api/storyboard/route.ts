@@ -24,44 +24,134 @@ const ANIMATION_JSON_SCHEMA = {
                     actors: {
                         type: 'array',
                         items: {
-                            type: 'object',
-                            properties: {
-                                id: { type: 'string' },
-                                type: { const: 'emoji' },
-                                emoji: { type: 'string' },
-                                start: {
+                            oneOf: [
+                                {
                                     type: 'object',
                                     properties: {
-                                        x: { type: 'number' },
-                                        y: { type: 'number' },
-                                        scale: { type: 'number' }
-                                    },
-                                    required: ['x', 'y'],
-                                    additionalProperties: false
-                                },
-                                tracks: {
-                                    type: 'array',
-                                    items: {
-                                        type: 'object',
-                                        properties: {
-                                            t: { type: 'number' },
-                                            x: { type: 'number' },
-                                            y: { type: 'number' },
-                                            rotate: { type: 'number' },
-                                            scale: { type: 'number' },
-                                            ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
+                                        id: { type: 'string' },
+                                        type: { const: 'emoji' },
+                                        emoji: { type: 'string' },
+                                        start: {
+                                            type: 'object',
+                                            properties: {
+                                                x: { type: 'number' },
+                                                y: { type: 'number' },
+                                                scale: { type: 'number', minimum: 0 }
+                                            },
+                                            required: ['x', 'y', 'scale'],
+                                            additionalProperties: false
                                         },
-                                        required: ['t', 'x', 'y'],
-                                        additionalProperties: false
+                                        flipX: { type: 'boolean' },
+                                        tracks: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    t: { type: 'number' },
+                                                    x: { type: 'number' },
+                                                    y: { type: 'number' },
+                                                    rotate: { type: 'number' },
+                                                    scale: { type: 'number', minimum: 0 },
+                                                    ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
+                                                },
+                                                required: ['t', 'x', 'y'],
+                                                additionalProperties: false
+                                            },
+                                            minItems: 1
+                                        },
+                                        loop: { type: 'string', enum: ['float', 'none'] },
+                                        z: { type: 'number' },
+                                        ariaLabel: { type: 'string' }
                                     },
-                                    minItems: 1
-                                },
-                                loop: { type: 'string', enum: ['float', 'none'] },
-                                z: { type: 'number' },
-                                ariaLabel: { type: 'string' }
-                            },
-                            required: ['id', 'type', 'emoji', 'tracks'],
-                            additionalProperties: false
+                                      required: ['id', 'type', 'emoji', 'start', 'tracks'],
+                                      additionalProperties: false
+                                  },
+                                {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        type: { const: 'composite' },
+                                        parts: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    type: { const: 'emoji' },
+                                                    emoji: { type: 'string' },
+                                                  start: {
+                                                      type: 'object',
+                                                      properties: {
+                                                          x: { type: 'number' },
+                                                          y: { type: 'number' },
+                                                          scale: { type: 'number', minimum: 0 }
+                                                      },
+                                                      required: ['x', 'y', 'scale'],
+                                                      additionalProperties: false
+                                                  },
+                                                  flipX: { type: 'boolean' },
+                                                  tracks: {
+                                                        type: 'array',
+                                                        items: {
+                                                            type: 'object',
+                                                            properties: {
+                                                                t: { type: 'number' },
+                                                                x: { type: 'number' },
+                                                                y: { type: 'number' },
+                                                                rotate: { type: 'number' },
+                                                                scale: { type: 'number', minimum: 0 },
+                                                                ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
+                                                            },
+                                                            required: ['t', 'x', 'y'],
+                                                            additionalProperties: false
+                                                        },
+                                                        minItems: 1
+                                                    },
+                                                    loop: { type: 'string', enum: ['float', 'none'] },
+                                                    z: { type: 'number' },
+                                                    ariaLabel: { type: 'string' }
+                                                },
+                                                  required: ['id', 'type', 'emoji', 'start', 'tracks'],
+                                                  additionalProperties: false
+                                              },
+                                            minItems: 1
+                                        },
+                                          start: {
+                                              type: 'object',
+                                              properties: {
+                                                  x: { type: 'number' },
+                                                  y: { type: 'number' },
+                                                  scale: { type: 'number', minimum: 0 }
+                                              },
+                                              required: ['x', 'y', 'scale'],
+                                              additionalProperties: false
+                                          },
+                                          flipX: { type: 'boolean' },
+                                          tracks: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    t: { type: 'number' },
+                                                    x: { type: 'number' },
+                                                    y: { type: 'number' },
+                                                    rotate: { type: 'number' },
+                                                    scale: { type: 'number', minimum: 0 },
+                                                    ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
+                                                },
+                                                required: ['t', 'x', 'y'],
+                                                additionalProperties: false
+                                            },
+                                            minItems: 1
+                                        },
+                                        loop: { type: 'string', enum: ['float', 'none'] },
+                                        z: { type: 'number' },
+                                        ariaLabel: { type: 'string' }
+                                    },
+                                      required: ['id', 'type', 'parts', 'start', 'tracks'],
+                                      additionalProperties: false
+                                  }
+                            ]
                         }
                     },
                     sfx: {
@@ -101,7 +191,8 @@ function isCaptionClear(caption: any): boolean {
 
   // Length and word count check
   const words = c.split(/\s+/).filter(Boolean);
-  if (words.length < 4 || words.length > 24) return false;
+  // Accept slightly shorter captions to avoid over-rejecting model output
+  if (words.length < 3 || words.length > 24) return false;
 
   // Must contain letters (basic Latin + extended Latin ranges as an approximation)
   if (!/[A-Za-zÀ-ÖØ-öø-ÿ\u00C0-\u024F\u1E00-\u1EFF]/.test(c)) return false;
@@ -131,10 +222,20 @@ function guessSceneVerb(loop?: 'float' | 'none'): string {
 }
 
 function describeActor(actor: any): string {
-  const label = typeof actor?.ariaLabel === 'string' && actor.ariaLabel.trim()
-    ? actor.ariaLabel.trim()
-    : (typeof actor?.emoji === 'string' && actor.emoji.trim() ? 'emoji' : 'character');
-  return label;
+  if (typeof actor?.ariaLabel === 'string' && actor.ariaLabel.trim()) {
+    return actor.ariaLabel.trim();
+  }
+  if (actor?.type === 'composite') {
+    const part = Array.isArray(actor.parts) ? actor.parts[0] : undefined;
+    if (typeof part?.ariaLabel === 'string' && part.ariaLabel.trim()) {
+      return part.ariaLabel.trim();
+    }
+    if (typeof part?.emoji === 'string' && part.emoji.trim()) {
+      return 'emoji';
+    }
+    return 'character';
+  }
+  return typeof actor?.emoji === 'string' && actor.emoji.trim() ? 'emoji' : 'character';
 }
 
 function backgroundPhrase(bg?: string): string {
@@ -200,7 +301,7 @@ const STRICT_JSON_INSTRUCTION = [
     'If any value is unknown, provide a reasonable default that satisfies the schema.',
     // Caption rules:
     'Caption rules:',
-    '- scenes[i].caption MUST be a clear, grammatical sentence (4–24 words) that describes what happens in that scene.',
+    '- scenes[i].caption MUST be a clear, grammatical sentence (3–24 words) that describes what happens in that scene.',
     '- It MUST NOT be random strings, placeholders, or mostly emojis/symbols.',
     '- Prefer the same language as the user story.',
     '- Avoid repeated characters and filler like "lorem", "asdf", or "placeholder".'
@@ -363,31 +464,87 @@ function normalizeAnimation(candidate: any) {
     s.actors = s.actors.map((actor: any, j: number) => {
       const a: any = typeof actor === 'object' && actor ? actor : {};
       if (typeof a.id !== 'string' || !a.id.trim()) a.id = `actor-${j + 1}`;
-      a.type = 'emoji';
-      if (typeof a.emoji !== 'string' || !a.emoji.trim()) a.emoji = '😀';
 
-      if (typeof a.start !== 'object' || !a.start) a.start = {};
-      a.start.x = clamp01(a.start.x);
-      a.start.y = clamp01(a.start.y);
-      a.start.scale = clamp(a.start.scale, 0.05, 10, 1);
+      if (a.type === 'composite') {
+        a.type = 'composite';
+        if (!Array.isArray(a.parts)) a.parts = [];
+        a.parts = a.parts.map((part: any, k: number) => {
+          const p: any = typeof part === 'object' && part ? part : {};
+          if (typeof p.id !== 'string' || !p.id.trim()) p.id = `${a.id}-part-${k + 1}`;
+          p.type = 'emoji';
+          if (typeof p.emoji !== 'string' || !p.emoji.trim()) p.emoji = '😀';
+          if (typeof p.start !== 'object' || !p.start) p.start = {};
+          p.start.x = clamp01(p.start.x);
+          p.start.y = clamp01(p.start.y);
+          p.start.scale = clamp(p.start.scale, 0.05, 10, 1);
+          if (!Array.isArray(p.tracks) || p.tracks.length === 0) {
+            p.tracks = [
+              sanitizeKeyframe(
+                { t: 0, x: p.start.x, y: p.start.y, rotate: 0, scale: p.start.scale, ease: 'linear' },
+                { x: p.start.x, y: p.start.y, scale: p.start.scale },
+                s.duration_ms
+              )
+            ];
+          } else {
+            const pDefaults = { x: p.start.x, y: p.start.y, scale: p.start.scale };
+            p.tracks = p.tracks.map((kframe: any) => sanitizeKeyframe(kframe, pDefaults, s.duration_ms));
+          }
+          if (typeof p.loop !== 'string' || !['float', 'none'].includes(p.loop)) p.loop = 'none';
+          if (typeof p.z !== 'number') p.z = 0;
+          if (typeof p.ariaLabel !== 'string') p.ariaLabel = 'emoji actor';
+          p.flipX = p.flipX === true;
+          return p;
+        });
 
-      if (!Array.isArray(a.tracks) || a.tracks.length === 0) {
-        a.tracks = [
-          sanitizeKeyframe(
-            { t: 0, x: a.start.x, y: a.start.y, rotate: 0, scale: a.start.scale, ease: 'linear' },
-            { x: a.start.x, y: a.start.y, scale: a.start.scale },
-            s.duration_ms
-          )
-        ];
+        if (typeof a.start !== 'object' || !a.start) a.start = {};
+        a.start.x = clamp01(a.start.x);
+        a.start.y = clamp01(a.start.y);
+        a.start.scale = clamp(a.start.scale, 0.05, 10, 1);
+        if (!Array.isArray(a.tracks) || a.tracks.length === 0) {
+          a.tracks = [
+            sanitizeKeyframe(
+              { t: 0, x: a.start.x, y: a.start.y, rotate: 0, scale: a.start.scale, ease: 'linear' },
+              { x: a.start.x, y: a.start.y, scale: a.start.scale },
+              s.duration_ms
+            )
+          ];
+        } else {
+          const defaults = { x: a.start.x, y: a.start.y, scale: a.start.scale };
+          a.tracks = a.tracks.map((k: any) => sanitizeKeyframe(k, defaults, s.duration_ms));
+        }
+        if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
+        if (typeof a.z !== 'number') a.z = 0;
+        if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'composite actor';
+        a.flipX = a.flipX === true;
+        return a;
       } else {
-        const defaults = { x: a.start.x, y: a.start.y, scale: a.start.scale };
-        a.tracks = a.tracks.map((k: any) => sanitizeKeyframe(k, defaults, s.duration_ms));
-      }
+        a.type = 'emoji';
+        if (typeof a.emoji !== 'string' || !a.emoji.trim()) a.emoji = '😀';
 
-      if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
-      if (typeof a.z !== 'number') a.z = 0;
-      if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'emoji actor';
-      return a;
+        if (typeof a.start !== 'object' || !a.start) a.start = {};
+        a.start.x = clamp01(a.start.x);
+        a.start.y = clamp01(a.start.y);
+        a.start.scale = clamp(a.start.scale, 0.05, 10, 1);
+
+        if (!Array.isArray(a.tracks) || a.tracks.length === 0) {
+          a.tracks = [
+            sanitizeKeyframe(
+              { t: 0, x: a.start.x, y: a.start.y, rotate: 0, scale: a.start.scale, ease: 'linear' },
+              { x: a.start.x, y: a.start.y, scale: a.start.scale },
+              s.duration_ms
+            )
+          ];
+        } else {
+          const defaults = { x: a.start.x, y: a.start.y, scale: a.start.scale };
+          a.tracks = a.tracks.map((k: any) => sanitizeKeyframe(k, defaults, s.duration_ms));
+        }
+
+        if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
+        if (typeof a.z !== 'number') a.z = 0;
+        if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'emoji actor';
+        a.flipX = a.flipX === true;
+        return a;
+      }
     });
 
     if (!Array.isArray(s.sfx)) s.sfx = [];
