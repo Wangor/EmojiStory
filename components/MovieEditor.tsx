@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Animation, Scene, Actor, EmojiActor, TextActor, Keyframe } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
+import SceneCanvas from './SceneCanvas';
 
 function uuid() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -12,6 +13,7 @@ function uuid() {
 
 type SceneEditorProps = {
   scene: Scene;
+  fps: number;
   onChange: (s: Scene) => void;
   onRemove: () => void;
 };
@@ -65,6 +67,7 @@ export default function MovieEditor() {
           <SceneEditor
             key={s.id}
             scene={s}
+            fps={animation.fps}
             onChange={(sc) => updateScene(i, sc)}
             onRemove={() => removeScene(i)}
           />
@@ -89,7 +92,7 @@ export default function MovieEditor() {
   );
 }
 
-function SceneEditor({ scene, onChange, onRemove }: SceneEditorProps) {
+function SceneEditor({ scene, fps, onChange, onRemove }: SceneEditorProps) {
   const update = (fields: Partial<Scene>) => onChange({ ...scene, ...fields });
 
   const updateActor = (idx: number, actor: Actor) => {
@@ -174,6 +177,8 @@ function SceneEditor({ scene, onChange, onRemove }: SceneEditorProps) {
           onChange={(e) => update({ caption: e.target.value })}
         />
       </div>
+
+      <SceneCanvas scene={scene} fps={fps} onSceneChange={onChange} />
 
       <div>
         <h4 className="font-medium">Background Actors</h4>
