@@ -268,23 +268,56 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
     );
   }
   if (actor.type === 'composite') {
-    const size = Math.round(48 * (actor.start?.scale ?? 1));
+    // Calculate bounding box of all parts
+    const bbox = actor.parts.reduce(
+      (acc, p) => {
+        const s = p.start?.scale ?? 1;
+        const x0 = p.start?.x ?? 0;
+        const y0 = p.start?.y ?? 0;
+        acc.minX = Math.min(acc.minX, x0);
+        acc.minY = Math.min(acc.minY, y0);
+        acc.maxX = Math.max(acc.maxX, x0 + s);
+        acc.maxY = Math.max(acc.maxY, y0 + s);
+        return acc;
+      },
+      { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+    );
+
+    // Dominant part determines base scale
+    const dominantScale = Math.max(...actor.parts.map((p) => p.start?.scale ?? 1));
+    const unitSize = actor.meta?.sizeOverride ?? Math.round((48 * (actor.start?.scale ?? 1)) / dominantScale);
+
+    const width = (bbox.maxX - bbox.minX) * unitSize;
+    const height = (bbox.maxY - bbox.minY) * unitSize;
+
     return (
       <motion.span
         role="img"
         aria-label={actor.ariaLabel ?? 'composite'}
-        style={{ position: 'absolute', fontSize: size, transformOrigin: 'center center', display: 'inline-block' }}
+        style={{
+          position: 'absolute',
+          width,
+          height,
+          transformOrigin: 'center center',
+          display: 'inline-block'
+        }}
         initial={{ x: x[0], y: y[0], rotate: rotate[0], scale: scale[0] }}
         animate={controls}
       >
         <span
-          style={{ position: 'relative', display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}
+          style={{
+            position: 'relative',
+            width,
+            height,
+            display: 'inline-block',
+            transform: actor.flipX ? 'scaleX(-1)' : undefined
+          }}
         >
           {actor.parts.map((p) => {
             const partScale = p.start?.scale ?? 1;
-            const partSize = size * partScale;
-            const offsetX = (p.start?.x ?? 0) * size;
-            const offsetY = (p.start?.y ?? 0) * size;
+            const partSize = unitSize * partScale;
+            const offsetX = ((p.start?.x ?? 0) - bbox.minX) * unitSize;
+            const offsetY = ((p.start?.y ?? 0) - bbox.minY) * unitSize;
             return (
               <span
                 key={p.id}

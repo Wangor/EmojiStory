@@ -29,6 +29,10 @@ export type CompositeActor = {
   loop?: 'float' | 'none';
   z?: number;
   ariaLabel?: string;
+  meta?: {
+    /** Overrides automatic group sizing in pixels for manual tuning */
+    sizeOverride?: number;
+  };
 };
 
 export type Actor = EmojiActor | CompositeActor;
