@@ -5,8 +5,9 @@ import { FilmSlate, MagicWand, Play, Stop } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
 import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
+import { MovieCard } from '../components/MovieCard';
 import { SAMPLE_ANIMATION } from '../lib/sampleAnimation';
-import { insertMovie, getUser } from '../lib/supabaseClient';
+import { insertMovie, getUser, getAllMovies } from '../lib/supabaseClient';
 
 export default function Page() {
   const [storyText, setStoryText] = useState<string>(
@@ -16,6 +17,7 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [movies, setMovies] = useState<any[]>([]);
   const playerRef = useRef<{ play: () => void; stop: () => void } | null>(null);
 
   const canPlay = !!animation && animation.scenes.length > 0;
@@ -23,6 +25,7 @@ export default function Page() {
 
   useEffect(() => {
     getUser().then(setUser);
+    getAllMovies().then(setMovies).catch((e) => setError(e.message));
   }, []);
 
   async function generateWithAI() {
@@ -128,11 +131,12 @@ export default function Page() {
                   setError('Please login to save');
                   return;
                 }
-                await insertMovie({
+                const saved = await insertMovie({
                   title: storyText.substring(0, 30),
                   story: storyText,
                   animation,
                 });
+                setMovies((m) => [saved, ...m]);
               } catch (e: any) {
                 setError(e.message);
               }
@@ -180,6 +184,22 @@ export default function Page() {
             </div>
           )}
         </div>
+        {movies.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-4 text-center">Latest Movies</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {movies.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setAnimation(m.animation as Animation)}
+                  className="text-left"
+                >
+                  <MovieCard movie={m} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

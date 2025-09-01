@@ -49,7 +49,17 @@ export async function getMoviesByUser() {
   const { data, error } = await supabase
     .from('movies')
     .select('*')
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function getAllMovies() {
+  const { data, error } = await supabase
+    .from('movies')
+    .select('*')
+    .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
 }
