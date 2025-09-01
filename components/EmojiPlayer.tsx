@@ -50,11 +50,14 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   ref: React.Ref<{ play: () => void; stop: () => void }>
 ) {
   const [sceneIndex, setSceneIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  // Start in playing state so the animation begins automatically
+  const [playing, setPlaying] = useState(true);
 
   // rAF-driven playback clock
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  // Track how much of the current scene has elapsed so we can pause/resume
+  const elapsedRef = useRef(0);
 
   const totalScenes = animation.scenes.length;
   const scene = animation.scenes[sceneIndex];
@@ -69,11 +72,14 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
 
   function startRaf() {
     clearRaf();
-    startedAtRef.current = null;
     const tick = (now: number) => {
-      if (startedAtRef.current == null) startedAtRef.current = now;
+      if (startedAtRef.current == null) {
+        startedAtRef.current = now - elapsedRef.current;
+      }
       const elapsed = now - startedAtRef.current;
+      elapsedRef.current = elapsed;
       if (elapsed >= duration) {
+        elapsedRef.current = 0;
         setSceneIndex((i) => {
           const next = i + 1;
           if (next >= totalScenes) {
@@ -106,6 +112,8 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
         // Explicit stop resets to the start
         setPlaying(false);
         clearRaf();
+        elapsedRef.current = 0;
+        startedAtRef.current = null;
         setSceneIndex(0);
       }
     }),
@@ -128,13 +136,21 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   useEffect(() => {
     clearRaf();
     if (!playing) {
-      // Pause: do not reset scene index; just stop the clock
+      // Pause: clock stopped but keep current progress
       return;
     }
     if (!scene) return;
     startRaf();
     return clearRaf;
   }, [playing, sceneIndex, duration, totalScenes, loop]);
+
+  // When the animation changes, reset to the start and autoplay
+  useEffect(() => {
+    elapsedRef.current = 0;
+    startedAtRef.current = null;
+    setSceneIndex(0);
+    setPlaying(true);
+  }, [animation]);
 
   // Controls
   const canPrev = sceneIndex > 0;
