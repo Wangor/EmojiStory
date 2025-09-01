@@ -112,7 +112,7 @@ export async function getChannelWithMovies(name: string) {
   const { data: channel, error: channelError } = await supabase
     .from('channels')
     .select('*')
-    .eq('name', name)
+    .ilike('name', name)
     .maybeSingle();
   if (channelError) throw channelError;
   if (!channel) return { channel: null, movies: [] };

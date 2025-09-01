@@ -6,21 +6,22 @@ import { MovieCard } from '../../../components/MovieCard';
 
 export default function ChannelViewPage({ params }: { params: { name: string } }) {
   const { name } = params;
+  const channelName = decodeURIComponent(name);
   const [channel, setChannel] = useState<any | null>(null);
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!name) return;
-    getChannelWithMovies(name)
+    if (!channelName) return;
+    getChannelWithMovies(channelName)
       .then(({ channel, movies }) => {
         setChannel(channel);
         setMovies(movies);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [name]);
+  }, [channelName]);
 
   if (loading) {
     return (
