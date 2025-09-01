@@ -240,14 +240,13 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
   const scale = actor.tracks.map((k) => k.scale ?? actor.start?.scale ?? 1);
 
   React.useEffect(() => {
-    controls.start({
-      x,
-      y,
-      rotate,
-      scale,
-      transition: { times, duration: duration / 1000, ease: 'easeInOut' }
-    });
-  }, [controls, duration]); // arrays derived from props
+    const transition: any = { times, duration: duration / 1000, ease: 'easeInOut' };
+    if (actor.loop === 'float') {
+      transition.repeat = Infinity;
+      transition.repeatType = 'mirror';
+    }
+    controls.start({ x, y, rotate, scale, transition });
+  }, [controls, duration, actor.loop]); // arrays derived from props
 
   if (actor.type === 'emoji') {
     const size = Math.round(48 * (actor.start?.scale ?? 1));

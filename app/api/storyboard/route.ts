@@ -442,6 +442,24 @@ function clamp(n: any, min: number, max: number, fallback: number): number {
   const x = typeof n === 'number' && Number.isFinite(n) ? n : fallback;
   return Math.max(min, Math.min(max, x));
 }
+
+function pickBackgroundEmoji(text: string): string {
+  const t = text.toLowerCase();
+  const rules: Array<{ keys: string[]; emoji: string }> = [
+    { keys: ['forest', 'woods', 'tree'], emoji: '🌲' },
+    { keys: ['city', 'street', 'town'], emoji: '🏙️' },
+    { keys: ['beach', 'ocean', 'sea', 'sand'], emoji: '🏖️' },
+    { keys: ['mountain', 'hill'], emoji: '🏔️' },
+    { keys: ['night', 'moon', 'star'], emoji: '🌃' },
+    { keys: ['space', 'planet', 'galaxy'], emoji: '🌌' },
+    { keys: ['desert'], emoji: '🏜️' },
+    { keys: ['castle'], emoji: '🏰' }
+  ];
+  for (const r of rules) {
+    if (r.keys.some((k) => t.includes(k))) return r.emoji;
+  }
+  return '🌅';
+}
 function sanitizeEase(ease: any): 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' {
   return ['linear', 'easeIn', 'easeOut', 'easeInOut'].includes(ease) ? ease : 'linear';
 }
@@ -573,6 +591,25 @@ function normalizeAnimation(candidate: any) {
     s.backgroundActors = s.backgroundActors.map((actor: any, j: number) =>
       sanitizeEmojiActor(actor, j, s.duration_ms, 'bg')
     );
+
+    if (s.backgroundActors.length === 0) {
+      const bgEmoji = pickBackgroundEmoji(s.caption || anim.title || '');
+      const bgActor = {
+        id: 'bg-1',
+        type: 'emoji',
+        emoji: bgEmoji,
+        start: { x: 0.5, y: 0.5, scale: 8 },
+        tracks: [
+          { t: 0, x: 0.5, y: 0.5, rotate: 0, scale: 8, ease: 'linear' },
+          { t: s.duration_ms / 2, x: 0.5, y: 0.48, rotate: 0, scale: 8, ease: 'linear' },
+          { t: s.duration_ms, x: 0.5, y: 0.5, rotate: 0, scale: 8, ease: 'linear' }
+        ],
+        loop: 'float',
+        z: -100,
+        ariaLabel: 'background'
+      };
+      s.backgroundActors.push(sanitizeEmojiActor(bgActor, 0, s.duration_ms, 'bg'));
+    }
 
     s.actors = s.actors.map((actor: any, j: number) => {
       const a: any = typeof actor === 'object' && actor ? actor : {};

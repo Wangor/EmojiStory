@@ -12,11 +12,14 @@ export const SAMPLE_ANIMATION: Animation = {
           id: 'bg-1',
           type: 'emoji',
           emoji: '🌆',
-          start: { x: 0.5, y: 0.5, scale: 1 },
+          start: { x: 0.5, y: 0.5, scale: 8 },
           tracks: [
-            { t: 0, x: 0.5, y: 0.5 },
-            { t: 6000, x: 0.5, y: 0.5 }
-          ]
+            { t: 0, x: 0.5, y: 0.5, scale: 8 },
+            { t: 3000, x: 0.5, y: 0.48, scale: 8 },
+            { t: 6000, x: 0.5, y: 0.5, scale: 8 }
+          ],
+          loop: 'float',
+          z: -100
         }
       ],
       caption: 'A cat spots a red balloon.',
@@ -54,11 +57,14 @@ export const SAMPLE_ANIMATION: Animation = {
           id: 'bg-2',
           type: 'emoji',
           emoji: '🌬️',
-          start: { x: 0.5, y: 0.5, scale: 1 },
+          start: { x: 0.5, y: 0.5, scale: 8 },
           tracks: [
-            { t: 0, x: 0.5, y: 0.5 },
-            { t: 5000, x: 0.5, y: 0.5 }
-          ]
+            { t: 0, x: 0.5, y: 0.5, scale: 8 },
+            { t: 2500, x: 0.5, y: 0.52, scale: 8 },
+            { t: 5000, x: 0.5, y: 0.5, scale: 8 }
+          ],
+          loop: 'float',
+          z: -100
         }
       ],
       caption: 'A gust lifts it higher—the chase is on!',
