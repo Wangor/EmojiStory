@@ -268,24 +268,29 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
     );
   }
   if (actor.type === 'composite') {
+    if (actor.parts.length === 0) return null;
+
     // Calculate bounding box of all parts
-    const bbox = actor.parts.reduce(
-      (acc, p) => {
-        const s = p.start?.scale ?? 1;
-        const x0 = p.start?.x ?? 0;
-        const y0 = p.start?.y ?? 0;
-        acc.minX = Math.min(acc.minX, x0);
-        acc.minY = Math.min(acc.minY, y0);
-        acc.maxX = Math.max(acc.maxX, x0 + s);
-        acc.maxY = Math.max(acc.maxY, y0 + s);
-        return acc;
-      },
-      { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
-    );
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const p of actor.parts) {
+      const s = p.start?.scale ?? 1;
+      const x0 = p.start?.x ?? 0;
+      const y0 = p.start?.y ?? 0;
+      minX = Math.min(minX, x0);
+      minY = Math.min(minY, y0);
+      maxX = Math.max(maxX, x0 + s);
+      maxY = Math.max(maxY, y0 + s);
+    }
+
+    const bbox = { minX, minY, maxX, maxY };
 
     // Dominant part determines base scale
     const dominantScale = Math.max(...actor.parts.map((p) => p.start?.scale ?? 1));
-    const unitSize = actor.meta?.sizeOverride ?? Math.round((48 * (actor.start?.scale ?? 1)) / dominantScale);
+    const unitSize =
+      actor.meta?.sizeOverride ?? Math.round((48 * (actor.start?.scale ?? 1)) / dominantScale);
 
     const width = (bbox.maxX - bbox.minX) * unitSize;
     const height = (bbox.maxY - bbox.minY) * unitSize;
