@@ -1,7 +1,7 @@
 'use client';
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { motion, useAnimationControls } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { Actor, Animation, Scene, Effect } from './AnimationTypes';
 
 const EFFECT_VARIANTS: Record<Effect, { hidden: any; show: any }> = {
@@ -33,6 +33,26 @@ function wrapWithEffects(
   }, element);
 }
 
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+function sampleAt(times: number[], values: number[], p: number) {
+  if (values.length === 0) return 0;
+  if (values.length === 1) return values[0];
+  for (let i = 1; i < times.length; i++) {
+    if (p <= times[i]) {
+      const t0 = times[i - 1];
+      const t1 = times[i];
+      const v0 = values[i - 1];
+      const v1 = values[i];
+      const tt = (p - t0) / (t1 - t0);
+      return lerp(v0, v1, tt);
+    }
+  }
+  return values[values.length - 1];
+}
+
 export const EmojiPlayer = forwardRef(function EmojiPlayer(
   {
     animation,
@@ -52,6 +72,8 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   const [sceneIndex, setSceneIndex] = useState(0);
   // Start in playing state so the animation begins automatically
   const [playing, setPlaying] = useState(true);
+  // Progress of the current scene (0-1)
+  const [progress, setProgress] = useState(0);
 
   // rAF-driven playback clock
   const rafRef = useRef<number | null>(null);
@@ -78,8 +100,10 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
       }
       const elapsed = now - startedAtRef.current;
       elapsedRef.current = elapsed;
+      setProgress(elapsed / duration);
       if (elapsed >= duration) {
         elapsedRef.current = 0;
+        setProgress(0);
         setSceneIndex((i) => {
           const next = i + 1;
           if (next >= totalScenes) {
@@ -114,6 +138,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
         clearRaf();
         elapsedRef.current = 0;
         startedAtRef.current = null;
+        setProgress(0);
         setSceneIndex(0);
       }
     }),
@@ -144,11 +169,19 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
     return clearRaf;
   }, [playing, sceneIndex, duration, totalScenes, loop]);
 
+  // Reset bookkeeping when the scene index changes
+  useEffect(() => {
+    elapsedRef.current = 0;
+    startedAtRef.current = null;
+    setProgress(0);
+  }, [sceneIndex]);
+
   // When the animation changes, reset to the start and autoplay
   useEffect(() => {
     elapsedRef.current = 0;
     startedAtRef.current = null;
     setSceneIndex(0);
+    setProgress(0);
     setPlaying(true);
   }, [animation]);
 
@@ -196,7 +229,13 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
         </div>
 
         {scene && (
-          <SceneView key={scene.id + ':' + sceneIndex} scene={scene} width={width} height={height} />
+          <SceneView
+            key={scene.id + ':' + sceneIndex}
+            scene={scene}
+            width={width}
+            height={height}
+            progress={progress}
+          />
         )}
 
         {/* Pause overlay */}
@@ -283,7 +322,17 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   );
 });
 
-function SceneView({ scene, width, height }: { scene: Scene; width: number; height: number }) {
+function SceneView({
+  scene,
+  width,
+  height,
+  progress
+}: {
+  scene: Scene;
+  width: number;
+  height: number;
+  progress: number;
+}) {
   const content = (
     <div style={{ position: 'relative', width, height }}>
       {scene.backgroundActors
@@ -296,13 +345,21 @@ function SceneView({ scene, width, height }: { scene: Scene; width: number; heig
             w={width}
             h={height}
             duration={scene.duration_ms}
+            progress={progress}
           />
         ))}
       {scene.actors
         .slice()
         .sort((a, b) => (a.z ?? 0) - (b.z ?? 0))
         .map((a) => (
-          <ActorView key={a.id} actor={a} w={width} h={height} duration={scene.duration_ms} />
+          <ActorView
+            key={a.id}
+            actor={a}
+            w={width}
+            h={height}
+            duration={scene.duration_ms}
+            progress={progress}
+          />
         ))}
       {scene.caption && (
         <div className="absolute bottom-4 left-0 right-0 text-center text-white font-medium text-lg px-4">
@@ -316,37 +373,47 @@ function SceneView({ scene, width, height }: { scene: Scene; width: number; heig
   return wrapWithEffects(content, scene.effects, 'div');
 }
 
-function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: number; duration: number }) {
-  const controls = useAnimationControls();
+function ActorView({
+  actor,
+  w,
+  h,
+  duration,
+  progress
+}: {
+  actor: Actor;
+  w: number;
+  h: number;
+  duration: number;
+  progress: number;
+}) {
   const times = actor.tracks.map((k) => k.t / Math.max(1, duration));
-  const x = actor.tracks.map((k) => k.x * w);
-  const y = actor.tracks.map((k) => k.y * h);
-  const rotate = actor.tracks.map((k) => k.rotate ?? 0);
-  const scale = actor.tracks.map((k) => k.scale ?? actor.start?.scale ?? 1);
+  const xVals = actor.tracks.map((k) => k.x * w);
+  const yVals = actor.tracks.map((k) => k.y * h);
+  const rotateVals = actor.tracks.map((k) => k.rotate ?? 0);
+  const scaleVals = actor.tracks.map((k) => k.scale ?? actor.start?.scale ?? 1);
 
-  React.useEffect(() => {
-    const transition: any = { times, duration: duration / 1000, ease: 'easeInOut' };
-    if (actor.loop === 'float') {
-      transition.repeat = Infinity;
-      transition.repeatType = 'mirror';
-    }
-    controls.start({ x, y, rotate, scale, transition });
-  }, [controls, duration, actor.loop]); // arrays derived from props
+  const x = sampleAt(times, xVals, progress);
+  const y = sampleAt(times, yVals, progress);
+  const rotate = sampleAt(times, rotateVals, progress);
+  const scale = sampleAt(times, scaleVals, progress);
 
   if (actor.type === 'emoji') {
     const size = Math.round(48 * (actor.start?.scale ?? 1));
     const node = (
-      <motion.span
+      <span
         role="img"
         aria-label={actor.ariaLabel ?? actor.emoji}
-        style={{ position: 'absolute', fontSize: size, transformOrigin: 'center center' }}
-        initial={{ x: x[0], y: y[0], rotate: rotate[0], scale: scale[0] }}
-        animate={controls}
+        style={{
+          position: 'absolute',
+          fontSize: size,
+          transformOrigin: 'center center',
+          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`
+        }}
       >
         <span style={{ display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}>
           {actor.emoji}
         </span>
-      </motion.span>
+      </span>
     );
     return wrapWithEffects(node, actor.effects, 'span');
   }
@@ -379,18 +446,17 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
     const height = (bbox.maxY - bbox.minY) * unitSize;
 
     const node = (
-      <motion.span
+      <span
         role="img"
         aria-label={actor.ariaLabel ?? 'composite'}
         style={{
           position: 'absolute',
           width,
           height,
+          display: 'inline-block',
           transformOrigin: 'center center',
-          display: 'inline-block'
+          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`
         }}
-        initial={{ x: x[0], y: y[0], rotate: rotate[0], scale: scale[0] }}
-        animate={controls}
       >
         <span
           style={{
@@ -425,7 +491,7 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
             );
           })}
         </span>
-      </motion.span>
+      </span>
     );
     return wrapWithEffects(node, actor.effects, 'span');
   }
