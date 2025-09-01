@@ -7,6 +7,7 @@ Constraints:
 - Every actor's start includes {x,y,scale}; choose scale values to convey real-world size relations between actors (dragons >> humans) and any props or utilities they carry.
 - Use flipX:true when an emoji or part should face left; omit flipX or set false for the default right-facing orientation.
 - Keyframes are in ms relative to the scene.
+ - Each scene can include backgroundActors (array of emoji actors) rendered behind foreground actors. Choose backgrounds that match the setting and use generous scales (roughly 2-5) so they anchor the scene without overwhelming it.
 Output ONLY valid JSON that matches the types: Keyframe, EmojiActor, Actor, Scene, Animation.
 Ensure final keyframes align with each scene's duration. No prose, no markdown; JSON only.`;
 

@@ -40,7 +40,7 @@ export type Actor = EmojiActor | CompositeActor;
 export type Scene = {
   id: string;
   duration_ms: number; // scene duration
-  background?: string; // emoji backdrop or theme hint
+  backgroundActors: EmojiActor[]; // actors rendered behind foreground
   caption?: string;
   actors: Actor[];
   sfx?: { at_ms: number; type: 'pop' | 'whoosh' | 'ding' }[];

@@ -193,20 +193,18 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
 function SceneView({ scene, width, height }: { scene: Scene; width: number; height: number }) {
   return (
     <div style={{ position: 'relative', width, height }}>
-      {scene.background && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'grid',
-            placeItems: 'center',
-            fontSize: Math.min(width, height) * 0.6,
-            opacity: 0.8
-          }}
-        >
-          <span aria-hidden>{scene.background}</span>
-        </div>
-      )}
+      {scene.backgroundActors
+        .slice()
+        .sort((a, b) => (a.z ?? 0) - (b.z ?? 0))
+        .map((a) => (
+          <ActorView
+            key={'bg-' + a.id}
+            actor={a}
+            w={width}
+            h={height}
+            duration={scene.duration_ms}
+          />
+        ))}
       {scene.actors
         .slice()
         .sort((a, b) => (a.z ?? 0) - (b.z ?? 0))
@@ -242,14 +240,13 @@ function ActorView({ actor, w, h, duration }: { actor: Actor; w: number; h: numb
   const scale = actor.tracks.map((k) => k.scale ?? actor.start?.scale ?? 1);
 
   React.useEffect(() => {
-    controls.start({
-      x,
-      y,
-      rotate,
-      scale,
-      transition: { times, duration: duration / 1000, ease: 'easeInOut' }
-    });
-  }, [controls, duration]); // arrays derived from props
+    const transition: any = { times, duration: duration / 1000, ease: 'easeInOut' };
+    if (actor.loop === 'float') {
+      transition.repeat = Infinity;
+      transition.repeatType = 'mirror';
+    }
+    controls.start({ x, y, rotate, scale, transition });
+  }, [controls, duration, actor.loop]); // arrays derived from props
 
   if (actor.type === 'emoji') {
     const size = Math.round(48 * (actor.start?.scale ?? 1));

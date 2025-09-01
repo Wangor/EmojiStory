@@ -7,7 +7,21 @@ export const SAMPLE_ANIMATION: Animation = {
     {
       id: 'scene-1',
       duration_ms: 6000,
-      background: '🌆',
+      backgroundActors: [
+        {
+          id: 'bg-1',
+          type: 'emoji',
+          emoji: '🌆',
+          start: { x: 0.5, y: 0.65, scale: 3.5 },
+          tracks: [
+            { t: 0, x: 0.5, y: 0.65, scale: 3.5 },
+            { t: 3000, x: 0.5, y: 0.63, scale: 3.5 },
+            { t: 6000, x: 0.5, y: 0.65, scale: 3.5 }
+          ],
+          loop: 'float',
+          z: -100
+        }
+      ],
       caption: 'A cat spots a red balloon.',
       actors: [
         {
@@ -38,7 +52,21 @@ export const SAMPLE_ANIMATION: Animation = {
     {
       id: 'scene-2',
       duration_ms: 5000,
-      background: '🌬️',
+      backgroundActors: [
+        {
+          id: 'bg-2',
+          type: 'emoji',
+          emoji: '🌬️',
+          start: { x: 0.5, y: 0.5, scale: 3 },
+          tracks: [
+            { t: 0, x: 0.5, y: 0.5, scale: 3 },
+            { t: 2500, x: 0.5, y: 0.52, scale: 3 },
+            { t: 5000, x: 0.5, y: 0.5, scale: 3 }
+          ],
+          loop: 'float',
+          z: -100
+        }
+      ],
       caption: 'A gust lifts it higher—the chase is on!',
       actors: [
         {

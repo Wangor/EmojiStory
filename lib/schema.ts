@@ -38,7 +38,7 @@ export const actorSchema = z.union([emojiActorSchema, compositeActorSchema]);
 export const sceneSchema = z.object({
   id: z.string(),
   duration_ms: z.number().positive(),
-  background: z.string().optional(),
+  backgroundActors: z.array(emojiActorSchema).default([]),
   caption: z.string().optional(),
   actors: z.array(actorSchema),
   sfx: z.array(z.object({ at_ms: z.number().nonnegative(), type: z.enum(['pop','whoosh','ding']) })).optional()
