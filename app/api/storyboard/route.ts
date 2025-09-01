@@ -191,7 +191,8 @@ function isCaptionClear(caption: any): boolean {
 
   // Length and word count check
   const words = c.split(/\s+/).filter(Boolean);
-  if (words.length < 4 || words.length > 24) return false;
+  // Accept slightly shorter captions to avoid over-rejecting model output
+  if (words.length < 3 || words.length > 24) return false;
 
   // Must contain letters (basic Latin + extended Latin ranges as an approximation)
   if (!/[A-Za-zÀ-ÖØ-öø-ÿ\u00C0-\u024F\u1E00-\u1EFF]/.test(c)) return false;
@@ -300,7 +301,7 @@ const STRICT_JSON_INSTRUCTION = [
     'If any value is unknown, provide a reasonable default that satisfies the schema.',
     // Caption rules:
     'Caption rules:',
-    '- scenes[i].caption MUST be a clear, grammatical sentence (4–24 words) that describes what happens in that scene.',
+    '- scenes[i].caption MUST be a clear, grammatical sentence (3–24 words) that describes what happens in that scene.',
     '- It MUST NOT be random strings, placeholders, or mostly emojis/symbols.',
     '- Prefer the same language as the user story.',
     '- Avoid repeated characters and filler like "lorem", "asdf", or "placeholder".'
