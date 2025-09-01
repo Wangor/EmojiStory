@@ -132,7 +132,8 @@ export default function Page() {
                   return;
                 }
                 const saved = await insertMovie({
-                  title: storyText.substring(0, 30),
+                  title: animation?.title || storyText.substring(0, 30),
+                  description: animation?.description || '',
                   story: storyText,
                   animation,
                 });

@@ -2,6 +2,7 @@ import type { Animation } from '../components/AnimationTypes';
 
 export const SAMPLE_ANIMATION: Animation = {
   title: 'The Lost Balloon',
+  description: 'A curious cat chases a drifting red balloon through the city skyline.',
   fps: 30,
   scenes: [
     {

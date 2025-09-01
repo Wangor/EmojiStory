@@ -51,6 +51,12 @@ export const sceneSchema = z.object({
 
 export const animationSchema = z.object({
   title: z.string(),
+  description: z
+    .string()
+    .refine(
+      (s) => s.trim().split(/\s+/).filter(Boolean).length <= 50,
+      { message: 'Must be 50 words or fewer' }
+    ),
   fps: z.number().positive(),
   scenes: z.array(sceneSchema).min(1)
 });

@@ -23,7 +23,10 @@ export default function MoviesPage() {
       <ul className="mb-8 space-y-2">
         {movies.map(m => (
           <li key={m.id} className="flex justify-between items-center border p-2 rounded">
-            <span>{m.title || m.story.slice(0,30)}</span>
+            <div>
+              <div className="font-medium">{m.title || m.story.slice(0,30)}</div>
+              {m.description && <div className="text-xs text-gray-500">{m.description}</div>}
+            </div>
             <button onClick={() => setSelected(m)} className="text-blue-600 underline">Play</button>
           </li>
         ))}
