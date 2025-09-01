@@ -556,6 +556,20 @@ function normalizeAnimation(candidate: any) {
     }
 
     if (!Array.isArray(s.backgroundActors)) s.backgroundActors = [];
+    // Backward compatibility: allow single `background` emoji
+    if (typeof (s as any).background === 'string' && (s as any).background.trim()) {
+      s.backgroundActors.unshift({
+        id: 'bg-1',
+        type: 'emoji',
+        emoji: (s as any).background,
+        start: { x: 0.5, y: 0.5, scale: 1 },
+        tracks: [
+          { t: 0, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' },
+          { t: s.duration_ms, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' }
+        ]
+      });
+      delete (s as any).background;
+    }
     s.backgroundActors = s.backgroundActors.map((actor: any, j: number) =>
       sanitizeEmojiActor(actor, j, s.duration_ms, 'bg')
     );
