@@ -220,8 +220,9 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
     <div className="w-full">
       {/* Main video container */}
       <div
-        className="relative rounded-xl border border-gray-200 shadow-lg overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800"
+        className="relative rounded-xl border border-gray-200 shadow-lg overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 cursor-pointer"
         style={{ width, height }}
+        onClick={handlePlayPause}
       >
         {/* Title overlay */}
         <div className="absolute top-3 left-4 text-xs text-gray-300 font-medium pointer-events-none z-10">
@@ -240,7 +241,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
 
         {/* Pause overlay */}
         {!playing && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <div className="absolute inset-0 flex items-center justify-center z-20 cursor-pointer">
             <div className="bg-black/50 rounded-full p-6">
               <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path
