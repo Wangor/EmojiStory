@@ -443,22 +443,59 @@ function clamp(n: any, min: number, max: number, fallback: number): number {
   return Math.max(min, Math.min(max, x));
 }
 
-function pickBackgroundEmoji(text: string): string {
+function pickBackgroundActors(text: string, durationMs: number) {
   const t = text.toLowerCase();
-  const rules: Array<{ keys: string[]; emoji: string }> = [
-    { keys: ['forest', 'woods', 'tree'], emoji: '🌲' },
-    { keys: ['city', 'street', 'town'], emoji: '🏙️' },
-    { keys: ['beach', 'ocean', 'sea', 'sand'], emoji: '🏖️' },
-    { keys: ['mountain', 'hill'], emoji: '🏔️' },
-    { keys: ['night', 'moon', 'star'], emoji: '🌃' },
-    { keys: ['space', 'planet', 'galaxy'], emoji: '🌌' },
-    { keys: ['desert'], emoji: '🏜️' },
-    { keys: ['castle'], emoji: '🏰' }
+  const make = (emoji: string, x: number, y: number, scale: number) => ({
+    type: 'emoji',
+    emoji,
+    start: { x, y, scale },
+    tracks: [
+      { t: 0, x, y, rotate: 0, scale, ease: 'linear' },
+      { t: durationMs / 2, x, y: y - 0.02, rotate: 0, scale, ease: 'linear' },
+      { t: durationMs, x, y, rotate: 0, scale, ease: 'linear' }
+    ],
+    loop: 'float',
+    z: -100,
+    ariaLabel: 'background'
+  });
+  const rules: Array<{ keys: string[]; actors: any[] }> = [
+    {
+      keys: ['forest', 'woods', 'tree', 'jungle', 'park'],
+      actors: [make('🌳', 0.2, 0.65, 2.5), make('🌲', 0.5, 0.6, 3), make('🌳', 0.8, 0.65, 2.5)]
+    },
+    {
+      keys: ['city', 'street', 'town', 'building', 'skyscraper'],
+      actors: [make('🏙️', 0.5, 0.6, 3)]
+    },
+    {
+      keys: ['beach', 'ocean', 'sea', 'sand', 'shore', 'wave'],
+      actors: [make('🏖️', 0.5, 0.6, 3)]
+    },
+    {
+      keys: ['mountain', 'hill', 'cliff', 'peak'],
+      actors: [make('🏔️', 0.5, 0.6, 3)]
+    },
+    {
+      keys: ['night', 'moon', 'star', 'dark'],
+      actors: [make('🌃', 0.5, 0.6, 3)]
+    },
+    {
+      keys: ['space', 'planet', 'galaxy', 'astronaut', 'rocket'],
+      actors: [make('🌌', 0.5, 0.5, 3)]
+    },
+    {
+      keys: ['desert', 'cactus', 'dune', 'camel'],
+      actors: [make('🏜️', 0.5, 0.6, 3)]
+    },
+    {
+      keys: ['castle'],
+      actors: [make('🏰', 0.5, 0.6, 3)]
+    }
   ];
   for (const r of rules) {
-    if (r.keys.some((k) => t.includes(k))) return r.emoji;
+    if (r.keys.some((k) => t.includes(k))) return r.actors;
   }
-  return '🌅';
+  return [];
 }
 function sanitizeEase(ease: any): 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' {
   return ['linear', 'easeIn', 'easeOut', 'easeInOut'].includes(ease) ? ease : 'linear';
@@ -593,22 +630,10 @@ function normalizeAnimation(candidate: any) {
     );
 
     if (s.backgroundActors.length === 0) {
-      const bgEmoji = pickBackgroundEmoji(s.caption || anim.title || '');
-      const bgActor = {
-        id: 'bg-1',
-        type: 'emoji',
-        emoji: bgEmoji,
-        start: { x: 0.5, y: 0.5, scale: 8 },
-        tracks: [
-          { t: 0, x: 0.5, y: 0.5, rotate: 0, scale: 8, ease: 'linear' },
-          { t: s.duration_ms / 2, x: 0.5, y: 0.48, rotate: 0, scale: 8, ease: 'linear' },
-          { t: s.duration_ms, x: 0.5, y: 0.5, rotate: 0, scale: 8, ease: 'linear' }
-        ],
-        loop: 'float',
-        z: -100,
-        ariaLabel: 'background'
-      };
-      s.backgroundActors.push(sanitizeEmojiActor(bgActor, 0, s.duration_ms, 'bg'));
+      const bgActors = pickBackgroundActors(s.caption || anim.title || '', s.duration_ms);
+      s.backgroundActors.push(
+        ...bgActors.map((bg: any, idx: number) => sanitizeEmojiActor(bg, idx, s.duration_ms, 'bg'))
+      );
     }
 
     s.actors = s.actors.map((actor: any, j: number) => {
