@@ -193,20 +193,18 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
 function SceneView({ scene, width, height }: { scene: Scene; width: number; height: number }) {
   return (
     <div style={{ position: 'relative', width, height }}>
-      {scene.background && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'grid',
-            placeItems: 'center',
-            fontSize: Math.min(width, height) * 0.6,
-            opacity: 0.8
-          }}
-        >
-          <span aria-hidden>{scene.background}</span>
-        </div>
-      )}
+      {scene.backgroundActors
+        .slice()
+        .sort((a, b) => (a.z ?? 0) - (b.z ?? 0))
+        .map((a) => (
+          <ActorView
+            key={'bg-' + a.id}
+            actor={a}
+            w={width}
+            h={height}
+            duration={scene.duration_ms}
+          />
+        ))}
       {scene.actors
         .slice()
         .sort((a, b) => (a.z ?? 0) - (b.z ?? 0))

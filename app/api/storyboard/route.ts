@@ -19,7 +19,50 @@ const ANIMATION_JSON_SCHEMA = {
                 properties: {
                     id: { type: 'string' },
                     duration_ms: { type: 'number' },
-                    background: { type: 'string' },
+                    backgroundActors: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                type: { const: 'emoji' },
+                                emoji: { type: 'string' },
+                                start: {
+                                    type: 'object',
+                                    properties: {
+                                        x: { type: 'number' },
+                                        y: { type: 'number' },
+                                        scale: { type: 'number', minimum: 0 }
+                                    },
+                                    required: ['x', 'y', 'scale'],
+                                    additionalProperties: false
+                                },
+                                flipX: { type: 'boolean' },
+                                tracks: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            t: { type: 'number' },
+                                            x: { type: 'number' },
+                                            y: { type: 'number' },
+                                            rotate: { type: 'number' },
+                                            scale: { type: 'number', minimum: 0 },
+                                            ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
+                                        },
+                                        required: ['t', 'x', 'y'],
+                                        additionalProperties: false
+                                    },
+                                    minItems: 1
+                                },
+                                loop: { type: 'string', enum: ['float', 'none'] },
+                                z: { type: 'number' },
+                                ariaLabel: { type: 'string' }
+                            },
+                            required: ['id', 'type', 'emoji', 'start', 'tracks'],
+                            additionalProperties: false
+                        }
+                    },
                     caption: { type: 'string' },
                     actors: {
                         type: 'array',
@@ -238,10 +281,11 @@ function describeActor(actor: any): string {
   return typeof actor?.emoji === 'string' && actor.emoji.trim() ? 'emoji' : 'character';
 }
 
-function backgroundPhrase(bg?: string): string {
-  if (!bg || typeof bg !== 'string' || !bg.trim()) return '';
-  // Keep simple to avoid locale dependencies
-  return ` on a ${bg} background`;
+function backgroundPhrase(bgActors?: any[]): string {
+  if (!Array.isArray(bgActors) || bgActors.length === 0) return '';
+  const a = bgActors[0];
+  const desc = describeActor(a);
+  return ` with ${desc} in the background`;
 }
 
 function synthesizeCaption(scene: any): string {
@@ -253,7 +297,7 @@ function synthesizeCaption(scene: any): string {
   else subject = `The ${subjects[0]} and ${subjects[1]}`;
 
   const verb = guessSceneVerb(actors[0]?.loop);
-  const bg = backgroundPhrase(scene?.background);
+  const bg = backgroundPhrase(scene?.backgroundActors);
 
   const text = `${subject} ${verb}${bg}`;
   return toSentenceCase(text);
@@ -267,7 +311,18 @@ const FEW_SHOT_EXAMPLE = {
         {
             id: 'scene-1',
             duration_ms: 3000,
-            background: '🌇',
+            backgroundActors: [
+                {
+                    id: 'bg-1',
+                    type: 'emoji',
+                    emoji: '🌇',
+                    start: { x: 0.5, y: 0.5, scale: 1 },
+                    tracks: [
+                        { t: 0, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' },
+                        { t: 3000, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' }
+                    ]
+                }
+            ],
             caption: 'Sunset intro',
             actors: [
                 {
@@ -404,6 +459,34 @@ function sanitizeKeyframe(
   return { t, x, y, rotate, scale, ease };
 }
 
+function sanitizeEmojiActor(actor: any, index: number, durationMs: number, prefix: string) {
+  const a: any = typeof actor === 'object' && actor ? actor : {};
+  if (typeof a.id !== 'string' || !a.id.trim()) a.id = `${prefix}-${index + 1}`;
+  a.type = 'emoji';
+  if (typeof a.emoji !== 'string' || !a.emoji.trim()) a.emoji = '😀';
+  if (typeof a.start !== 'object' || !a.start) a.start = {};
+  a.start.x = clamp01(a.start.x);
+  a.start.y = clamp01(a.start.y);
+  a.start.scale = clamp(a.start.scale, 0.05, 10, 1);
+  if (!Array.isArray(a.tracks) || a.tracks.length === 0) {
+    a.tracks = [
+      sanitizeKeyframe(
+        { t: 0, x: a.start.x, y: a.start.y, rotate: 0, scale: a.start.scale, ease: 'linear' },
+        { x: a.start.x, y: a.start.y, scale: a.start.scale },
+        durationMs
+      )
+    ];
+  } else {
+    const defaults = { x: a.start.x, y: a.start.y, scale: a.start.scale };
+    a.tracks = a.tracks.map((k: any) => sanitizeKeyframe(k, defaults, durationMs));
+  }
+  if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
+  if (typeof a.z !== 'number') a.z = 0;
+  if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'emoji actor';
+  a.flipX = a.flipX === true;
+  return a;
+}
+
 // 4) Ensure we always produce/repair a readable caption in normalizeAnimation
 function normalizeAnimation(candidate: any) {
   const anim: any = typeof candidate === 'object' && candidate ? candidate : {};
@@ -416,7 +499,18 @@ function normalizeAnimation(candidate: any) {
       {
         id: 'scene-1',
         duration_ms: 3000,
-        background: '🌇',
+        backgroundActors: [
+          {
+            id: 'bg-1',
+            type: 'emoji',
+            emoji: '🌇',
+            start: { x: 0.5, y: 0.5, scale: 1 },
+            tracks: [
+              { t: 0, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' },
+              { t: 3000, x: 0.5, y: 0.5, rotate: 0, scale: 1, ease: 'linear' }
+            ]
+          }
+        ],
         caption: 'Auto-generated scene.',
         actors: [
           {
@@ -460,6 +554,11 @@ function normalizeAnimation(candidate: any) {
         }
       ];
     }
+
+    if (!Array.isArray(s.backgroundActors)) s.backgroundActors = [];
+    s.backgroundActors = s.backgroundActors.map((actor: any, j: number) =>
+      sanitizeEmojiActor(actor, j, s.duration_ms, 'bg')
+    );
 
     s.actors = s.actors.map((actor: any, j: number) => {
       const a: any = typeof actor === 'object' && actor ? actor : {};
@@ -518,32 +617,7 @@ function normalizeAnimation(candidate: any) {
         a.flipX = a.flipX === true;
         return a;
       } else {
-        a.type = 'emoji';
-        if (typeof a.emoji !== 'string' || !a.emoji.trim()) a.emoji = '😀';
-
-        if (typeof a.start !== 'object' || !a.start) a.start = {};
-        a.start.x = clamp01(a.start.x);
-        a.start.y = clamp01(a.start.y);
-        a.start.scale = clamp(a.start.scale, 0.05, 10, 1);
-
-        if (!Array.isArray(a.tracks) || a.tracks.length === 0) {
-          a.tracks = [
-            sanitizeKeyframe(
-              { t: 0, x: a.start.x, y: a.start.y, rotate: 0, scale: a.start.scale, ease: 'linear' },
-              { x: a.start.x, y: a.start.y, scale: a.start.scale },
-              s.duration_ms
-            )
-          ];
-        } else {
-          const defaults = { x: a.start.x, y: a.start.y, scale: a.start.scale };
-          a.tracks = a.tracks.map((k: any) => sanitizeKeyframe(k, defaults, s.duration_ms));
-        }
-
-        if (typeof a.loop !== 'string' || !['float', 'none'].includes(a.loop)) a.loop = 'none';
-        if (typeof a.z !== 'number') a.z = 0;
-        if (typeof a.ariaLabel !== 'string') a.ariaLabel = 'emoji actor';
-        a.flipX = a.flipX === true;
-        return a;
+        return sanitizeEmojiActor(a, j, s.duration_ms, 'actor');
       }
     });
 
@@ -554,8 +628,6 @@ function normalizeAnimation(candidate: any) {
       if (!['pop', 'whoosh', 'ding'].includes(f.type)) f.type = 'ding';
       return f;
     });
-
-    if (typeof s.background !== 'string') s.background = undefined;
 
     // Ensure caption existence and clarity
     if (typeof s.caption !== 'string' || !isCaptionClear(s.caption)) {
