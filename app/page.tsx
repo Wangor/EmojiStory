@@ -2,10 +2,11 @@
 
 /* eslint-disable import/no-unresolved */
 import { FilmSlate, MagicWand, Play, Stop } from '@phosphor-icons/react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
 import { SAMPLE_ANIMATION } from '../lib/sampleAnimation';
+import { insertMovie, getUser } from '../lib/supabaseClient';
 
 export default function Page() {
   const [storyText, setStoryText] = useState<string>(
@@ -14,10 +15,15 @@ export default function Page() {
   const [animation, setAnimation] = useState<Animation | null>(SAMPLE_ANIMATION);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const playerRef = useRef<{ play: () => void; stop: () => void } | null>(null);
 
   const canPlay = !!animation && animation.scenes.length > 0;
   const wordCount = storyText.trim().split(/\s+/).filter(word => word.length > 0).length;
+
+  useEffect(() => {
+    getUser().then(setUser);
+  }, []);
 
   async function generateWithAI() {
     setLoading(true); setError(null);
@@ -112,6 +118,29 @@ export default function Page() {
           >
             <Stop weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
             Stop
+          </button>
+
+          <button
+            onClick={async () => {
+              try {
+                setError(null);
+                if (!user) {
+                  setError('Please login to save');
+                  return;
+                }
+                await insertMovie({
+                  title: storyText.substring(0, 30),
+                  story: storyText,
+                  animation,
+                });
+              } catch (e: any) {
+                setError(e.message);
+              }
+            }}
+            disabled={!canPlay}
+            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Save
           </button>
         </div>
 
