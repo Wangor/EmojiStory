@@ -1,14 +1,15 @@
 import type { ReactNode } from 'react';
+import './globals.css';
 
 export const metadata = {
   title: 'Emoji Movie MVP',
-  description: 'Turn stories into emoji mini-movies'
+  description: 'Turn stories into emoji mini-movies',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial' }}>
+      <body className="min-h-screen bg-gray-50 text-gray-900">
         {children}
       </body>
     </html>

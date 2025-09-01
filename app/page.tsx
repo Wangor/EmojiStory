@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable import/no-unresolved */
+import { FilmSlate, MagicWand, Play, Stop } from '@phosphor-icons/react';
 import { useState, useRef } from 'react';
 import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
@@ -15,6 +17,7 @@ export default function Page() {
   const playerRef = useRef<{ play: () => void; stop: () => void } | null>(null);
 
   const canPlay = !!animation && animation.scenes.length > 0;
+  const wordCount = storyText.trim().split(/\s+/).filter(word => word.length > 0).length;
 
   async function generateWithAI() {
     setLoading(true); setError(null);
@@ -27,7 +30,7 @@ export default function Page() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed to generate');
       setAnimation(data.animation as Animation);
-    } catch (e:any) {
+    } catch (e: any) {
       setError(e.message || 'Unknown error');
     } finally {
       setLoading(false);
@@ -35,30 +38,119 @@ export default function Page() {
   }
 
   return (
-    <main style={{ maxWidth: 960, margin: '24px auto', padding: '0 16px' }}>
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>🎬 Emoji Movie MVP</h1>
-      <textarea
-        value={storyText}
-        onChange={(e) => setStoryText(e.target.value)}
-        rows={5}
-        style={{ width: '100%', padding: 12, fontSize: 16 }}
-      />
-      <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button onClick={() => setAnimation(SAMPLE_ANIMATION)}>Use Sample</button>
-        <button onClick={generateWithAI} disabled={loading}>{loading ? 'Generating…' : 'Generate with AI'}</button>
-        <button onClick={() => playerRef.current?.play()} disabled={!canPlay}>Play</button>
-        <button onClick={() => playerRef.current?.stop()} disabled={!canPlay}>Stop</button>
-      </div>
-      {error && <p style={{ color: '#b91c1c', marginTop: 8 }}>Error: {error}</p>}
-      <div style={{ marginTop: 20 }}>
-        {animation && (
-          <EmojiPlayer
-            ref={playerRef}
-            animation={animation}
-            width={900}
-            height={500}
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-2">
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+              <FilmSlate weight="bold" size={36} className="text-white" />
+            </div>
+            Emoji Movie Studio
+          </h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Transform your stories into animated emoji movies using AI
+          </p>
+        </div>
+
+        {/* Story Input */}
+        <div className="mb-8">
+          <label htmlFor="story-input" className="block text-sm font-semibold text-gray-700 mb-3 text-center">
+            Tell Your Story
+          </label>
+          <textarea
+            id="story-input"
+            value={storyText}
+            onChange={(e) => setStoryText(e.target.value)}
+            rows={4}
+            placeholder="Describe your story... Be creative!"
+            className="w-full p-4 text-lg border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm resize-none text-center"
           />
+          <div className="text-center mt-2">
+            <span className="text-sm text-gray-400">
+              {wordCount} {wordCount === 1 ? 'word' : 'words'}
+            </span>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3 justify-center mb-8">
+          <button
+            onClick={() => setAnimation(SAMPLE_ANIMATION)}
+            className="group flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 font-medium"
+          >
+            <FilmSlate weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
+            Use Sample
+          </button>
+
+          <button
+            onClick={generateWithAI}
+            disabled={loading || !storyText.trim()}
+            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-blue-600 disabled:hover:to-blue-700"
+          >
+            <MagicWand
+              weight="bold"
+              size={20}
+              className={`transition-transform ${loading ? 'animate-spin' : 'group-hover:scale-110'}`}
+            />
+            {loading ? 'Generating…' : 'Generate with AI'}
+          </button>
+
+          <button
+            onClick={() => playerRef.current?.play()}
+            disabled={!canPlay}
+            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Play weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
+            Play
+          </button>
+
+          <button
+            onClick={() => playerRef.current?.stop()}
+            disabled={!canPlay}
+            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Stop weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
+            Stop
+          </button>
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div className="flex items-start gap-2">
+              <div className="w-5 h-5 text-red-500 mt-0.5">⚠️</div>
+              <div>
+                <h3 className="font-semibold text-red-800 mb-1">Error</h3>
+                <p className="text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
         )}
+
+        {/* Player */}
+        <div className="flex justify-center">
+          {animation ? (
+            <div className="w-full max-w-4xl">
+              <EmojiPlayer
+                ref={playerRef}
+                animation={animation}
+                width={900}
+                height={500}
+              />
+            </div>
+          ) : (
+            <div className="w-full max-w-4xl h-96 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50">
+              <div className="text-center text-gray-500">
+                <div className="w-16 h-16 mx-auto mb-4 opacity-50">
+                  <FilmSlate weight="light" size={64} />
+                </div>
+                <p className="text-lg font-medium mb-2">No animation loaded</p>
+                <p className="text-sm">Use the sample or generate a new story with AI</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
