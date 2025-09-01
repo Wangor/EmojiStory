@@ -2,11 +2,21 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getUser, signOut } from '../lib/supabaseClient';
-import { FilmSlateIcon, SignOut, User, UserPlus, UserCircle } from '@phosphor-icons/react';
+import {
+  FilmSlateIcon,
+  SignOut,
+  User,
+  UserPlus,
+  UserCircle,
+  MagnifyingGlass,
+} from '@phosphor-icons/react';
 
 export function Navbar() {
   const [user, setUser] = useState<any>(null);
+  const [search, setSearch] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     getUser().then(setUser);
@@ -17,10 +27,19 @@ export function Navbar() {
     setUser(null);
   }
 
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = search.trim();
+    if (q.length > 0) {
+      router.push(`/search?q=${encodeURIComponent(q)}`);
+      setSearch('');
+    }
+  }
+
   return (
     <nav className="bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center h-16">
           <Link
             href="/"
             className="text-white font-bold text-xl hover:text-gray-200 transition-colors duration-200"
@@ -28,7 +47,27 @@ export function Navbar() {
             🎬 Emoji Movie Studio
           </Link>
 
-          <div className="flex gap-6 items-center">
+          <div className="flex-1 flex justify-center px-4">
+            <form onSubmit={handleSearch} className="w-full max-w-md">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search movies..."
+                  className="w-full rounded-md py-2 pl-4 pr-10 text-sm focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <MagnifyingGlass size={18} weight="bold" />
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="flex gap-6 items-center ml-4">
             {user ? (
               <>
                 <Link
