@@ -6,8 +6,6 @@ import { useState, useRef } from 'react';
 import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
 import { SAMPLE_ANIMATION } from '../lib/sampleAnimation';
-import { ACTORS } from '../lib/assets/actors';
-import { BACKGROUNDS } from '../lib/assets/backgrounds';
 
 export default function Page() {
   const [storyText, setStoryText] = useState<string>(
@@ -72,28 +70,6 @@ export default function Page() {
             <span className="text-sm text-gray-400">
               {wordCount} {wordCount === 1 ? 'word' : 'words'}
             </span>
-          </div>
-        </div>
-
-        {/* Available assets */}
-        <div className="mb-8 text-center">
-          <h2 className="font-semibold text-gray-700 mb-2">Available actors</h2>
-          <div className="flex flex-wrap justify-center gap-3">
-            {ACTORS.map((a) => (
-              <div key={a.id} className="flex items-center gap-1">
-                <span>{a.emoji}</span>
-                <span className="text-sm text-gray-600">{a.description}</span>
-              </div>
-            ))}
-          </div>
-          <h2 className="font-semibold text-gray-700 mt-4 mb-2">Available backgrounds</h2>
-          <div className="flex flex-wrap justify-center gap-3">
-            {BACKGROUNDS.map((b) => (
-              <div key={b.id} className="flex items-center gap-1">
-                <span>{b.emoji}</span>
-                <span className="text-sm text-gray-600">{b.description}</span>
-              </div>
-            ))}
           </div>
         </div>
 
