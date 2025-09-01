@@ -13,7 +13,10 @@ type SceneCanvasProps = {
 export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const [current, setCurrent] = useState(0); // milliseconds
+  // track the current frame rather than raw milliseconds to avoid floating
+  // point precision issues when scrubbing the timeline. the frame is later
+  // converted back into milliseconds when sampling or writing keyframes.
+  const [currentFrame, setCurrentFrame] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
 
   const scaleRef = useRef<{
@@ -86,13 +89,15 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     const rect = containerRef.current.getBoundingClientRect();
     const x = (info.point.x - rect.left) / rect.width;
     const y = (info.point.y - rect.top) / rect.height;
-    const pose = sample(scene.actors.find((a) => a.id === actorId)!, current);
-    updateActor(actorId, { t: current, x, y, scale: pose.scale });
+    const t = currentFrame * frameMs;
+    const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
+    updateActor(actorId, { t, x, y, scale: pose.scale });
   };
 
   const handleScaleStart = (e: React.PointerEvent, actorId: string) => {
     e.stopPropagation();
-    const pose = sample(scene.actors.find((a) => a.id === actorId)!, current);
+    const t = currentFrame * frameMs;
+    const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
     scaleRef.current = {
       id: actorId,
       startScale: pose.scale,
@@ -109,8 +114,9 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     const s = scaleRef.current;
     if (!s) return;
     const diff = e.clientY - s.startY;
+    const t = currentFrame * frameMs;
     const newScale = Math.max(0.1, s.startScale + diff / 100);
-    updateActor(s.id, { t: current, x: s.x, y: s.y, scale: newScale });
+    updateActor(s.id, { t, x: s.x, y: s.y, scale: newScale });
   };
 
   const handleScaleEnd = () => {
@@ -131,7 +137,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
           {selectedActor && <polyline points={pathPoints} fill="none" stroke="blue" />}
         </svg>
         {scene.actors.map((a) => {
-          const pose = sample(a, current);
+          const pose = sample(a, currentFrame * frameMs);
           const style: React.CSSProperties = {
             left: pose.x * 100 + '%',
             top: pose.y * 100 + '%',
@@ -167,14 +173,14 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
       <input
         type="range"
         min={0}
-        max={scene.duration_ms}
-        step={frameMs}
-        value={current}
-        onChange={(e) => setCurrent(Number(e.target.value))}
+        max={Math.round(scene.duration_ms / frameMs)}
+        step={1}
+        value={currentFrame}
+        onChange={(e) => setCurrentFrame(Number(e.target.value))}
         className="w-full"
       />
       <div className="text-xs text-center">
-        Frame {Math.round(current / frameMs)} / {Math.round(scene.duration_ms / frameMs)}
+        Frame {currentFrame} / {Math.round(scene.duration_ms / frameMs)}
       </div>
     </div>
   );
