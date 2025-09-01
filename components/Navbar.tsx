@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getUser, signOut } from '../lib/supabaseClient';
-import { FilmSlateIcon, SignOut, User, UserPlus } from '@phosphor-icons/react';
+import { FilmSlateIcon, SignOut, User, UserPlus, UserCircle } from '@phosphor-icons/react';
 
 export function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -31,6 +31,13 @@ export function Navbar() {
           <div className="flex gap-6 items-center">
             {user ? (
               <>
+                <Link
+                  href="/channel"
+                  className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
+                >
+                  <UserCircle size={18} weight="bold" />
+                  <span>My Channel</span>
+                </Link>
                 <Link
                   href="/movies"
                   className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"

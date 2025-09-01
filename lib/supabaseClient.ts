@@ -64,3 +64,44 @@ export async function getAllMovies() {
   if (error) throw error;
   return data;
 }
+
+export async function getChannel() {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await supabase
+    .from('channels')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+export async function upsertChannel(params: { name: string; description: string; picture?: File }) {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  let picture_url: string | undefined;
+  if (params.picture) {
+    const fileExt = params.picture.name.split('.').pop();
+    const filePath = `${user.id}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from('channel-pictures')
+      .upload(filePath, params.picture, { upsert: true });
+    if (uploadError) throw uploadError;
+    const { data } = supabase.storage.from('channel-pictures').getPublicUrl(filePath);
+    picture_url = data.publicUrl;
+  }
+  const { data, error } = await supabase
+    .from('channels')
+    .upsert({
+      user_id: user.id,
+      name: params.name,
+      description: params.description,
+      picture_url,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
