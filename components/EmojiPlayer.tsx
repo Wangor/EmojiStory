@@ -151,69 +151,85 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   const handlePlayPause = () => setPlaying((p) => !p);
 
   return (
-    <div>
+    <div className="w-full">
+      {/* Main video container */}
       <div
-        style={{
-          width,
-          height,
-          border: '1px solid #e5e7eb',
-          borderRadius: 12,
-          overflow: 'hidden',
-          position: 'relative',
-          background: '#0b1020'
-        }}
+        className="relative rounded-xl border border-gray-200 shadow-lg overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800"
+        style={{ width, height }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 8,
-            color: '#9ca3af',
-            fontSize: 12,
-            pointerEvents: 'none'
-          }}
-        >
+        {/* Title overlay */}
+        <div className="absolute top-3 left-4 text-xs text-gray-300 font-medium pointer-events-none z-10">
           {animation.title}
         </div>
+
         {scene && (
           <SceneView key={scene.id + ':' + sceneIndex} scene={scene} width={width} height={height} />
         )}
-        <div
-          style={{
-            position: 'absolute',
-            right: 8,
-            bottom: 8,
-            padding: '4px 8px',
-            fontSize: 12,
-            color: '#9ca3af'
-          }}
-        >
-          Scene {sceneIndex + 1}/{totalScenes}
+
+        {/* Scene counter */}
+        <div className="absolute bottom-3 right-4 px-2 py-1 bg-black/30 backdrop-blur-sm rounded-md text-xs text-gray-200 font-mono">
+          {sceneIndex + 1}/{totalScenes}
         </div>
       </div>
 
       {/* Transport controls */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: 8
-        }}
-      >
-        <button onClick={handlePrev} disabled={!canPrev} aria-label="Previous scene">
-          ⏮️ Prev
+      <div className="flex items-center justify-center gap-2 mt-6">
+        <button
+          onClick={handlePrev}
+          disabled={!canPrev}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-sm"
+          aria-label="Previous scene"
+        >
+          <svg className="w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+          </svg>
         </button>
+
         <button
           onClick={handlePlayPause}
           disabled={totalScenes === 0}
+          className="group flex items-center justify-center w-14 h-14 rounded-full bg-gray-900 hover:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-900 disabled:hover:shadow-md"
           aria-label={playing ? 'Pause' : 'Play'}
         >
-          {playing ? '⏸️ Pause' : '▶️ Play'}
+          {playing ? (
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+            </svg>
+          )}
         </button>
-        <button onClick={handleNext} disabled={!canNext} aria-label="Next scene">
-          Next ⏭️
+
+        <button
+          onClick={handleNext}
+          disabled={!canNext}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-sm"
+          aria-label="Next scene"
+        >
+          <svg className="w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414zm6 0a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L14.586 10l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
         </button>
+      </div>
+
+      {/* Progress indicator */}
+      <div className="flex justify-center mt-4">
+        <div className="flex gap-1">
+          {Array.from({ length: totalScenes }, (_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                i === sceneIndex 
+                  ? 'bg-gray-800 scale-125' 
+                  : i < sceneIndex 
+                    ? 'bg-gray-400' 
+                    : 'bg-gray-200'
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -241,19 +257,10 @@ function SceneView({ scene, width, height }: { scene: Scene; width: number; heig
           <ActorView key={a.id} actor={a} w={width} h={height} duration={scene.duration_ms} />
         ))}
       {scene.caption && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 16,
-            left: 0,
-            right: 0,
-            textAlign: 'center',
-            color: 'white',
-            textShadow: '0 2px 4px rgba(0,0,0,.6)',
-            fontSize: 20
-          }}
-        >
-          {scene.caption}
+        <div className="absolute bottom-4 left-0 right-0 text-center text-white font-medium text-lg px-4">
+          <div className="inline-block bg-black/40 backdrop-blur-sm px-3 py-1 rounded-lg">
+            {scene.caption}
+          </div>
         </div>
       )}
     </div>
