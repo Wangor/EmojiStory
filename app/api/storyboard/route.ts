@@ -36,7 +36,7 @@ const ANIMATION_JSON_SCHEMA = {
                                             properties: {
                                                 x: { type: 'number' },
                                                 y: { type: 'number' },
-                                                scale: { type: 'number' }
+                                                scale: { type: 'number', minimum: 0 }
                                             },
                                             required: ['x', 'y', 'scale'],
                                             additionalProperties: false
@@ -51,7 +51,7 @@ const ANIMATION_JSON_SCHEMA = {
                                                     x: { type: 'number' },
                                                     y: { type: 'number' },
                                                     rotate: { type: 'number' },
-                                                    scale: { type: 'number' },
+                                                    scale: { type: 'number', minimum: 0 },
                                                     ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
                                                 },
                                                 required: ['t', 'x', 'y'],
@@ -84,7 +84,7 @@ const ANIMATION_JSON_SCHEMA = {
                                                       properties: {
                                                           x: { type: 'number' },
                                                           y: { type: 'number' },
-                                                          scale: { type: 'number' }
+                                                          scale: { type: 'number', minimum: 0 }
                                                       },
                                                       required: ['x', 'y', 'scale'],
                                                       additionalProperties: false
@@ -99,7 +99,7 @@ const ANIMATION_JSON_SCHEMA = {
                                                                 x: { type: 'number' },
                                                                 y: { type: 'number' },
                                                                 rotate: { type: 'number' },
-                                                                scale: { type: 'number' },
+                                                                scale: { type: 'number', minimum: 0 },
                                                                 ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
                                                             },
                                                             required: ['t', 'x', 'y'],
@@ -121,7 +121,7 @@ const ANIMATION_JSON_SCHEMA = {
                                               properties: {
                                                   x: { type: 'number' },
                                                   y: { type: 'number' },
-                                                  scale: { type: 'number' }
+                                                  scale: { type: 'number', minimum: 0 }
                                               },
                                               required: ['x', 'y', 'scale'],
                                               additionalProperties: false
@@ -136,7 +136,7 @@ const ANIMATION_JSON_SCHEMA = {
                                                     x: { type: 'number' },
                                                     y: { type: 'number' },
                                                     rotate: { type: 'number' },
-                                                    scale: { type: 'number' },
+                                                    scale: { type: 'number', minimum: 0 },
                                                     ease: { type: 'string', enum: ['linear', 'easeIn', 'easeOut', 'easeInOut'] }
                                                 },
                                                 required: ['t', 'x', 'y'],

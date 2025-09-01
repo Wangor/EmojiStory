@@ -11,7 +11,7 @@ export type EmojiActor = {
   id: string;
   type: 'emoji';
   emoji: string; // any Unicode emoji, e.g., "🐱"
-  start?: { x: number; y: number; scale: number };
+  start?: { x: number; y: number; scale: number }; // scale > 0 represents overall size
   flipX?: boolean; // mirror horizontally when true
   tracks: Keyframe[]; // must end at scene duration
   loop?: 'float' | 'none';
@@ -22,8 +22,8 @@ export type EmojiActor = {
 export type CompositeActor = {
   id: string;
   type: 'composite';
-  parts: EmojiActor[]; // grouped emoji parts with relative offsets and scale
-  start?: { x: number; y: number; scale: number };
+  parts: EmojiActor[]; // grouped emoji parts with relative offsets and per-part scale
+  start?: { x: number; y: number; scale: number }; // scale > 0 for group size
   flipX?: boolean; // mirror entire group when true
   tracks: Keyframe[];
   loop?: 'float' | 'none';
