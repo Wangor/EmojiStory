@@ -65,7 +65,7 @@ function MoviesContent() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-700 mb-3">No Movies Yet</h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              You haven't created any movies yet. Head back to the studio to create your first emoji movie!
+              You haven&#39;t created any movies yet. Head back to the studio to create your first emoji movie!
             </p>
             <a
               href="/"
