@@ -89,6 +89,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
             top,
             width: widthP,
             height: heightP,
+            display: 'flex',
             ...(comp.flipX ? { transform: 'scaleX(-1)' } : {}),
           }}
         >
@@ -152,6 +153,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
           width: '100%',
           height: '100%',
           background: '#fff',
+          display: 'flex',
         }}
       >
         {scene.backgroundActors.map((a) => renderActor(a))}
