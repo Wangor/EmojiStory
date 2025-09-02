@@ -6,10 +6,12 @@ import { Scene, Actor, Keyframe, TextActor } from './AnimationTypes';
 type SceneCanvasProps = {
   scene: Scene;
   fps: number;
+  width: number;
+  height: number;
   onSceneChange: (s: Scene) => void;
 };
 
-export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasProps) {
+export default function SceneCanvas({ scene, fps, width, height, onSceneChange }: SceneCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   // track the current frame rather than raw milliseconds to avoid floating
@@ -268,7 +270,11 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
           </button>
         </div>
       </div>
-      <div ref={containerRef} className="relative w-full h-64 border overflow-hidden">
+      <div
+        ref={containerRef}
+        className="relative w-full border overflow-hidden"
+        style={{ aspectRatio: `${width}/${height}` }}
+      >
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox={`0 0 ${size.w} ${size.h}`}

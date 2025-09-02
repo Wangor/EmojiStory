@@ -5,6 +5,9 @@ import { Animation, Scene, Actor, EmojiActor, TextActor, Keyframe } from './Anim
 import { EmojiPlayer } from './EmojiPlayer';
 import SceneCanvas from './SceneCanvas';
 
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 400;
+
 function uuid() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
@@ -81,7 +84,7 @@ export default function MovieEditor() {
       </div>
       <div className="md:w-1/2">
         {animation.scenes.length > 0 ? (
-          <EmojiPlayer animation={animation} width={600} height={400} />
+          <EmojiPlayer animation={animation} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} />
         ) : (
           <div className="w-full h-64 border-2 border-dashed flex items-center justify-center text-gray-400">
             No scenes yet
@@ -178,7 +181,13 @@ function SceneEditor({ scene, fps, onChange, onRemove }: SceneEditorProps) {
         />
       </div>
 
-      <SceneCanvas scene={scene} fps={fps} onSceneChange={onChange} />
+      <SceneCanvas
+        scene={scene}
+        fps={fps}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        onSceneChange={onChange}
+      />
 
       <div>
         <h4 className="font-medium">Background Actors</h4>
