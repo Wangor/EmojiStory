@@ -6,6 +6,7 @@ import { getMoviesByUser, likeMovie, getMovieLikes } from '../../lib/supabaseCli
 import type { Animation } from '../../components/AnimationTypes';
 import { EmojiPlayer } from '../../components/EmojiPlayer';
 import { MovieCard } from '../../components/MovieCard';
+import { ClipComments } from '../../components/ClipComments';
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<any[]>([]);
@@ -84,6 +85,7 @@ export default function MoviesPage() {
                 width={1000}
                 height={600}
               />
+              <ClipComments movieId={selected.id} movieOwnerId={selected.user_id} />
             </div>
           </div>
         </div>
