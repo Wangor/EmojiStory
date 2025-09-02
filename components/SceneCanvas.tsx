@@ -202,7 +202,8 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     const style: React.CSSProperties = {
       left: pose.x * 100 + '%',
       top: pose.y * 100 + '%',
-      transform: `translate(-50%, -50%) scale(${pose.scale})`
+      transform: `translate(-50%, -50%) scale(${pose.scale})`,
+      opacity: layer === 'actors' && isBg ? 0.5 : 1
     };
     const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
     return (
@@ -274,6 +275,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
           {allActors.map((a, i) => {
             const points = buildPath(a);
             if (!points) return null;
+            const isBg = i < (scene.backgroundActors as Actor[]).length;
             return (
               <polyline
                 key={a.id}
@@ -281,6 +283,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
                 fill="none"
                 stroke={colors[i % colors.length]}
                 strokeWidth={selected === a.id ? 2 : 1}
+                opacity={layer === 'actors' && isBg ? 0.5 : 1}
               />
             );
           })}
