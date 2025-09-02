@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { Scene, Actor, Keyframe, TextActor } from './AnimationTypes';
 
 type SceneCanvasProps = {
@@ -18,6 +18,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   const [currentFrame, setCurrentFrame] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [tool, setTool] = useState<'move' | 'scale'>('move');
+  const [layer, setLayer] = useState<'actors' | 'background'>('actors');
 
   const dragRef = useRef<{
     id: string;
@@ -93,7 +94,8 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   }
 
   function updateActor(id: string, kf: Keyframe) {
-    const actors = scene.actors.map((a) => {
+    const target = layer === 'actors' ? 'actors' : 'backgroundActors';
+    const actors = (scene[target] as Actor[]).map((a) => {
       if (a.id !== id) return a;
       let updated = upsert(a, kf);
       if (kf.t === 0) {
@@ -107,8 +109,12 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
       }
       return updated;
     });
-    onSceneChange({ ...scene, actors });
+    onSceneChange({ ...scene, [target]: actors } as Scene);
   }
+  const findActor = (id: string) => {
+    const list = layer === 'actors' ? scene.actors : scene.backgroundActors;
+    return list.find((a) => a.id === id)!;
+  };
 
   const handleMoveStart = (actorId: string, e: React.PointerEvent) => {
     if (!containerRef.current) return;
@@ -117,7 +123,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     setSelected(actorId);
     const rect = containerRef.current.getBoundingClientRect();
     const t = Math.round(currentFrame * frameMs);
-    const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
+    const pose = sample(findActor(actorId), t);
     const centerX = rect.left + pose.x * rect.width;
     const centerY = rect.top + pose.y * rect.height;
     const offsetX = e.clientX - centerX;
@@ -134,7 +140,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     const x = clamp01((e.clientX - rect.left - offsetX) / rect.width);
     const y = clamp01((e.clientY - rect.top - offsetY) / rect.height);
     const t = Math.round(currentFrame * frameMs);
-    const pose = sample(scene.actors.find((a) => a.id === id)!, t);
+    const pose = sample(findActor(id), t);
     updateActor(id, { t, x, y, scale: pose.scale });
   };
 
@@ -149,7 +155,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     e.stopPropagation();
     setSelected(actorId);
     const t = Math.round(currentFrame * frameMs);
-    const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
+    const pose = sample(findActor(actorId), t);
     scaleRef.current = {
       id: actorId,
       startScale: pose.scale,
@@ -186,29 +192,86 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
       .map((k) => `${(k as any).x * size.w},${(k as any).y * size.h}`);
     return pts.join(' ');
   }
+  useEffect(() => {
+    setSelected(null);
+  }, [layer]);
+
+  const renderActor = (a: Actor, isBg: boolean) => {
+    const t = Math.round(currentFrame * frameMs);
+    const pose = sample(a, t);
+    const style: React.CSSProperties = {
+      left: pose.x * 100 + '%',
+      top: pose.y * 100 + '%',
+      transform: `translate(-50%, -50%) scale(${pose.scale})`
+    };
+    const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
+    return (
+      <div
+        key={a.id}
+        onPointerDown={
+          interactive && tool === 'move'
+            ? (e) => handleMoveStart(a.id, e)
+            : () => interactive && setSelected(a.id)
+        }
+        className={`absolute select-none ${interactive && tool === 'move' ? 'cursor-move' : 'cursor-pointer'} ${selected === a.id ? 'ring-2 ring-blue-500' : ''}`}
+        style={style}
+      >
+        {a.type === 'emoji' && <span>{(a as any).emoji}</span>}
+        {a.type === 'text' && (
+          <span style={{ color: (a as TextActor).color, fontSize: (a as TextActor).fontSize }}>
+            {(a as TextActor).text}
+          </span>
+        )}
+        {interactive && selected === a.id && tool === 'scale' && (
+          <div
+            onPointerDown={(e) => handleScaleStart(e, a.id)}
+            className="absolute w-3 h-3 bg-white border border-blue-500 bottom-0 right-0 cursor-se-resize"
+          />
+        )}
+      </div>
+    );
+  };
+
+  const allActors: Actor[] = [...(scene.backgroundActors as Actor[]), ...scene.actors];
 
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
-        <button
-          className={`px-2 py-1 border ${tool === 'move' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-          onClick={() => setTool('move')}
-        >
-          Move
-        </button>
-        <button
-          className={`px-2 py-1 border ${tool === 'scale' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-          onClick={() => setTool('scale')}
-        >
-          Resize
-        </button>
+        <div className="flex gap-1">
+          <button
+            className={`px-2 py-1 border ${layer === 'actors' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            onClick={() => setLayer('actors')}
+          >
+            Actors
+          </button>
+          <button
+            className={`px-2 py-1 border ${layer === 'background' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            onClick={() => setLayer('background')}
+          >
+            Background
+          </button>
+        </div>
+        <div className="flex gap-1">
+          <button
+            className={`px-2 py-1 border ${tool === 'move' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            onClick={() => setTool('move')}
+          >
+            Move
+          </button>
+          <button
+            className={`px-2 py-1 border ${tool === 'scale' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            onClick={() => setTool('scale')}
+          >
+            Resize
+          </button>
+        </div>
       </div>
       <div ref={containerRef} className="relative w-full h-64 border overflow-hidden">
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox={`0 0 ${size.w} ${size.h}`}
         >
-          {scene.actors.map((a, i) => {
+          {allActors.map((a, i) => {
             const points = buildPath(a);
             if (!points) return null;
             return (
@@ -222,36 +285,8 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
             );
           })}
         </svg>
-        {scene.actors.map((a) => {
-          const t = Math.round(currentFrame * frameMs);
-          const pose = sample(a, t);
-          const style: React.CSSProperties = {
-            left: pose.x * 100 + '%',
-            top: pose.y * 100 + '%',
-            transform: `translate(-50%, -50%) scale(${pose.scale})`
-          };
-          return (
-            <div
-              key={a.id}
-              onPointerDown={tool === 'move' ? (e) => handleMoveStart(a.id, e) : () => setSelected(a.id)}
-              className={`absolute select-none ${tool === 'move' ? 'cursor-move' : 'cursor-pointer'} ${selected === a.id ? 'ring-2 ring-blue-500' : ''}`}
-              style={style}
-            >
-              {a.type === 'emoji' && <span>{(a as any).emoji}</span>}
-              {a.type === 'text' && (
-                <span style={{ color: (a as TextActor).color, fontSize: (a as TextActor).fontSize }}>
-                  {(a as TextActor).text}
-                </span>
-              )}
-              {selected === a.id && tool === 'scale' && (
-                <div
-                  onPointerDown={(e) => handleScaleStart(e, a.id)}
-                  className="absolute w-3 h-3 bg-white border border-blue-500 bottom-0 right-0 cursor-se-resize"
-                />
-              )}
-            </div>
-          );
-        })}
+        {scene.backgroundActors.map((a) => renderActor(a as Actor, true))}
+        {scene.actors.map((a) => renderActor(a, false))}
       </div>
       <input
         type="range"
