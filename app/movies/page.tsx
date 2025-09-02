@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Play, ArrowLeft, FilmSlate, Clock, Heart } from '@phosphor-icons/react';
-import { getMoviesByUser, likeMovie, getMovieLikes } from '../../lib/supabaseClient';
+import { getMoviesByUser, likeMovie, getMovieLikes, getMovieById } from '../../lib/supabaseClient';
 import type { Animation } from '../../components/AnimationTypes';
 import { EmojiPlayer } from '../../components/EmojiPlayer';
 import { MovieCard } from '../../components/MovieCard';
 import { ClipComments } from '../../components/ClipComments';
+import { ShareButton } from '../../components/ShareButton';
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<any[]>([]);
@@ -15,6 +17,8 @@ export default function MoviesPage() {
   const [loading, setLoading] = useState(true);
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
+  const params = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     getMoviesByUser()
@@ -22,6 +26,18 @@ export default function MoviesPage() {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const movieId = params.get('movie');
+    if (movieId) {
+      const existing = movies.find((m) => m.id === movieId);
+      if (existing) {
+        setSelected(existing);
+      } else {
+        getMovieById(movieId).then(setSelected).catch(console.error);
+      }
+    }
+  }, [movies, params]);
 
   useEffect(() => {
     if (selected) {
@@ -49,7 +65,10 @@ export default function MoviesPage() {
         <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Back Button */}
           <button
-            onClick={() => setSelected(null)}
+            onClick={() => {
+              setSelected(null);
+              router.replace('/movies');
+            }}
             className="group flex items-center gap-2 mb-6 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200"
           >
             <ArrowLeft weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
@@ -66,7 +85,7 @@ export default function MoviesPage() {
                 {selected.description}
               </p>
             )}
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex justify-center gap-2">
               <button
                 onClick={toggleLike}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${liked ? 'text-red-600 border-red-300 bg-red-50' : 'text-gray-600 border-gray-300'}`}
@@ -74,6 +93,7 @@ export default function MoviesPage() {
                 <Heart weight={liked ? 'fill' : 'regular'} />
                 <span>{likes}</span>
               </button>
+              <ShareButton movieId={selected.id} />
             </div>
           </div>
 
@@ -193,7 +213,10 @@ export default function MoviesPage() {
 
                     {/* Play Button - This stays at the bottom */}
                     <button
-                      onClick={() => setSelected(movie)}
+                      onClick={() => {
+                        setSelected(movie);
+                        router.replace(`/movies?movie=${movie.id}`);
+                      }}
                       className="group/play w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium mt-auto"
                     >
                       <div className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover/play:bg-white/30 transition-colors">

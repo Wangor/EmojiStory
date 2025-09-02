@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart } from '@phosphor-icons/react';
+import { ShareButton } from './ShareButton';
 import type {
   Animation,
   Scene,
@@ -191,13 +192,16 @@ export function MovieCard({
             <span className="truncate">@{movie.channels.name}</span>
           </Link>
         )}
-        <button
-          onClick={toggleLike}
-          className={`flex items-center gap-1 text-xs ${liked ? 'text-red-600' : 'text-gray-500'}`}
-        >
-          <Heart weight={liked ? 'fill' : 'regular'} size={14} />
-          <span>{likes}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleLike}
+            className={`flex items-center gap-1 text-xs ${liked ? 'text-red-600' : 'text-gray-500'}`}
+          >
+            <Heart weight={liked ? 'fill' : 'regular'} size={14} />
+            <span>{likes}</span>
+          </button>
+          <ShareButton movieId={movie.id} url={`/movies?movie=${movie.id}`} />
+        </div>
       </div>
     </div>
   );

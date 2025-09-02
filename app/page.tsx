@@ -3,6 +3,7 @@
 /* eslint-disable import/no-unresolved */
 import { FilmSlate, MagicWand, Play, Stop } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
 import { MovieCard } from '../components/MovieCard';
@@ -19,6 +20,7 @@ export default function Page() {
   const [user, setUser] = useState<any>(null);
   const [movies, setMovies] = useState<any[]>([]);
   const playerRef = useRef<{ play: () => void; stop: () => void } | null>(null);
+  const router = useRouter();
 
   const canPlay = !!animation && animation.scenes.length > 0;
   const wordCount = storyText.trim().split(/\s+/).filter(word => word.length > 0).length;
@@ -193,10 +195,9 @@ export default function Page() {
                 <div
                   key={m.id}
                   onClick={(e) => {
-                    // Only set animation if the click wasn't on the channel link
                     const target = e.target as HTMLElement;
-                    if (!target.closest('a')) {
-                      setAnimation(m.animation as Animation);
+                    if (!target.closest('a,button')) {
+                      router.push(`/movies?movie=${m.id}`);
                     }
                   }}
                   className="cursor-pointer"
