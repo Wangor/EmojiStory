@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ShareNetwork } from '@phosphor-icons/react';
 import { trackShare } from '../lib/analytics';
 
@@ -18,7 +18,8 @@ export function ShareButton({ movieId, url }: ShareButtonProps) {
     return absolute;
   };
 
-  const handleShare = async () => {
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     const shareUrl = getUrl();
     try {
       if (navigator.share) {
