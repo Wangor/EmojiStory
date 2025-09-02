@@ -5,8 +5,9 @@ import { Animation, Scene, Actor, EmojiActor, TextActor, Keyframe } from './Anim
 import { EmojiPlayer } from './EmojiPlayer';
 import SceneCanvas from './SceneCanvas';
 
-const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 400;
+// Keep editor canvas and player in sync by sharing the same aspect ratio
+const CANVAS_WIDTH = 480;
+const CANVAS_HEIGHT = 270;
 
 function uuid() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto

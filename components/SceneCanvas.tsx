@@ -201,12 +201,21 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
   const renderActor = (a: Actor, isBg: boolean) => {
     const t = Math.round(currentFrame * frameMs);
     const pose = sample(a, t);
+
+    // Calculate base font size to match EmojiPlayer
+    const baseFontSize = a.type === 'emoji'
+      ? Math.round(48 * (a.start?.scale ?? 1))
+      : a.type === 'text' && (a as any).fontSize
+        ? (a as any).fontSize
+        : Math.round(32 * (a.start?.scale ?? 1));
+
     const style: React.CSSProperties = {
       left: pose.x * 100 + '%',
       top: pose.y * 100 + '%',
-      transform: `scale(${pose.scale})`,
-      transformOrigin: 'top left',
-      opacity: layer === 'actors' && isBg ? 0.5 : 1
+      transform: `translate(-50%, -50%) scale(${pose.scale})`,
+      transformOrigin: 'center center',
+      opacity: layer === 'actors' && isBg ? 0.5 : 1,
+      fontSize: baseFontSize
     };
     const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
     return (
@@ -222,7 +231,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
       >
         {a.type === 'emoji' && <span>{(a as any).emoji}</span>}
         {a.type === 'text' && (
-          <span style={{ color: (a as TextActor).color, fontSize: (a as TextActor).fontSize }}>
+          <span style={{ color: (a as TextActor).color }}>
             {(a as TextActor).text}
           </span>
         )}
@@ -313,4 +322,3 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
     </div>
   );
 }
-

@@ -53,15 +53,42 @@ function sampleAt(times: number[], values: number[], p: number) {
   return values[values.length - 1];
 }
 
+// Simple demo animation used when no animation is supplied
+export const SAMPLE_ANIMATION: Animation = {
+  title: 'Sample Movie',
+  description: 'Demo animation',
+  fps: 30,
+  scenes: [
+    {
+      id: 'sample-scene',
+      duration_ms: 3000,
+      backgroundActors: [],
+      actors: [
+        {
+          id: 'sample-actor',
+          type: 'emoji',
+          emoji: '🎬',
+          start: { x: 0.1, y: 0.1, scale: 1 },
+          tracks: [
+            { t: 0, x: 0.1, y: 0.1 },
+            { t: 1500, x: 0.8, y: 0.3 },
+            { t: 3000, x: 0.2, y: 0.8 }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
 export const EmojiPlayer = forwardRef(function EmojiPlayer(
   {
-    animation,
+    animation = SAMPLE_ANIMATION,
     width,
     height,
     onPlayChange,
     loop = true // auto-loop by default
   }: {
-    animation: Animation;
+    animation?: Animation;
     width: number;
     height: number;
     onPlayChange?: (p: boolean) => void;
@@ -376,8 +403,8 @@ function SceneView({
 
 function ActorView({
   actor,
-  w,
-  h,
+  w: _w,
+  h: _h,
   duration,
   progress
 }: {
@@ -401,8 +428,8 @@ function ActorView({
     .sort((a, b) => a.t - b.t);
 
   const times = frames.map((k) => k.t / Math.max(1, duration));
-  const xVals = frames.map((k) => k.x * w);
-  const yVals = frames.map((k) => k.y * h);
+  const xVals = frames.map((k) => k.x * 100);
+  const yVals = frames.map((k) => k.y * 100);
   const rotateVals = frames.map((k) => k.rotate ?? 0);
   const scaleVals = frames.map((k) => k.scale ?? actor.start?.scale ?? 1);
 
@@ -419,11 +446,11 @@ function ActorView({
         aria-label={actor.ariaLabel ?? actor.emoji}
         style={{
           position: 'absolute',
-          left: x,
-          top: y,
+          left: `${x}%`,
+          top: `${y}%`,
           fontSize: size,
-          transformOrigin: 'top left',
-          transform: `rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'center center',
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span style={{ display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}>
@@ -439,10 +466,10 @@ function ActorView({
       <span
         style={{
           position: 'absolute',
-          left: x,
-          top: y,
-          transformOrigin: 'top left',
-          transform: `rotate(${rotate}deg) scale(${scale})`,
+          left: `${x}%`,
+          top: `${y}%`,
+          transformOrigin: 'center center',
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`,
           color: actor.color ?? 'white',
           fontSize: size,
           whiteSpace: 'pre'
@@ -487,13 +514,13 @@ function ActorView({
         aria-label={actor.ariaLabel ?? 'composite'}
         style={{
           position: 'absolute',
-          left: x,
-          top: y,
+          left: `${x}%`,
+          top: `${y}%`,
           width,
           height,
           display: 'inline-block',
-          transformOrigin: 'top left',
-          transform: `rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'center center',
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span
@@ -519,7 +546,7 @@ function ActorView({
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
-                  transformOrigin: 'top left'
+                  transformOrigin: 'center center'
                 }}
               >
                 <span style={{ display: 'inline-block', transform: p.flipX ? 'scaleX(-1)' : undefined }}>
