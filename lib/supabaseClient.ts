@@ -155,6 +155,47 @@ export async function searchMovies(query: string) {
   return data;
 }
 
+export async function likeMovie(movieId: string) {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: existing, error: selectError } = await supabase
+    .from('likes')
+    .select('*')
+    .eq('movie_id', movieId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (selectError) throw selectError;
+
+  if (existing) {
+    const { error } = await supabase
+      .from('likes')
+      .delete()
+      .eq('movie_id', movieId)
+      .eq('user_id', user.id);
+    if (error) throw error;
+    return { liked: false };
+  }
+
+  const { error } = await supabase
+    .from('likes')
+    .insert({ movie_id: movieId, user_id: user.id });
+  if (error) throw error;
+  return { liked: true };
+}
+
+export async function getMovieLikes(movieId: string) {
+  const user = await getUser();
+  const { data, error } = await supabase
+    .from('likes')
+    .select('user_id')
+    .eq('movie_id', movieId);
+  if (error) throw error;
+  const count = data.length;
+  const liked = !!user && data.some((l) => l.user_id === user.id);
+  return { count, liked };
+}
+
 export async function getChannel() {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');

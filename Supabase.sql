@@ -28,6 +28,25 @@ alter table public.movies
 
 update public.movies set description = coalesce(description, '');
 
+-- Likes table for tracking movie likes
+create table if not exists public.likes (
+  movie_id uuid references public.movies(id) on delete cascade,
+  user_id uuid references auth.users(id),
+  created_at timestamptz default now(),
+  primary key (movie_id, user_id)
+);
+
+alter table public.likes enable row level security;
+
+create policy "Public read access" on public.likes
+  for select using (true);
+
+create policy "Users can insert their own likes" on public.likes
+  for insert with check (auth.uid() = user_id);
+
+create policy "Users can delete their own likes" on public.likes
+  for delete using (auth.uid() = user_id);
+
 -- Channels table for user profiles
 create table if not exists public.channels (
   id uuid primary key default gen_random_uuid(),
