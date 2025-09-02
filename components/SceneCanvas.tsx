@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
-import { ArrowsOutCardinalIcon, ResizeIcon, UserIcon, MountainsIcon, ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { Scene, Actor, Keyframe, TextActor } from './AnimationTypes';
 
+import SceneCanvasToolbar from './SceneCanvasToolbar';
+
+import SceneCanvasActorInfo from './SceneCanvasActorInfo';
 type SceneCanvasProps = {
     scene: Scene;
     fps: number;
@@ -336,70 +338,8 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
     return (
         <div className="space-y-4">
             {/* Controls */}
-            <div className="flex justify-between items-center">
-                <div className="flex gap-2">
-                    <div className="flex bg-gray-100 rounded-lg p-1">
-                        <button
-                            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                                layer === 'actors'
-                                    ? 'bg-white text-blue-600 shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
-                            }`}
-                            onClick={() => setLayer('actors')}
-                        >
-                            <UserIcon size={14} />
-                            Actors
-                        </button>
-                        <button
-                            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                                layer === 'background'
-                                    ? 'bg-white text-green-600 shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
-                            }`}
-                            onClick={() => setLayer('background')}
-                        >
-                            <MountainsIcon size={14} />
-                            Background
-                        </button>
-                    </div>
-                </div>
+            <SceneCanvasToolbar layer={layer} setLayer={setLayer} tool={tool} setTool={setTool} />
 
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                    <button
-                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                            tool === 'move'
-                                ? 'bg-white text-blue-600 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                        onClick={() => setTool('move')}
-                    >
-                        <ArrowsOutCardinalIcon size={14} />
-                        Move
-                    </button>
-                    <button
-                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                            tool === 'scale'
-                                ? 'bg-white text-blue-600 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                        onClick={() => setTool('scale')}
-                    >
-                        <ResizeIcon size={14} />
-                        Scale
-                    </button>
-                    <button
-                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                            tool === 'rotate'
-                                ? 'bg-white text-green-600 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                        onClick={() => setTool('rotate')}
-                    >
-                        <ArrowsClockwiseIcon size={14} />
-                        Rotate
-                    </button>
-                </div>
-            </div>
 
             {/* Frame Control */}
             <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
@@ -466,46 +406,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
 
             {/* Actor Info */}
             {selected && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                                <UserIcon size={12} className="text-blue-600" />
-                            </div>
-                            <span className="font-medium text-blue-900">
-                Selected: {findActor(selected).type}
-              </span>
-                        </div>
-                        <div className="text-sm text-blue-700">
-                            Frame {currentFrame} ({Math.round(currentFrame * frameMs)}ms)
-                        </div>
-                    </div>
-                    {(() => {
-                        const actor = findActor(selected);
-                        const t = Math.round(currentFrame * frameMs);
-                        const pose = sample(actor, t);
-                        return (
-                            <div className="mt-2 grid grid-cols-4 gap-3 text-xs">
-                                <div>
-                                    <span className="text-blue-600 font-medium">X:</span>
-                                    <span className="text-blue-800 ml-1">{pose.x.toFixed(2)}</span>
-                                </div>
-                                <div>
-                                    <span className="text-blue-600 font-medium">Y:</span>
-                                    <span className="text-blue-800 ml-1">{pose.y.toFixed(2)}</span>
-                                </div>
-                                <div>
-                                    <span className="text-blue-600 font-medium">Scale:</span>
-                                    <span className="text-blue-800 ml-1">{pose.scale.toFixed(2)}</span>
-                                </div>
-                                <div>
-                                    <span className="text-blue-600 font-medium">Rotate:</span>
-                                    <span className="text-blue-800 ml-1">{pose.rotate.toFixed(1)}°</span>
-                                </div>
-                            </div>
-                        );
-                    })()}
-                </div>
+                <SceneCanvasActorInfo actor={findActor(selected)} currentFrame={currentFrame} frameMs={frameMs} sample={sample} />
             )}
         </div>
     );
