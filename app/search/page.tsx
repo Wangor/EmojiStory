@@ -1,11 +1,11 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { searchMovies } from '../../lib/supabaseClient';
 import { MovieCard } from '../../components/MovieCard';
 
-export default function SearchPage() {
+function SearchContent() {
   const params = useSearchParams();
   const query = params.get('q') ?? '';
   const [movies, setMovies] = useState<any[]>([]);
@@ -49,3 +49,17 @@ export default function SearchPage() {
   );
 }
 
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <h1 className="text-3xl font-bold mb-6">Search Results</h1>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
+  );
+}

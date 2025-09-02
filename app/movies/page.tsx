@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Play, ArrowLeft, FilmSlate, Clock, Heart } from '@phosphor-icons/react';
 import { getMoviesByUser, likeMovie, getMovieLikes, getMovieById } from '../../lib/supabaseClient';
@@ -10,7 +10,7 @@ import { MovieCard } from '../../components/MovieCard';
 import { ClipComments } from '../../components/ClipComments';
 import { ShareButton } from '../../components/ShareButton';
 
-export default function MoviesPage() {
+function MoviesContent() {
   const [movies, setMovies] = useState<any[]>([]);
   const [selected, setSelected] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -245,5 +245,27 @@ export default function MoviesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MoviesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                <FilmSlate weight="bold" size={36} className="text-white" />
+              </div>
+              My Movie Collection
+            </h1>
+            <p className="text-gray-600 text-lg">Loading your movies...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <MoviesContent />
+    </Suspense>
   );
 }

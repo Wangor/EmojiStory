@@ -424,7 +424,7 @@ function ActorView({
     },
     ...actor.tracks
   ]
-    .filter(Boolean)
+    .filter((frame): frame is NonNullable<typeof frame> => Boolean(frame))
     .sort((a, b) => a.t - b.t);
 
   const times = frames.map((k) => k.t / Math.max(1, duration));
