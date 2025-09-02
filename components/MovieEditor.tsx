@@ -21,7 +21,8 @@ import {
     TextTIcon,
     PaletteIcon,
     HashIcon,
-    MountainsIcon
+    MountainsIcon,
+    ArrowsClockwiseIcon
 } from '@phosphor-icons/react';
 import { Animation, Scene, Actor, EmojiActor, TextActor, Keyframe } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
@@ -259,7 +260,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
             type: 'emoji',
             emoji: '😀',
             start: { x: 0.5, y: 0.5, scale: 1 },
-            tracks: [{ t: 0, x: 0.5, y: 0.5 }]
+            tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
         };
         update({ actors: [...scene.actors, actor] });
     };
@@ -270,7 +271,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
             type: 'text',
             text: 'Hello World',
             start: { x: 0.5, y: 0.5, scale: 1 },
-            tracks: [{ t: 0, x: 0.5, y: 0.5 }]
+            tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
         };
         update({ actors: [...scene.actors, actor] });
     };
@@ -293,7 +294,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
             type: 'emoji',
             emoji: '🌄',
             start: { x: 0.5, y: 0.5, scale: 1 },
-            tracks: [{ t: 0, x: 0.5, y: 0.5 }]
+            tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
         };
         update({ backgroundActors: [...scene.backgroundActors, actor] });
     };
@@ -526,7 +527,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
     };
 
     const addKeyframe = () => {
-        const tracks = [...actor.tracks, { t: 500, x: 0.5, y: 0.5 }];
+        const tracks = [...actor.tracks, { t: 500, x: 0.5, y: 0.5, rotate: 0 }];
         update({ tracks });
     };
 
@@ -544,7 +545,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                 type: 'emoji',
                 emoji: '😀',
                 start: { x: 0.5, y: 0.5, scale: 1 },
-                tracks: [{ t: 0, x: 0.5, y: 0.5 }]
+                tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
             };
             onChange(a);
         } else if (t === 'text') {
@@ -553,7 +554,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                 type: 'text',
                 text: 'Hello World',
                 start: { x: 0.5, y: 0.5, scale: 1 },
-                tracks: [{ t: 0, x: 0.5, y: 0.5 }]
+                tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
             };
             onChange(a);
         }
@@ -692,9 +693,9 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                         <div>
                             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
                                 <ArrowsOutCardinalIcon size={14} />
-                                Starting Position
+                                Starting Position & Rotation
                             </label>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-4 gap-3">
                                 <div>
                                     <label className="block text-xs text-gray-600 mb-1">X Position</label>
                                     <input
@@ -725,11 +726,21 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                                         onChange={(e) => updateStart('scale', Number(e.target.value))}
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-xs text-gray-600 mb-1">Rotation (deg)</label>
+                                    <input
+                                        type="number"
+                                        step="1"
+                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        value="0"
+                                        placeholder="0"
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <div>
-                            <div className="flex justify-between items-center mb-3">
+                            <div className="flex items-center justify-between mb-3">
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                                     <ClockIcon size={14} />
                                     Animation Keyframes
@@ -742,66 +753,82 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                                     Add Keyframe
                                 </button>
                             </div>
-
-                            {actor.tracks.length > 0 && (
-                                <div className="space-y-2">
-                                    <div className="grid grid-cols-5 gap-2 text-xs text-gray-600 font-medium px-2">
-                                        <div>Time (ms)</div>
-                                        <div>X</div>
-                                        <div>Y</div>
-                                        <div>Scale</div>
-                                        <div></div>
-                                    </div>
-                                    {actor.tracks.map((k, i) => (
-                                        <div key={i} className="grid grid-cols-5 gap-2 items-center p-2 bg-white rounded-md border border-gray-200">
-                                            <input
-                                                type="number"
-                                                className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                value={k.t}
-                                                onChange={(e) => updateTrack(i, 't', Number(e.target.value))}
-                                            />
-                                            <input
-                                                type="number"
-                                                step="0.1"
-                                                className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                value={k.x}
-                                                onChange={(e) => updateTrack(i, 'x', Number(e.target.value))}
-                                            />
-                                            <input
-                                                type="number"
-                                                step="0.1"
-                                                className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                value={k.y}
-                                                onChange={(e) => updateTrack(i, 'y', Number(e.target.value))}
-                                            />
-                                            <input
-                                                type="number"
-                                                step="0.1"
-                                                className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                value={k.scale ?? ''}
-                                                placeholder="1"
-                                                onChange={(e) => updateTrack(i, 'scale', Number(e.target.value))}
-                                            />
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                                {actor.tracks.map((track, idx) => (
+                                    <div key={idx} className="border border-gray-200 rounded-md p-3 bg-white">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-xs font-medium text-gray-600">
+                                                Keyframe {idx + 1} - {track.t}ms
+                                            </span>
                                             <button
-                                                className="inline-flex items-center justify-center w-6 h-6 text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                onClick={() => removeKeyframe(i)}
+                                                className="text-xs text-red-600 hover:text-red-700"
+                                                onClick={() => removeKeyframe(idx)}
                                             >
                                                 <TrashIcon size={12} />
                                             </button>
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {actor.tracks.length === 0 && (
-                                <div className="text-center py-6 bg-white rounded-lg border-2 border-dashed border-gray-200">
-                                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-                                        <ClockIcon size={14} className="text-gray-400" />
+                                        <div className="grid grid-cols-5 gap-2">
+                                            <div>
+                                                <label className="block text-xs text-gray-600 mb-1">Time (ms)</label>
+                                                <input
+                                                    type="number"
+                                                    className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                    value={track.t}
+                                                    onChange={(e) => updateTrack(idx, 't', Number(e.target.value))}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-600 mb-1">X</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.1"
+                                                    className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                    value={track.x}
+                                                    onChange={(e) => updateTrack(idx, 'x', Number(e.target.value))}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-600 mb-1">Y</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.1"
+                                                    className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                    value={track.y}
+                                                    onChange={(e) => updateTrack(idx, 'y', Number(e.target.value))}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-600 mb-1">Scale</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.1"
+                                                    className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                    value={track.scale ?? 1}
+                                                    onChange={(e) => updateTrack(idx, 'scale', Number(e.target.value))}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-600 mb-1">
+                                                    <ArrowsClockwiseIcon size={10} className="inline mr-1" />
+                                                    Rotate (deg)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    step="1"
+                                                    className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                    value={track.rotate ?? 0}
+                                                    onChange={(e) => updateTrack(idx, 'rotate', Number(e.target.value))}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="text-gray-500 text-sm font-medium">No keyframes yet</p>
-                                    <p className="text-gray-400 text-xs mt-1">Add keyframes to animate this actor</p>
-                                </div>
-                            )}
+                                ))}
+                                {actor.tracks.length === 0 && (
+                                    <div className="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-md">
+                                        No keyframes yet. Add one to animate this actor.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
