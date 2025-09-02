@@ -200,7 +200,7 @@ export function MovieCard({
             <HeartIcon weight={liked ? 'fill' : 'regular'} size={14} />
             <span>{likes}</span>
           </button>
-          <ShareButton movieId={movie.id} url={`/movies?movie=${movie.id}`} />
+          <ShareButton movieId={movie.id} url={`/movies/${movie.id}`} />
         </div>
       </div>
     </div>

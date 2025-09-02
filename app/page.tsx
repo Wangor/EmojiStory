@@ -197,7 +197,7 @@ export default function Page() {
                   onClick={(e) => {
                     const target = e.target as HTMLElement;
                     if (!target.closest('a,button')) {
-                      router.push(`/movies?movie=${m.id}`);
+                      router.push(`/movies/${m.id}`);
                     }
                   }}
                   className="cursor-pointer"
