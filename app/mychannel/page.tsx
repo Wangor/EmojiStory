@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Camera, User, FileText, Check,  WarningCircleIcon} from '@phosphor-icons/react';
+import { CameraIcon, UserIcon, FileTextIcon, CheckIcon,  WarningCircleIcon} from '@phosphor-icons/react';
 import { getChannel, upsertChannel } from '../../lib/supabaseClient';
 
 export default function ChannelPage() {
@@ -46,7 +46,7 @@ export default function ChannelPage() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl shadow-lg mb-4">
-                        <User weight="bold" size={28} className="text-white" />
+                        <UserIcon weight="bold" size={28} className="text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Channel Settings</h1>
                     <p className="text-gray-600">Customize your channel profile and information</p>
@@ -68,7 +68,7 @@ export default function ChannelPage() {
 
                         {message && (
                             <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
-                                <Check size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
+                                <CheckIcon size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
                                 <div>
                                     <h3 className="font-semibold text-green-800 text-sm">Success</h3>
                                     <p className="text-green-700 text-sm mt-1">{message}</p>
@@ -87,11 +87,11 @@ export default function ChannelPage() {
                                     />
                                 ) : (
                                     <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
-                                        <Camera size={24} className="text-gray-500" />
+                                        <CameraIcon size={24} className="text-gray-500" />
                                     </div>
                                 )}
                                 <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors duration-200">
-                                    <Camera size={16} className="text-white" />
+                                    <CameraIcon size={16} className="text-white" />
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -106,7 +106,7 @@ export default function ChannelPage() {
                         {/* Channel Name */}
                         <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                <User size={16} />
+                                <UserIcon size={16} />
                                 Channel Name
                             </label>
                             <input
@@ -122,7 +122,7 @@ export default function ChannelPage() {
                         {/* Description */}
                         <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                <FileText size={16} />
+                                <FileTextIcon size={16} />
                                 Description
                             </label>
                             <textarea
@@ -151,7 +151,7 @@ export default function ChannelPage() {
                                     </>
                                 ) : (
                                     <>
-                                        <Check size={20} />
+                                        <CheckIcon size={20} />
                                         Save Channel
                                     </>
                                 )}
@@ -163,7 +163,7 @@ export default function ChannelPage() {
                 {/* Tips Card */}
                 <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-6">
                     <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                        <User size={16} />
+                        <UserIcon size={16} />
                         Channel Tips
                     </h3>
                     <ul className="text-sm text-blue-800 space-y-2">

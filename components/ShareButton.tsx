@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShareNetwork } from '@phosphor-icons/react';
+import { ShareNetworkIcon } from '@phosphor-icons/react';
 import { trackShare } from '../lib/analytics';
 
 interface ShareButtonProps {
@@ -41,7 +41,7 @@ export function ShareButton({ movieId, url }: ShareButtonProps) {
       className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
       title="Share"
     >
-      <ShareNetwork size={14} />
+      <ShareNetworkIcon size={14} />
       <span>{copied ? 'Copied!' : 'Share'}</span>
     </button>
   );

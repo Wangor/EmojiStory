@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Play, ArrowLeft, FilmSlate, Clock, Heart } from '@phosphor-icons/react';
+import { PlayIcon, ArrowLeftIcon, FilmSlateIcon, ClockIcon, HeartIcon } from '@phosphor-icons/react';
 import { getMoviesByUser, likeMovie, getMovieLikes, getMovieById } from '../../lib/supabaseClient';
 import type { Animation } from '../../components/AnimationTypes';
 import { EmojiPlayer } from '../../components/EmojiPlayer';
@@ -71,7 +71,7 @@ function MoviesContent() {
             }}
             className="group flex items-center gap-2 mb-6 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200"
           >
-            <ArrowLeft weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
+            <ArrowLeftIcon weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
             Back to Movies
           </button>
 
@@ -90,7 +90,7 @@ function MoviesContent() {
                 onClick={toggleLike}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${liked ? 'text-red-600 border-red-300 bg-red-50' : 'text-gray-600 border-gray-300'}`}
               >
-                <Heart weight={liked ? 'fill' : 'regular'} />
+                <HeartIcon weight={liked ? 'fill' : 'regular'} />
                 <span>{likes}</span>
               </button>
               <ShareButton movieId={selected.id} />
@@ -120,7 +120,7 @@ function MoviesContent() {
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-2">
             <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-              <FilmSlate weight="bold" size={36} className="text-white" />
+              <FilmSlateIcon weight="bold" size={36} className="text-white" />
             </div>
             My Movie Collection
           </h1>
@@ -156,7 +156,7 @@ function MoviesContent() {
         {!loading && movies.length === 0 && !error && (
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 opacity-30">
-              <FilmSlate weight="light" size={96} className="text-gray-400" />
+              <FilmSlateIcon weight="light" size={96} className="text-gray-400" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-700 mb-3">No Movies Yet</h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
@@ -166,7 +166,7 @@ function MoviesContent() {
               href="/"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
             >
-              <FilmSlate weight="bold" size={20} />
+              <FilmSlateIcon weight="bold" size={20} />
               Go to Studio
             </a>
           </div>
@@ -196,7 +196,7 @@ function MoviesContent() {
                   <div className="px-4 pb-4 flex-1 flex flex-col">
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                       <span className="flex items-center gap-1">
-                        <Clock size={12} />
+                        <ClockIcon size={12} />
                         {movie.animation?.scenes?.length || 0} scenes
                       </span>
                       {movie.created_at && (
@@ -220,7 +220,7 @@ function MoviesContent() {
                       className="group/play w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium mt-auto"
                     >
                       <div className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover/play:bg-white/30 transition-colors">
-                        <Play weight="fill" size={12} className="text-white ml-0.5" />
+                        <PlayIcon weight="fill" size={12} className="text-white ml-0.5" />
                       </div>
                       Watch Movie
                     </button>
@@ -238,7 +238,7 @@ function MoviesContent() {
               href="/"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
             >
-              <FilmSlate weight="bold" size={20} />
+              <FilmSlateIcon weight="bold" size={20} />
               Create New Movie
             </a>
           </div>
@@ -256,7 +256,7 @@ export default function MoviesPage() {
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-2">
               <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-                <FilmSlate weight="bold" size={36} className="text-white" />
+                <FilmSlateIcon weight="bold" size={36} className="text-white" />
               </div>
               My Movie Collection
             </h1>
