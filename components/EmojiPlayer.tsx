@@ -387,11 +387,24 @@ function ActorView({
   duration: number;
   progress: number;
 }) {
-  const times = actor.tracks.map((k) => k.t / Math.max(1, duration));
-  const xVals = actor.tracks.map((k) => k.x * w);
-  const yVals = actor.tracks.map((k) => k.y * h);
-  const rotateVals = actor.tracks.map((k) => k.rotate ?? 0);
-  const scaleVals = actor.tracks.map((k) => k.scale ?? actor.start?.scale ?? 1);
+  const frames = [
+    actor.start && {
+      t: 0,
+      x: actor.start.x,
+      y: actor.start.y,
+      rotate: 0,
+      scale: actor.start.scale
+    },
+    ...actor.tracks
+  ]
+    .filter(Boolean)
+    .sort((a, b) => a.t - b.t);
+
+  const times = frames.map((k) => k.t / Math.max(1, duration));
+  const xVals = frames.map((k) => k.x * w);
+  const yVals = frames.map((k) => k.y * h);
+  const rotateVals = frames.map((k) => k.rotate ?? 0);
+  const scaleVals = frames.map((k) => k.scale ?? actor.start?.scale ?? 1);
 
   const x = sampleAt(times, xVals, progress);
   const y = sampleAt(times, yVals, progress);
@@ -406,14 +419,36 @@ function ActorView({
         aria-label={actor.ariaLabel ?? actor.emoji}
         style={{
           position: 'absolute',
+          left: x,
+          top: y,
           fontSize: size,
-          transformOrigin: 'center center',
-          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'top left',
+          transform: `rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span style={{ display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}>
           {actor.emoji}
         </span>
+      </span>
+    );
+    return wrapWithEffects(node, actor.effects, 'span');
+  }
+  if (actor.type === 'text') {
+    const size = actor.fontSize ?? Math.round(32 * (actor.start?.scale ?? 1));
+    const node = (
+      <span
+        style={{
+          position: 'absolute',
+          left: x,
+          top: y,
+          transformOrigin: 'top left',
+          transform: `rotate(${rotate}deg) scale(${scale})`,
+          color: actor.color ?? 'white',
+          fontSize: size,
+          whiteSpace: 'pre'
+        }}
+      >
+        {actor.text}
       </span>
     );
     return wrapWithEffects(node, actor.effects, 'span');
@@ -452,11 +487,13 @@ function ActorView({
         aria-label={actor.ariaLabel ?? 'composite'}
         style={{
           position: 'absolute',
+          left: x,
+          top: y,
           width,
           height,
           display: 'inline-block',
-          transformOrigin: 'center center',
-          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'top left',
+          transform: `rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span
@@ -482,7 +519,7 @@ function ActorView({
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
-                  transformOrigin: 'center center'
+                  transformOrigin: 'top left'
                 }}
               >
                 <span style={{ display: 'inline-block', transform: p.flipX ? 'scaleX(-1)' : undefined }}>
