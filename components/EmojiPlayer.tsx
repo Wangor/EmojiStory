@@ -387,11 +387,24 @@ function ActorView({
   duration: number;
   progress: number;
 }) {
-  const times = actor.tracks.map((k) => k.t / Math.max(1, duration));
-  const xVals = actor.tracks.map((k) => k.x * w);
-  const yVals = actor.tracks.map((k) => k.y * h);
-  const rotateVals = actor.tracks.map((k) => k.rotate ?? 0);
-  const scaleVals = actor.tracks.map((k) => k.scale ?? actor.start?.scale ?? 1);
+  const frames = [
+    actor.start && {
+      t: 0,
+      x: actor.start.x,
+      y: actor.start.y,
+      rotate: 0,
+      scale: actor.start.scale
+    },
+    ...actor.tracks
+  ]
+    .filter(Boolean)
+    .sort((a, b) => a.t - b.t);
+
+  const times = frames.map((k) => k.t / Math.max(1, duration));
+  const xVals = frames.map((k) => k.x * w);
+  const yVals = frames.map((k) => k.y * h);
+  const rotateVals = frames.map((k) => k.rotate ?? 0);
+  const scaleVals = frames.map((k) => k.scale ?? actor.start?.scale ?? 1);
 
   const x = sampleAt(times, xVals, progress);
   const y = sampleAt(times, yVals, progress);
