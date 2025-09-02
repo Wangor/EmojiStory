@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Scene, Actor, Keyframe, TextActor } from './AnimationTypes';
 
 type SceneCanvasProps = {
@@ -22,8 +21,6 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
 
   const dragRef = useRef<{
     id: string;
-    startX: number;
-    startY: number;
     offsetX: number;
     offsetY: number;
   } | null>(null);
@@ -113,29 +110,42 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     onSceneChange({ ...scene, actors });
   }
 
-  const handleDragStart = (actorId: string, event: any) => {
+  const handleMoveStart = (actorId: string, e: React.PointerEvent) => {
+    if (!containerRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
     setSelected(actorId);
+    const rect = containerRef.current.getBoundingClientRect();
     const t = Math.round(currentFrame * frameMs);
     const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
-    const targetRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const offsetX = event.clientX - (targetRect.left + targetRect.width / 2);
-    const offsetY = event.clientY - (targetRect.top + targetRect.height / 2);
-    dragRef.current = { id: actorId, startX: pose.x, startY: pose.y, offsetX, offsetY };
+    const centerX = rect.left + pose.x * rect.width;
+    const centerY = rect.top + pose.y * rect.height;
+    const offsetX = e.clientX - centerX;
+    const offsetY = e.clientY - centerY;
+    dragRef.current = { id: actorId, offsetX, offsetY };
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleMoveEnd);
   };
 
-  const handleDragEnd = (actorId: string, info: any) => {
-    if (!containerRef.current || !dragRef.current) return;
+  const handleMove = (e: PointerEvent) => {
+    if (!dragRef.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const start = dragRef.current;
-    const x = clamp01((info.point.x - rect.left - start.offsetX) / rect.width);
-    const y = clamp01((info.point.y - rect.top - start.offsetY) / rect.height);
+    const { id, offsetX, offsetY } = dragRef.current;
+    const x = clamp01((e.clientX - rect.left - offsetX) / rect.width);
+    const y = clamp01((e.clientY - rect.top - offsetY) / rect.height);
     const t = Math.round(currentFrame * frameMs);
-    const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
-    updateActor(actorId, { t, x, y, scale: pose.scale });
+    const pose = sample(scene.actors.find((a) => a.id === id)!, t);
+    updateActor(id, { t, x, y, scale: pose.scale });
+  };
+
+  const handleMoveEnd = () => {
     dragRef.current = null;
+    window.removeEventListener('pointermove', handleMove);
+    window.removeEventListener('pointerup', handleMoveEnd);
   };
 
   const handleScaleStart = (e: React.PointerEvent, actorId: string) => {
+    e.preventDefault();
     e.stopPropagation();
     setSelected(actorId);
     const t = Math.round(currentFrame * frameMs);
@@ -218,14 +228,9 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
             transform: `translate(-50%, -50%) scale(${pose.scale})`
           };
           return (
-            <motion.div
+            <div
               key={a.id}
-              drag={tool === 'move'}
-              dragMomentum={false}
-              dragConstraints={containerRef}
-              onDragStart={tool === 'move' ? (e) => handleDragStart(a.id, e) : undefined}
-              onDragEnd={tool === 'move' ? (e, info) => handleDragEnd(a.id, info) : undefined}
-              onPointerDown={() => tool === 'scale' && setSelected(a.id)}
+              onPointerDown={tool === 'move' ? (e) => handleMoveStart(a.id, e) : () => setSelected(a.id)}
               className={`absolute select-none ${tool === 'move' ? 'cursor-move' : 'cursor-pointer'} ${selected === a.id ? 'ring-2 ring-blue-500' : ''}`}
               style={style}
             >
@@ -241,7 +246,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
                   className="absolute w-3 h-3 bg-white border border-blue-500 bottom-0 right-0 cursor-se-resize"
                 />
               )}
-            </motion.div>
+            </div>
           );
         })}
       </div>
