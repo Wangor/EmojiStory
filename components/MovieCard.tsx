@@ -10,7 +10,7 @@ import type {
 
 function SceneThumbnail({ scene }: { scene: Scene }) {
   const width = 160;
-  const height = 90;
+  const height = (width * 9) / 16; // match EmojiPlayer aspect ratio
 
   const renderEmoji = (a: EmojiActor) => {
     const start = a.start ?? {
@@ -19,15 +19,15 @@ function SceneThumbnail({ scene }: { scene: Scene }) {
       scale: a.tracks[0].scale ?? 1,
     };
     const size = Math.round(32 * start.scale);
-    const left = start.x * width;
-    const top = start.y * height;
+    const left = start.x * 100;
+    const top = start.y * 100;
     return (
       <span
         key={a.id}
         style={{
           position: 'absolute',
-          left,
-          top,
+          left: `${left}%`,
+          top: `${top}%`,
           fontSize: size,
           transform: 'translate(-50%, -50%)',
         }}
@@ -74,16 +74,16 @@ function SceneThumbnail({ scene }: { scene: Scene }) {
       const widthP = (maxX - minX) * unitSize;
       const heightP = (maxY - minY) * unitSize;
       const pos = comp.start ?? { x: comp.tracks[0].x, y: comp.tracks[0].y };
-      const left = pos.x * width;
-      const top = pos.y * height;
+      const left = pos.x * 100;
+      const top = pos.y * 100;
 
       return (
         <span
           key={comp.id}
           style={{
             position: 'absolute',
-            left,
-            top,
+            left: `${left}%`,
+            top: `${top}%`,
             width: widthP,
             height: heightP,
             transform: `translate(-50%, -50%)${comp.flipX ? ' scaleX(-1)' : ''}`,
