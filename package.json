@@ -5,7 +5,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seo-check": "node scripts/seo-checklist.js"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.6",
