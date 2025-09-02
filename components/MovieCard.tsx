@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Heart } from '@phosphor-icons/react';
 import type {
   Animation,
   Scene,
@@ -7,6 +8,7 @@ import type {
   EmojiActor,
   CompositeActor,
 } from './AnimationTypes';
+import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
 
 function SceneThumbnail({ scene }: { scene: Scene }) {
   const width = 160;
@@ -136,6 +138,7 @@ export function MovieCard({
   movie,
 }: {
   movie: {
+    id: string;
     title?: string;
     description?: string;
     story: string;
@@ -147,6 +150,27 @@ export function MovieCard({
   };
 }) {
   const firstScene = movie.animation?.scenes?.[0];
+  const [likes, setLikes] = useState(0);
+  const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    getMovieLikes(movie.id).then(({ count, liked }) => {
+      setLikes(count);
+      setLiked(liked);
+    });
+  }, [movie.id]);
+
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const { liked: newLiked } = await likeMovie(movie.id);
+      setLiked(newLiked);
+      setLikes((c) => c + (newLiked ? 1 : -1));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="space-y-2">
       {firstScene ? <SceneThumbnail scene={firstScene} /> : null}
@@ -167,6 +191,13 @@ export function MovieCard({
             <span className="truncate">@{movie.channels.name}</span>
           </Link>
         )}
+        <button
+          onClick={toggleLike}
+          className={`flex items-center gap-1 text-xs ${liked ? 'text-red-600' : 'text-gray-500'}`}
+        >
+          <Heart weight={liked ? 'fill' : 'regular'} size={14} />
+          <span>{likes}</span>
+        </button>
       </div>
     </div>
   );

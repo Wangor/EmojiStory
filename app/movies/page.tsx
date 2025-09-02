@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Play, ArrowLeft, FilmSlate, Clock } from '@phosphor-icons/react';
-import { getMoviesByUser } from '../../lib/supabaseClient';
+import { Play, ArrowLeft, FilmSlate, Clock, Heart } from '@phosphor-icons/react';
+import { getMoviesByUser, likeMovie, getMovieLikes } from '../../lib/supabaseClient';
 import type { Animation } from '../../components/AnimationTypes';
 import { EmojiPlayer } from '../../components/EmojiPlayer';
 import { MovieCard } from '../../components/MovieCard';
@@ -12,6 +12,8 @@ export default function MoviesPage() {
   const [selected, setSelected] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [likes, setLikes] = useState(0);
+  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
     getMoviesByUser()
@@ -19,6 +21,26 @@ export default function MoviesPage() {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (selected) {
+      getMovieLikes(selected.id).then(({ count, liked }) => {
+        setLikes(count);
+        setLiked(liked);
+      });
+    }
+  }, [selected]);
+
+  const toggleLike = async () => {
+    if (!selected) return;
+    try {
+      const { liked: newLiked } = await likeMovie(selected.id);
+      setLiked(newLiked);
+      setLikes((c) => c + (newLiked ? 1 : -1));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (selected) {
     return (
@@ -43,6 +65,15 @@ export default function MoviesPage() {
                 {selected.description}
               </p>
             )}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={toggleLike}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${liked ? 'text-red-600 border-red-300 bg-red-50' : 'text-gray-600 border-gray-300'}`}
+              >
+                <Heart weight={liked ? 'fill' : 'regular'} />
+                <span>{likes}</span>
+              </button>
+            </div>
           </div>
 
           {/* Player */}
