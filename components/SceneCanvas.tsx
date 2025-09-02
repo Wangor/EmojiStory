@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
+import { ArrowsOutCardinalIcon, Resize, User, MountainsIcon } from '@phosphor-icons/react';
 import { Scene, Actor, Keyframe, TextActor } from './AnimationTypes';
 
 type SceneCanvasProps = {
@@ -14,9 +15,6 @@ type SceneCanvasProps = {
 export default function SceneCanvas({ scene, fps, width, height, onSceneChange }: SceneCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  // track the current frame rather than raw milliseconds to avoid floating
-  // point precision issues when scrubbing the timeline. the frame is later
-  // converted back into milliseconds when sampling or writing keyframes.
   const [currentFrame, setCurrentFrame] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [tool, setTool] = useState<'move' | 'scale'>('move');
@@ -113,6 +111,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
     });
     onSceneChange({ ...scene, [target]: actors } as Scene);
   }
+
   const findActor = (id: string) => {
     const list = layer === 'actors' ? scene.actors : scene.backgroundActors;
     return list.find((a) => a.id === id)!;
@@ -185,7 +184,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
     window.removeEventListener('pointerup', handleScaleEnd);
   };
 
-  const colors = ['red', 'green', 'blue', 'orange', 'purple', 'teal'];
+  const colors = ['#ef4444', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4'];
 
   function buildPath(a: Actor) {
     const pts = [a.start && { t: 0, x: a.start.x, y: a.start.y }, ...a.tracks]
@@ -194,6 +193,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
       .map((k) => `${(k as any).x * size.w},${(k as any).y * size.h}`);
     return pts.join(' ');
   }
+
   useEffect(() => {
     setSelected(null);
   }, [layer]);
@@ -202,7 +202,6 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
     const t = Math.round(currentFrame * frameMs);
     const pose = sample(a, t);
 
-    // Calculate base font size to match EmojiPlayer
     const baseFontSize = a.type === 'emoji'
       ? Math.round(48 * (a.start?.scale ?? 1))
       : a.type === 'text' && (a as any).fontSize
@@ -217,7 +216,10 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
       opacity: layer === 'actors' && isBg ? 0.5 : 1,
       fontSize: baseFontSize
     };
+
     const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
+    const isSelected = selected === a.id;
+
     return (
       <div
         key={a.id}
@@ -226,7 +228,11 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
             ? (e) => handleMoveStart(a.id, e)
             : () => interactive && setSelected(a.id)
         }
-        className={`absolute select-none ${interactive && tool === 'move' ? 'cursor-move' : 'cursor-pointer'} ${selected === a.id ? 'ring-2 ring-blue-500' : ''}`}
+        className={`absolute select-none ${
+          interactive && tool === 'move' ? 'cursor-move' : 'cursor-pointer'
+        } ${
+          isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
+        } ${interactive ? 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-1' : ''}`}
         style={style}
       >
         {a.type === 'emoji' && <span>{(a as any).emoji}</span>}
@@ -235,10 +241,10 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
             {(a as TextActor).text}
           </span>
         )}
-        {interactive && selected === a.id && tool === 'scale' && (
+        {interactive && isSelected && tool === 'scale' && (
           <div
             onPointerDown={(e) => handleScaleStart(e, a.id)}
-            className="absolute w-3 h-3 bg-white border border-blue-500 bottom-0 right-0 cursor-se-resize"
+            className="absolute w-3 h-3 bg-white border-2 border-blue-500 bottom-0 right-0 cursor-se-resize rounded-sm shadow-sm"
           />
         )}
       </div>
@@ -248,40 +254,66 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
   const allActors: Actor[] = [...(scene.backgroundActors as Actor[]), ...scene.actors];
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <div className="flex gap-1">
-          <button
-            className={`px-2 py-1 border ${layer === 'actors' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-            onClick={() => setLayer('actors')}
-          >
-            Actors
-          </button>
-          <button
-            className={`px-2 py-1 border ${layer === 'background' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-            onClick={() => setLayer('background')}
-          >
-            Background
-          </button>
+    <div className="space-y-4">
+      {/* Controls */}
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2">
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                layer === 'actors' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setLayer('actors')}
+            >
+              <User size={14} />
+              Actors
+            </button>
+            <button
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                layer === 'background' 
+                  ? 'bg-white text-green-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setLayer('background')}
+            >
+              <MountainsIcon size={14} />
+              Background
+            </button>
+          </div>
         </div>
-        <div className="flex gap-1">
+
+        <div className="flex bg-gray-100 rounded-lg p-1">
           <button
-            className={`px-2 py-1 border ${tool === 'move' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              tool === 'move' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
             onClick={() => setTool('move')}
           >
+            <ArrowsOutCardinalIcon size={14} />
             Move
           </button>
           <button
-            className={`px-2 py-1 border ${tool === 'scale' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              tool === 'scale' 
+                ? 'bg-white text-purple-600 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
             onClick={() => setTool('scale')}
           >
-            Resize
+            <Resize size={14} />
+            Scale
           </button>
         </div>
       </div>
+
+      {/* Canvas */}
       <div
         ref={containerRef}
-        className="relative w-full border overflow-hidden"
+        className="relative w-full border-2 border-gray-300 rounded-lg overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 shadow-lg"
         style={{ aspectRatio: `${width}/${height}` }}
       >
         <svg
@@ -298,8 +330,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
                 points={points}
                 fill="none"
                 stroke={colors[i % colors.length]}
-                strokeWidth={selected === a.id ? 2 : 1}
-                opacity={layer === 'actors' && isBg ? 0.5 : 1}
+                strokeWidth={selected === a.id ? 3 : 2}
+                strokeDasharray={isBg ? "5,5" : "none"}
+                opacity={layer === 'actors' && isBg ? 0.3 : 0.8}
               />
             );
           })}
@@ -307,17 +340,23 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
         {scene.backgroundActors.map((a) => renderActor(a as Actor, true))}
         {scene.actors.map((a) => renderActor(a, false))}
       </div>
-      <input
-        type="range"
-        min={0}
-        max={Math.round(scene.duration_ms / frameMs)}
-        step={1}
-        value={currentFrame}
-        onChange={(e) => setCurrentFrame(Number(e.target.value))}
-        className="w-full"
-      />
-      <div className="text-xs text-center">
-        Frame {currentFrame} / {Math.round(scene.duration_ms / frameMs)}
+
+      {/* Timeline */}
+      <div className="space-y-2">
+        <input
+          type="range"
+          min={0}
+          max={Math.round(scene.duration_ms / frameMs)}
+          step={1}
+          value={currentFrame}
+          onChange={(e) => setCurrentFrame(Number(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+        />
+        <div className="flex justify-between items-center text-xs text-gray-500">
+          <span>Frame {currentFrame}</span>
+          <span>{Math.round(currentFrame * frameMs)}ms / {scene.duration_ms}ms</span>
+          <span>Total: {Math.round(scene.duration_ms / frameMs)} frames</span>
+        </div>
       </div>
     </div>
   );
