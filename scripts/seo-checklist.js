@@ -29,6 +29,9 @@ function fetchHtml(path) {
     if (!clipHtml.includes('og:image')) {
       throw new Error('Clip page missing og:image');
     }
+    if (!clipHtml.includes('thumbnail')) {
+      throw new Error('Clip page missing thumbnail meta');
+    }
 
     console.log('SEO checks passed');
   } catch (err) {

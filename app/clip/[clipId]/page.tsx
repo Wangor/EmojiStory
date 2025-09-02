@@ -11,6 +11,7 @@ export async function generateMetadata({ params }: { params: { clipId: string } 
   const title = clip?.title || 'Emoji Clip';
   const description = clip?.description || 'An emoji clip';
   const image = `/api/og/${clipId}`;
+  const thumbnail = `/api/thumbnail/${clipId}`;
 
   return {
     title,
@@ -18,13 +19,16 @@ export async function generateMetadata({ params }: { params: { clipId: string } 
     openGraph: {
       title,
       description,
-      images: [image],
+      images: [image, thumbnail],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
       images: [image],
+    },
+    other: {
+      thumbnail,
     },
   };
 }
