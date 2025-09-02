@@ -18,6 +18,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   // converted back into milliseconds when sampling or writing keyframes.
   const [currentFrame, setCurrentFrame] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [tool, setTool] = useState<'move' | 'scale'>('move');
 
   const dragRef = useRef<{
     id: string;
@@ -37,10 +38,15 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   } | null>(null);
 
   useLayoutEffect(() => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
+    if (!containerRef.current) return;
+    const update = () => {
+      const rect = containerRef.current!.getBoundingClientRect();
       setSize({ w: rect.width, h: rect.height });
-    }
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
   }, []);
 
   const frameMs = 1000 / fps;
@@ -131,6 +137,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
 
   const handleScaleStart = (e: React.PointerEvent, actorId: string) => {
     e.stopPropagation();
+    setSelected(actorId);
     const t = Math.round(currentFrame * frameMs);
     const pose = sample(scene.actors.find((a) => a.id === actorId)!, t);
     scaleRef.current = {
@@ -163,15 +170,29 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
   const colors = ['red', 'green', 'blue', 'orange', 'purple', 'teal'];
 
   function buildPath(a: Actor) {
-    return [a.start && { t: 0, x: a.start.x, y: a.start.y }, ...a.tracks]
-      .filter(Boolean)
+    const pts = [a.start && { t: 0, x: a.start.x, y: a.start.y }, ...a.tracks]
+      .filter((k: any) => typeof k?.x === 'number' && typeof k?.y === 'number')
       .sort((a, b) => (a as any).t - (b as any).t)
-      .map((k) => `${(k as any).x * size.w},${(k as any).y * size.h}`)
-      .join(' ');
+      .map((k) => `${(k as any).x * size.w},${(k as any).y * size.h}`);
+    return pts.join(' ');
   }
 
   return (
     <div className="space-y-2">
+      <div className="flex gap-2">
+        <button
+          className={`px-2 py-1 border ${tool === 'move' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+          onClick={() => setTool('move')}
+        >
+          Move
+        </button>
+        <button
+          className={`px-2 py-1 border ${tool === 'scale' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+          onClick={() => setTool('scale')}
+        >
+          Resize
+        </button>
+      </div>
       <div ref={containerRef} className="relative w-full h-64 border overflow-hidden">
         <svg className="absolute inset-0 pointer-events-none">
           {scene.actors.map((a, i) => {
@@ -199,12 +220,13 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
           return (
             <motion.div
               key={a.id}
-              drag
+              drag={tool === 'move'}
               dragMomentum={false}
               dragConstraints={containerRef}
-              onDragStart={(e) => handleDragStart(a.id, e)}
-              onDragEnd={(e, info) => handleDragEnd(a.id, info)}
-              className={`absolute cursor-move select-none ${selected === a.id ? 'ring-2 ring-blue-500' : ''}`}
+              onDragStart={tool === 'move' ? (e) => handleDragStart(a.id, e) : undefined}
+              onDragEnd={tool === 'move' ? (e, info) => handleDragEnd(a.id, info) : undefined}
+              onPointerDown={() => tool === 'scale' && setSelected(a.id)}
+              className={`absolute select-none ${tool === 'move' ? 'cursor-move' : 'cursor-pointer'} ${selected === a.id ? 'ring-2 ring-blue-500' : ''}`}
               style={style}
             >
               {a.type === 'emoji' && <span>{(a as any).emoji}</span>}
@@ -213,7 +235,7 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
                   {(a as TextActor).text}
                 </span>
               )}
-              {selected === a.id && (
+              {selected === a.id && tool === 'scale' && (
                 <div
                   onPointerDown={(e) => handleScaleStart(e, a.id)}
                   className="absolute w-3 h-3 bg-white border border-blue-500 bottom-0 right-0 cursor-se-resize"
