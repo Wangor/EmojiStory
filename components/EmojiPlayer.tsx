@@ -194,7 +194,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
     if (!scene) return;
     startRaf();
     return clearRaf;
-  }, [playing, sceneIndex, duration, totalScenes, loop]);
+  }, [playing, sceneIndex, duration, totalScenes, loop, scene, startRaf]);
 
   // Reset bookkeeping when the scene index changes
   useEffect(() => {
