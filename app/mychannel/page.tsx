@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CameraIcon, UserIcon, FileTextIcon, CheckIcon,  WarningCircleIcon} from '@phosphor-icons/react';
+import { CameraIcon, UserIcon, FileTextIcon, CheckIcon, WarningCircleIcon} from '@phosphor-icons/react';
 import { getChannel, upsertChannel } from '../../lib/supabaseClient';
+import Image from 'next/image';
 
 export default function ChannelPage() {
     const [name, setName] = useState('');
@@ -80,9 +81,11 @@ export default function ChannelPage() {
                         <div className="text-center">
                             <div className="relative inline-block">
                                 {pictureUrl ? (
-                                    <img
+                                    <Image
                                         src={pictureUrl}
                                         alt="Channel"
+                                        width={96}
+                                        height={96}
                                         className="w-24 h-24 object-cover rounded-full border-4 border-white shadow-lg"
                                     />
                                 ) : (
@@ -177,7 +180,7 @@ export default function ChannelPage() {
                         </li>
                         <li className="flex items-start gap-2">
                             <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                            Upload a high-quality profile picture for better recognition
+                            Upload an eye-catching channel picture to make your profile stand out
                         </li>
                     </ul>
                 </div>
