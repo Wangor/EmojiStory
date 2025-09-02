@@ -58,6 +58,16 @@ export async function getMoviesByUser() {
   return data;
 }
 
+export async function getMovieById(id: string) {
+  const { data, error } = await supabase
+    .from('movies')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function getAllMovies() {
   const { data, error } = await supabase
     .from('movies')
