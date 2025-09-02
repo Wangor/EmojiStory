@@ -20,6 +20,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   const scene: Scene | undefined = clip?.animation?.scenes?.[0];
   const width = 400;
   const height = Math.round((width * 9) / 16);
+  const title = clip?.title || 'Emoji Clip';
 
   function renderEmoji(a: EmojiActor) {
     const start = a.start ?? {
@@ -119,7 +120,6 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   }
 
   if (!scene) {
-    const title = clip?.title || 'Emoji Clip';
     return new ImageResponse(
       (
         <div
@@ -157,6 +157,22 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
       >
         {scene.backgroundActors.map((a) => renderActor(a))}
         {scene.actors.map((a) => renderActor(a))}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: 32,
+            fontWeight: 700,
+            textAlign: 'center',
+            background:
+              'linear-gradient(to top, rgba(255,255,255,0.9), rgba(255,255,255,0))',
+          }}
+        >
+          {title}
+        </div>
       </div>
     ),
     {
