@@ -44,7 +44,7 @@ export function Navbar() {
             href="/"
             className="text-white font-bold text-xl hover:text-gray-200 transition-colors duration-200"
           >
-            🎬 Emoji Movie Studio
+            🎬 Emojiclips.com - Tell your story with emojis
           </Link>
 
           <div className="flex-1 flex justify-center px-4">
