@@ -7,7 +7,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <Head>
-        <title>Emoji Movie MVP</title>
+        <title>Emojiclips.com Tell your story with emojis</title>
         <meta name="description" content="Turn stories into emoji mini-movies" />
         <meta property="og:title" content="Emoji Movie MVP" />
         <meta property="og:description" content="Turn stories into emoji mini-movies" />
