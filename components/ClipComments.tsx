@@ -9,6 +9,7 @@ interface Comment {
   user_id: string;
   content: string;
   created_at: string;
+  username?: string;
 }
 
 export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movieOwnerId: string }) {
@@ -48,7 +49,9 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
       <ul className="space-y-4 mb-6">
         {comments.map((c) => (
           <li key={c.id} className="p-4 bg-white border border-gray-200 rounded-lg">
-            <p className="text-gray-700 text-sm whitespace-pre-wrap">{c.content}</p>
+            <p className="text-gray-700 text-sm whitespace-pre-wrap">
+              <span className="font-medium">{c.username ?? 'Unknown'}:</span> {c.content}
+            </p>
             <div className="text-xs text-gray-500 mt-1">
               {new Date(c.created_at).toLocaleString()}
             </div>

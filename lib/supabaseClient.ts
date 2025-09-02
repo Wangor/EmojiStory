@@ -205,17 +205,30 @@ export async function postComment(movieId: string, content: string) {
     .select()
     .single();
   if (error) throw error;
-  return data;
+  const { data: channel } = await supabase
+    .from('channels')
+    .select('name')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  return { ...data, username: channel?.name };
 }
 
 export async function getComments(movieId: string) {
-  const { data, error } = await supabase
+  const { data: comments, error } = await supabase
     .from('comments')
     .select('*')
     .eq('movie_id', movieId)
     .order('created_at', { ascending: true });
   if (error) throw error;
-  return data;
+  if (!comments || comments.length === 0) return [];
+  const userIds = [...new Set(comments.map((c) => c.user_id))];
+  const { data: channels, error: channelError } = await supabase
+    .from('channels')
+    .select('user_id, name')
+    .in('user_id', userIds);
+  if (channelError) throw channelError;
+  const map = new Map((channels ?? []).map((ch) => [ch.user_id, ch.name]));
+  return comments.map((c) => ({ ...c, username: map.get(c.user_id) }));
 }
 
 export async function deleteComment(commentId: string) {
