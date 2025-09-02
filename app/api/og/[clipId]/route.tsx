@@ -29,23 +29,22 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
       scale: a.tracks[0].scale ?? 1,
     };
     const size = Math.round(baseUnit * start.scale);
-    const left = start.x * 100;
-    const top = start.y * 100;
+    const left = start.x * width - size / 2;
+    const top = start.y * height - size / 2;
     return (
       <span
         key={a.id}
         style={{
           position: 'absolute',
-          left: `${left}%`,
-          top: `${top}%`,
+          left,
+          top,
           fontSize: size,
-          transform: 'translate(-50%, -50%)',
         }}
       >
         <span
           style={{
             display: 'inline-block',
-            transform: a.flipX ? 'scaleX(-1)' : undefined,
+            ...(a.flipX ? { transform: 'scaleX(-1)' } : {}),
           }}
         >
           {a.emoji}
@@ -84,19 +83,19 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
       const widthP = (maxX - minX) * unitSize;
       const heightP = (maxY - minY) * unitSize;
       const pos = comp.start ?? { x: comp.tracks[0].x, y: comp.tracks[0].y };
-      const left = pos.x * 100;
-      const top = pos.y * 100;
+      const left = pos.x * width - widthP / 2;
+      const top = pos.y * height - heightP / 2;
 
       return (
         <span
           key={comp.id}
           style={{
             position: 'absolute',
-            left: `${left}%`,
-            top: `${top}%`,
+            left,
+            top,
             width: widthP,
             height: heightP,
-            transform: `translate(-50%, -50%)${comp.flipX ? ' scaleX(-1)' : ''}`,
+            ...(comp.flipX ? { transform: 'scaleX(-1)' } : {}),
           }}
         >
           {comp.parts.map((p) => {
@@ -117,7 +116,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
                 <span
                   style={{
                     display: 'inline-block',
-                    transform: p.flipX ? 'scaleX(-1)' : undefined,
+                    ...(p.flipX ? { transform: 'scaleX(-1)' } : {}),
                   }}
                 >
                   {p.emoji}
