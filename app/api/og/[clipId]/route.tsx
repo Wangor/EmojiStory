@@ -39,16 +39,10 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
           left,
           top,
           fontSize: size,
+          ...(a.flipX ? { transform: 'scaleX(-1)' } : {}),
         }}
       >
-        <span
-          style={{
-            display: 'inline-block',
-            ...(a.flipX ? { transform: 'scaleX(-1)' } : {}),
-          }}
-        >
-          {a.emoji}
-        </span>
+        {a.emoji}
       </span>
     );
   }
@@ -111,16 +105,10 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
+                  ...(p.flipX ? { transform: 'scaleX(-1)' } : {}),
                 }}
               >
-                <span
-                  style={{
-                    display: 'inline-block',
-                    ...(p.flipX ? { transform: 'scaleX(-1)' } : {}),
-                  }}
-                >
-                  {p.emoji}
-                </span>
+                {p.emoji}
               </span>
             );
           })}
