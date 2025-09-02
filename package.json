@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.6",
-    "@supabase/ssr": "^0.10.0",
-    "@supabase/supabase-js": "^2.39.1",
-    "emojibase-data": "^16.0.3",
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "emojibase-data": "latest",
     "framer-motion": "11.2.10",
     "next": "14.2.5",
     "openai": "^4.57.0",
