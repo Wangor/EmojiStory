@@ -449,8 +449,8 @@ function ActorView({
           left: `${x}%`,
           top: `${y}%`,
           fontSize: size,
-          transformOrigin: 'top left',
-          transform: `rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'center center',
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span style={{ display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}>
@@ -468,8 +468,8 @@ function ActorView({
           position: 'absolute',
           left: `${x}%`,
           top: `${y}%`,
-          transformOrigin: 'top left',
-          transform: `rotate(${rotate}deg) scale(${scale})`,
+          transformOrigin: 'center center',
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`,
           color: actor.color ?? 'white',
           fontSize: size,
           whiteSpace: 'pre'
@@ -519,8 +519,8 @@ function ActorView({
           width,
           height,
           display: 'inline-block',
-          transformOrigin: 'top left',
-          transform: `rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'center center',
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span
@@ -546,7 +546,7 @@ function ActorView({
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
-                  transformOrigin: 'top left'
+                  transformOrigin: 'center center'
                 }}
               >
                 <span style={{ display: 'inline-block', transform: p.flipX ? 'scaleX(-1)' : undefined }}>
