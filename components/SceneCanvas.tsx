@@ -124,10 +124,10 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     const rect = containerRef.current.getBoundingClientRect();
     const t = Math.round(currentFrame * frameMs);
     const pose = sample(findActor(actorId), t);
-    const centerX = rect.left + pose.x * rect.width;
-    const centerY = rect.top + pose.y * rect.height;
-    const offsetX = e.clientX - centerX;
-    const offsetY = e.clientY - centerY;
+    const left = rect.left + pose.x * rect.width;
+    const top = rect.top + pose.y * rect.height;
+    const offsetX = e.clientX - left;
+    const offsetY = e.clientY - top;
     dragRef.current = { id: actorId, offsetX, offsetY };
     window.addEventListener('pointermove', handleMove);
     window.addEventListener('pointerup', handleMoveEnd);
@@ -202,7 +202,8 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
     const style: React.CSSProperties = {
       left: pose.x * 100 + '%',
       top: pose.y * 100 + '%',
-      transform: `translate(-50%, -50%) scale(${pose.scale})`,
+      transform: `scale(${pose.scale})`,
+      transformOrigin: 'top left',
       opacity: layer === 'actors' && isBg ? 0.5 : 1
     };
     const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
