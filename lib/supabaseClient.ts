@@ -196,6 +196,38 @@ export async function getMovieLikes(movieId: string) {
   return { count, liked };
 }
 
+export async function postComment(movieId: string, content: string) {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await supabase
+    .from('comments')
+    .insert({ movie_id: movieId, user_id: user.id, content })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getComments(movieId: string) {
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('movie_id', movieId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteComment(commentId: string) {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { error } = await supabase
+    .from('comments')
+    .delete()
+    .eq('id', commentId);
+  if (error) throw error;
+}
+
 export async function getChannel() {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
