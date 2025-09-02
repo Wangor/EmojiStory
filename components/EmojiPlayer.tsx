@@ -419,9 +419,11 @@ function ActorView({
         aria-label={actor.ariaLabel ?? actor.emoji}
         style={{
           position: 'absolute',
+          left: x,
+          top: y,
           fontSize: size,
-          transformOrigin: 'center center',
-          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'top left',
+          transform: `rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span style={{ display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}>
@@ -437,7 +439,10 @@ function ActorView({
       <span
         style={{
           position: 'absolute',
-          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`,
+          left: x,
+          top: y,
+          transformOrigin: 'top left',
+          transform: `rotate(${rotate}deg) scale(${scale})`,
           color: actor.color ?? 'white',
           fontSize: size,
           whiteSpace: 'pre'
@@ -482,11 +487,13 @@ function ActorView({
         aria-label={actor.ariaLabel ?? 'composite'}
         style={{
           position: 'absolute',
+          left: x,
+          top: y,
           width,
           height,
           display: 'inline-block',
-          transformOrigin: 'center center',
-          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`
+          transformOrigin: 'top left',
+          transform: `rotate(${rotate}deg) scale(${scale})`
         }}
       >
         <span
@@ -512,7 +519,7 @@ function ActorView({
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
-                  transformOrigin: 'center center'
+                  transformOrigin: 'top left'
                 }}
               >
                 <span style={{ display: 'inline-block', transform: p.flipX ? 'scaleX(-1)' : undefined }}>
