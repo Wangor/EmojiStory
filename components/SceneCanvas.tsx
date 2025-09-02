@@ -204,7 +204,10 @@ export default function SceneCanvas({ scene, fps, onSceneChange }: SceneCanvasPr
         </button>
       </div>
       <div ref={containerRef} className="relative w-full h-64 border overflow-hidden">
-        <svg className="absolute inset-0 pointer-events-none">
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox={`0 0 ${size.w} ${size.h}`}
+        >
           {scene.actors.map((a, i) => {
             const points = buildPath(a);
             if (!points) return null;
