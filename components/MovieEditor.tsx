@@ -3,24 +3,24 @@
 import React, { useState } from 'react';
 import {
     FilmSlateIcon,
-    User,
-    Users,
-    Play,
-    Resize,
+    UserIcon,
+    UsersIcon,
+    PlayIcon,
+    ResizeIcon,
     ArrowsOutCardinalIcon,
-    Plus,
-    Trash,
-    Clock,
-    ChatText,
-    Eye,
-    EyeSlash,
-    CaretDown,
-    CaretRight,
-    Copy,
-    SmileyWink,
-    TextT,
-    Palette,
-    Hash,
+    PlusIcon,
+    TrashIcon,
+    ClockIcon,
+    ChatTextIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    CaretDownIcon,
+    CaretRightIcon,
+    CopyIcon,
+    SmileyWinkIcon,
+    TextTIcon,
+    PaletteIcon,
+    HashIcon,
     MountainsIcon
 } from '@phosphor-icons/react';
 import { Animation, Scene, Actor, EmojiActor, TextActor, Keyframe } from './AnimationTypes';
@@ -118,7 +118,7 @@ export default function MovieEditor() {
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
-                                <Clock size={16} className="text-gray-500" />
+                                <ClockIcon size={16} className="text-gray-500" />
                                 <label className="text-sm font-medium text-gray-700">FPS:</label>
                                 <input
                                     type="number"
@@ -167,7 +167,7 @@ export default function MovieEditor() {
                                 className="px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 border-r border-gray-200 flex items-center gap-2 transition-colors"
                                 onClick={addScene}
                             >
-                                <Plus size={14} />
+                                <PlusIcon size={14} />
                                 Add Scene
                             </button>
                         </div>
@@ -197,7 +197,7 @@ export default function MovieEditor() {
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                                         onClick={addScene}
                                     >
-                                        <Plus size={16} />
+                                        <PlusIcon size={16} />
                                         Create First Scene
                                     </button>
                                 </div>
@@ -210,7 +210,7 @@ export default function MovieEditor() {
                 <div className="w-1/2 flex flex-col bg-white">
                     <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
                         <div className="flex items-center gap-2">
-                            <Eye size={16} className="text-gray-500" />
+                            <EyeIcon size={16} className="text-gray-500" />
                             <h2 className="font-medium text-gray-900">Preview</h2>
                             {animation.scenes.length > 0 && (
                                 <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
@@ -228,7 +228,7 @@ export default function MovieEditor() {
                             <div className="w-full max-w-md h-64 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center text-gray-400 bg-white">
                                 <div className="text-center">
                                     <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
-                                        <Play size={20} className="text-gray-400" />
+                                        <PlayIcon size={20} className="text-gray-400" />
                                     </div>
                                     <p className="font-medium">Preview will appear here</p>
                                     <p className="text-sm mt-1">Add scenes to see your movie</p>
@@ -320,14 +320,14 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                             className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
                             onClick={onDuplicate}
                         >
-                            <Copy size={12} />
+                            <CopyIcon size={12} />
                             Duplicate
                         </button>
                         <button
                             className="inline-flex items-center gap-1 px-3 py-1 text-xs text-red-600 hover:bg-red-50 rounded-md transition-colors"
                             onClick={onRemove}
                         >
-                            <Trash size={12} />
+                            <TrashIcon size={12} />
                             Delete
                         </button>
                     </div>
@@ -335,7 +335,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                            <Clock size={14} />
+                            <ClockIcon size={14} />
                             Duration (ms)
                         </label>
                         <input
@@ -347,7 +347,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                     </div>
                     <div>
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                            <ChatText size={14} />
+                            <ChatTextIcon size={14} />
                             Caption
                         </label>
                         <input
@@ -373,7 +373,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                         {
                             key: 'actors',
                             label: 'Actors',
-                            icon: <User size={16} />,
+                            icon: <UserIcon size={16} />,
                             count: scene.actors.length > 0 ? `(${scene.actors.length})` : ''
                         },
                         {
@@ -423,7 +423,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
                             onClick={addBackground}
                         >
-                            <Plus size={16} />
+                            <PlusIcon size={16} />
                             Add Background
                         </button>
                     </div>
@@ -454,7 +454,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                 <div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <Users size={20} className="text-gray-500" />
+                            <UsersIcon size={20} className="text-gray-500" />
                             <h4 className="font-medium text-gray-900">Actors</h4>
                         </div>
                         <div className="flex gap-2">
@@ -462,14 +462,14 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                                 onClick={addActor}
                             >
-                                <SmileyWink size={16} />
+                                <SmileyWinkIcon size={16} />
                                 Add Emoji
                             </button>
                             <button
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
                                 onClick={addTextActor}
                             >
-                                <TextT size={16} />
+                                <TextTIcon size={16} />
                                 Add Text
                             </button>
                         </div>
@@ -486,7 +486,7 @@ function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }
                         {scene.actors.length === 0 && (
                             <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                                 <div className="w-12 h-12 mx-auto mb-3 bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <Users size={20} className="text-gray-400" />
+                                    <UsersIcon size={20} className="text-gray-400" />
                                 </div>
                                 <p className="text-gray-500 font-medium">No actors yet</p>
                                 <p className="text-gray-400 text-sm mt-1">Add characters to bring your scene to life</p>
@@ -570,11 +570,11 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
 
     const getActorIcon = () => {
         if (actor.type === 'emoji') {
-            return <SmileyWink size={16} className="text-blue-600" />;
+            return <SmileyWinkIcon size={16} className="text-blue-600" />;
         } else if (actor.type === 'text') {
-            return <TextT size={16} className="text-purple-600" />;
+            return <TextTIcon size={16} className="text-purple-600" />;
         }
-        return <User size={16} className="text-gray-600" />;
+        return <UserIcon size={16} className="text-gray-600" />;
     };
 
     return (
@@ -593,19 +593,19 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                         <span>{actor.type}</span>
                         <span>•</span>
                         <div className="flex items-center gap-1">
-                            <Clock size={12} />
+                            <ClockIcon size={12} />
                             {actor.tracks.length} keyframe{actor.tracks.length !== 1 ? 's' : ''}
                         </div>
                     </div>
                     <div className="ml-auto text-gray-400">
-                        {isExpanded ? <CaretDown size={16} /> : <CaretRight size={16} />}
+                        {isExpanded ? <CaretDownIcon size={16} /> : <CaretRightIcon size={16} />}
                     </div>
                 </button>
                 <button
                     className="ml-3 inline-flex items-center gap-1 px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                     onClick={onRemove}
                 >
-                    <Trash size={14} />
+                    <TrashIcon size={14} />
                     Remove
                 </button>
             </div>
@@ -617,7 +617,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                         {allowTypeChange && (
                             <div>
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                    <Hash size={14} />
+                                    <HashIcon size={14} />
                                     Type
                                 </label>
                                 <select
@@ -634,7 +634,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                         {actor.type === 'emoji' && (
                             <div>
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                    <SmileyWink size={14} />
+                                    <SmileyWinkIcon size={14} />
                                     Emoji
                                 </label>
                                 <input
@@ -649,7 +649,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                             <div className="space-y-4">
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                        <TextT size={14} />
+                                        <TextTIcon size={14} />
                                         Text Content
                                     </label>
                                     <input
@@ -662,7 +662,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                            <Palette size={14} />
+                                            <PaletteIcon size={14} />
                                             Color
                                         </label>
                                         <input
@@ -674,7 +674,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                                     </div>
                                     <div>
                                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                            <Resize size={14} />
+                                            <ResizeIcon size={14} />
                                             Font Size
                                         </label>
                                         <input
@@ -731,14 +731,14 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                         <div>
                             <div className="flex justify-between items-center mb-3">
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                                    <Clock size={14} />
+                                    <ClockIcon size={14} />
                                     Animation Keyframes
                                 </label>
                                 <button
                                     className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                                     onClick={addKeyframe}
                                 >
-                                    <Plus size={12} />
+                                    <PlusIcon size={12} />
                                     Add Keyframe
                                 </button>
                             </div>
@@ -786,7 +786,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                                                 className="inline-flex items-center justify-center w-6 h-6 text-red-600 hover:bg-red-50 rounded transition-colors"
                                                 onClick={() => removeKeyframe(i)}
                                             >
-                                                <Trash size={12} />
+                                                <TrashIcon size={12} />
                                             </button>
                                         </div>
                                     ))}
@@ -796,7 +796,7 @@ function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: Acto
                             {actor.tracks.length === 0 && (
                                 <div className="text-center py-6 bg-white rounded-lg border-2 border-dashed border-gray-200">
                                     <div className="w-8 h-8 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-                                        <Clock size={14} className="text-gray-400" />
+                                        <ClockIcon size={14} className="text-gray-400" />
                                     </div>
                                     <p className="text-gray-500 text-sm font-medium">No keyframes yet</p>
                                     <p className="text-gray-400 text-xs mt-1">Add keyframes to animate this actor</p>

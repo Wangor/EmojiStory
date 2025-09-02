@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
-import { ArrowsOutCardinalIcon, Resize, User, MountainsIcon } from '@phosphor-icons/react';
+import { ArrowsOutCardinalIcon, ResizeIcon, UserIcon, MountainsIcon } from '@phosphor-icons/react';
 import { Scene, Actor, Keyframe, TextActor } from './AnimationTypes';
 
 type SceneCanvasProps = {
@@ -267,7 +267,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
               }`}
               onClick={() => setLayer('actors')}
             >
-              <User size={14} />
+              <UserIcon size={14} />
               Actors
             </button>
             <button
@@ -304,7 +304,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
             }`}
             onClick={() => setTool('scale')}
           >
-            <Resize size={14} />
+            <ResizeIcon size={14} />
             Scale
           </button>
         </div>
