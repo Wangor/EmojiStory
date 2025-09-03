@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FilmSlateIcon,
     ClockIcon,
@@ -16,7 +16,11 @@ import { uuid } from '../lib/uuid';
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 270;
 
-export default function MovieEditor() {
+interface MovieEditorProps {
+    movie?: any;
+}
+
+export default function MovieEditor({ movie }: MovieEditorProps) {
     const [animation, setAnimation] = useState<Animation>({
         title: 'Untitled Movie',
         description: '',
@@ -24,6 +28,17 @@ export default function MovieEditor() {
         scenes: []
     });
     const [activeSceneIndex, setActiveSceneIndex] = useState(0);
+
+    useEffect(() => {
+        if (movie?.animation) {
+            setAnimation({
+                ...movie.animation,
+                title: movie.title ?? movie.animation.title ?? 'Untitled Movie',
+                description:
+                    movie.description ?? movie.animation.description ?? '',
+            });
+        }
+    }, [movie]);
 
     const updateScene = (idx: number, scene: Scene) => {
         setAnimation((a) => {
