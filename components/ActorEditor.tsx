@@ -14,9 +14,11 @@ import {
     CaretRightIcon,
     PlusIcon,
     ArrowsClockwiseIcon,
-    UserIcon
+    UserIcon,
+    UsersIcon
 } from '@phosphor-icons/react';
-import { Actor, EmojiActor, TextActor, Keyframe } from './AnimationTypes';
+import { Actor, EmojiActor, TextActor, Keyframe, CompositeActor } from './AnimationTypes';
+import { uuid } from '../lib/uuid';
 import EmojiCatalogue from './EmojiCatalogue';
 
 export type ActorEditorProps = {
@@ -29,6 +31,7 @@ export type ActorEditorProps = {
 export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: ActorEditorProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showEmojiCatalogue, setShowEmojiCatalogue] = useState(false);
+    const [partCatalogueIndex, setPartCatalogueIndex] = useState<number | null>(null);
 
     const update = (fields: any) => onChange({ ...actor, ...fields });
 
@@ -77,11 +80,139 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                 tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
             };
             onChange(a);
+        } else if (t === 'composite') {
+            const a: CompositeActor = {
+                id: actor.id,
+                type: 'composite',
+                parts: [
+                    {
+                        id: uuid(),
+                        type: 'emoji',
+                        emoji: '😀',
+                        start: { x: 0, y: 0, scale: 1 },
+                        tracks: []
+                    }
+                ],
+                start: { x: 0.5, y: 0.5, scale: 1 },
+                tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
+            };
+            onChange(a);
         }
     };
 
     const handleEmojiSelect = (emoji: string) => {
-        update({ emoji });
+        if (partCatalogueIndex !== null) {
+            updatePart(partCatalogueIndex, { emoji });
+            setPartCatalogueIndex(null);
+        } else {
+            update({ emoji });
+        }
+        setShowEmojiCatalogue(false);
+    };
+
+    const updatePart = (idx: number, fields: Partial<EmojiActor>) => {
+        const parts = [...(actor as CompositeActor).parts];
+        parts[idx] = { ...parts[idx], ...fields } as EmojiActor;
+        update({ parts });
+    };
+
+    const updatePartStart = (
+        idx: number,
+        field: keyof NonNullable<EmojiActor['start']>,
+        value: number
+    ) => {
+        const parts = [...(actor as CompositeActor).parts];
+        const part = { ...parts[idx] } as EmojiActor;
+        const start = { x: 0, y: 0, scale: 1, ...(part.start || {}) } as any;
+        start[field] = value;
+        part.start = start;
+        parts[idx] = part;
+        update({ parts });
+    };
+
+    const addPart = () => {
+        const parts = [
+            ...(actor as CompositeActor).parts,
+            {
+                id: uuid(),
+                type: 'emoji',
+                emoji: '😀',
+                start: { x: 0, y: 0, scale: 1 },
+                tracks: []
+            } as EmojiActor
+        ];
+        update({ parts });
+    };
+
+    const removePart = (idx: number) => {
+        const parts = [...(actor as CompositeActor).parts];
+        parts.splice(idx, 1);
+        update({ parts });
+    };
+
+    const renderPartsPreview = () => {
+        if (actor.type !== 'composite') return null;
+        const comp = actor as CompositeActor;
+        if (comp.parts.length === 0) return null;
+
+        let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+        for (const p of comp.parts) {
+            const s = p.start?.scale ?? 1;
+            const x0 = p.start?.x ?? 0;
+            const y0 = p.start?.y ?? 0;
+            minX = Math.min(minX, x0);
+            minY = Math.min(minY, y0);
+            maxX = Math.max(maxX, x0 + s);
+            maxY = Math.max(maxY, y0 + s);
+        }
+
+        const dominant = Math.max(...comp.parts.map((p) => p.start?.scale ?? 1));
+        const unitSize = Math.round(32 / dominant);
+        const widthPx = (maxX - minX) * unitSize;
+        const heightPx = (maxY - minY) * unitSize;
+        const scale = Math.min(48 / widthPx, 48 / heightPx);
+
+        return (
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+                <div
+                    style={{
+                        width: widthPx * scale,
+                        height: heightPx * scale,
+                        position: 'relative'
+                    }}
+                >
+                    {comp.parts.map((p) => {
+                        const ps = p.start?.scale ?? 1;
+                        const partSize = unitSize * ps * scale;
+                        const x = ((p.start?.x ?? 0) - minX) * unitSize * scale;
+                        const y = ((p.start?.y ?? 0) - minY) * unitSize * scale;
+                        return (
+                            <span
+                                key={p.id}
+                                style={{
+                                    position: 'absolute',
+                                    left: x,
+                                    top: y,
+                                    fontSize: partSize
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        display: 'inline-block',
+                                        transform: p.flipX ? 'scaleX(-1)' : undefined
+                                    }}
+                                >
+                                    {p.emoji}
+                                </span>
+                            </span>
+                        );
+                    })}
+                </div>
+            </div>
+        );
     };
 
     const getActorPreview = () => {
@@ -89,6 +220,8 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
             return (actor as EmojiActor).emoji;
         } else if (actor.type === 'text') {
             return `"${(actor as TextActor).text}"`;
+        } else if (actor.type === 'composite') {
+            return (actor as CompositeActor).parts.map((p) => p.emoji).join('');
         }
         return actor.type;
     };
@@ -98,6 +231,8 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
             return <SmileyWinkIcon size={16} className="text-blue-600" />;
         } else if (actor.type === 'text') {
             return <TextTIcon size={16} className="text-purple-600" />;
+        } else if (actor.type === 'composite') {
+            return <UsersIcon size={16} className="text-green-600" />;
         }
         return <UserIcon size={16} className="text-gray-600" />;
     };
@@ -153,6 +288,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                     >
                                         <option value="emoji">Emoji</option>
                                         <option value="text">Text</option>
+                                        <option value="composite">Composite</option>
                                     </select>
                                 </div>
                             )}
@@ -220,6 +356,88 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                 onChange={(e) => update({ fontSize: e.target.value ? Number(e.target.value) : undefined })}
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {actor.type === 'composite' && (
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                            <UsersIcon size={14} />
+                                            Parts
+                                        </label>
+                                        {renderPartsPreview()}
+                                    </div>
+                                    <div className="space-y-3">
+                                        {(actor as CompositeActor).parts.map((p, idx) => (
+                                            <div key={p.id} className="border border-gray-200 rounded-md p-3 bg-white space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        className="border border-gray-300 rounded-md px-3 py-1 text-sm w-20 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                        value={p.emoji}
+                                                        onChange={(e) => updatePart(idx, { emoji: e.target.value })}
+                                                    />
+                                                    <button
+                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                                        onClick={() => setPartCatalogueIndex(idx)}
+                                                    >
+                                                        <SmileyWinkIcon size={12} />
+                                                        Browse
+                                                    </button>
+                                                    <button
+                                                        className="ml-auto text-xs text-red-600 hover:text-red-700"
+                                                        onClick={() => removePart(idx)}
+                                                    >
+                                                        <TrashIcon size={12} />
+                                                    </button>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    <div>
+                                                        <label className="block text-xs text-gray-600 mb-1">X</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.1"
+                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                            value={p.start?.x ?? 0}
+                                                            onChange={(e) => updatePartStart(idx, 'x', Number(e.target.value))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-gray-600 mb-1">Y</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.1"
+                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                            value={p.start?.y ?? 0}
+                                                            onChange={(e) => updatePartStart(idx, 'y', Number(e.target.value))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-gray-600 mb-1">Scale</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.1"
+                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                            value={p.start?.scale ?? 1}
+                                                            onChange={(e) => updatePartStart(idx, 'scale', Number(e.target.value))}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {(actor as CompositeActor).parts.length === 0 && (
+                                            <div className="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-md">
+                                                No parts yet. Add one to build your composite actor.
+                                            </div>
+                                        )}
+                                        <button
+                                            className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                                            onClick={addPart}
+                                        >
+                                            <PlusIcon size={12} />
+                                            Add Part
+                                        </button>
                                     </div>
                                 </div>
                             )}
@@ -371,8 +589,11 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
 
             {/* Emoji Catalogue Modal */}
             <EmojiCatalogue
-                isOpen={showEmojiCatalogue}
-                onClose={() => setShowEmojiCatalogue(false)}
+                isOpen={showEmojiCatalogue || partCatalogueIndex !== null}
+                onClose={() => {
+                    setShowEmojiCatalogue(false);
+                    setPartCatalogueIndex(null);
+                }}
                 onSelectEmoji={handleEmojiSelect}
             />
         </>

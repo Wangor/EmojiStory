@@ -15,7 +15,7 @@ import {
     CopyIcon,
     TrashIcon
 } from '@phosphor-icons/react';
-import { Scene, Actor, EmojiActor, TextActor } from './AnimationTypes';
+import { Scene, Actor, EmojiActor, TextActor, CompositeActor } from './AnimationTypes';
 import SceneCanvas from './SceneCanvas';
 import ActorEditor from './ActorEditor';
 import { uuid } from '../lib/uuid';
@@ -59,6 +59,25 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
             id: uuid(),
             type: 'text',
             text: 'Hello World',
+            start: { x: 0.5, y: 0.5, scale: 1 },
+            tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
+        };
+        update({ actors: [...scene.actors, actor] });
+    };
+
+    const addCompositeActor = () => {
+        const actor: CompositeActor = {
+            id: uuid(),
+            type: 'composite',
+            parts: [
+                {
+                    id: uuid(),
+                    type: 'emoji',
+                    emoji: '😀',
+                    start: { x: 0, y: 0, scale: 1 },
+                    tracks: []
+                }
+            ],
             start: { x: 0.5, y: 0.5, scale: 1 },
             tracks: [{ t: 0, x: 0.5, y: 0.5, rotate: 0 }]
         };
@@ -249,18 +268,25 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         </div>
                         <div className="flex gap-2">
                             <button
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
                                 onClick={addActor}
                             >
                                 <SmileyWinkIcon size={16} />
                                 Add Emoji
                             </button>
                             <button
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
                                 onClick={addTextActor}
                             >
                                 <TextTIcon size={16} />
                                 Add Text
+                            </button>
+                            <button
+                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                                onClick={addCompositeActor}
+                            >
+                                <UsersIcon size={16} />
+                                Add Composite
                             </button>
                         </div>
                     </div>
