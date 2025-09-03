@@ -60,13 +60,25 @@ export async function updateProfile(params: { display_name?: string; avatar_url?
   return data;
 }
 
-export async function insertMovie(movie: { title: string; description: string; story: string; animation: any; }) {
+export async function getUserChannels() {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await supabase
+    .from('channels')
+    .select('*')
+    .eq('user_id', user.id);
+  if (error) throw error;
+  return data;
+}
+
+export async function insertMovie(movie: { channel_id: string; title: string; description: string; story: string; animation: any; }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('movies')
     .insert({
       user_id: user.id,
+      channel_id: movie.channel_id,
       title: movie.title,
       description: movie.description,
       story: movie.story,
@@ -83,8 +95,8 @@ export async function getMoviesByUser() {
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('movies')
-    .select('*')
-    .eq('user_id', user.id)
+    .select(`*, channels!inner(name, id, user_id)`)
+    .eq('channels.user_id', user.id)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
@@ -104,14 +116,14 @@ export async function getMovieById(id: string, opts: { allowReleased?: boolean }
   return data;
 }
 
-export async function publishMovie(id: string, publishDateTime: string) {
+export async function publishMovie(id: string, channelId: string, publishDateTime: string) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('movies')
     .update({ publish_datetime: publishDateTime })
     .eq('id', id)
-    .eq('user_id', user.id)
+    .eq('channel_id', channelId)
     .select()
     .single();
   if (error) throw error;
@@ -123,8 +135,10 @@ export async function getAllMovies() {
     .from('movies')
     .select(`
       *,
-      channels!movies_user_id_fkey(
-        name
+      channels!movies_channel_id_fkey(
+        id,
+        name,
+        user_id
       )
     `)
     .not('publish_datetime', 'is', null)
@@ -146,26 +160,26 @@ export async function getAllMovies() {
       return [];
     }
 
-    // Get unique user IDs from movies
-    const userIds = [...new Set(moviesData.map(movie => movie.user_id))];
+    // Get unique channel IDs from movies
+    const channelIds = [...new Set(moviesData.map(movie => movie.channel_id))];
 
-    // Fetch channels for these users
+    // Fetch channels for these ids
     const { data: channelsData, error: channelsError } = await supabase
       .from('channels')
-      .select('user_id, name')
-      .in('user_id', userIds);
+      .select('id, name, user_id')
+      .in('id', channelIds);
 
     if (channelsError) throw channelsError;
 
-    // Create a map of user_id to channel for quick lookup
+    // Create a map of channel_id to channel for quick lookup
     const channelsMap = new Map(
-      (channelsData || []).map(channel => [channel.user_id, channel])
+      (channelsData || []).map(channel => [channel.id, channel])
     );
 
     // Combine movies with their corresponding channels
     return moviesData.map(movie => ({
       ...movie,
-      channels: channelsMap.get(movie.user_id) || null
+      channels: channelsMap.get(movie.channel_id) || null
     }));
   }
 
@@ -177,8 +191,10 @@ export async function searchMovies(query: string) {
     .from('movies')
     .select(`
       *,
-      channels!movies_user_id_fkey(
-        name
+      channels!movies_channel_id_fkey(
+        id,
+        name,
+        user_id
       )
     `)
     .or(`title.ilike.%${query}%,story.ilike.%${query}%`)
@@ -201,22 +217,22 @@ export async function searchMovies(query: string) {
       return [];
     }
 
-    const userIds = [...new Set(moviesData.map(movie => movie.user_id))];
+    const channelIds = [...new Set(moviesData.map(movie => movie.channel_id))];
 
     const { data: channelsData, error: channelsError } = await supabase
       .from('channels')
-      .select('user_id, name')
-      .in('user_id', userIds);
+      .select('id, name, user_id')
+      .in('id', channelIds);
 
     if (channelsError) throw channelsError;
 
     const channelsMap = new Map(
-      (channelsData || []).map(channel => [channel.user_id, channel])
+      (channelsData || []).map(channel => [channel.id, channel])
     );
 
     return moviesData.map(movie => ({
       ...movie,
-      channels: channelsMap.get(movie.user_id) || null,
+      channels: channelsMap.get(movie.channel_id) || null,
     }));
   }
 
@@ -361,10 +377,10 @@ export async function getChannelWithMovies(name: string) {
   const { data: movies, error: moviesError } = await supabase
     .from('movies')
     .select('*')
-    .eq('user_id', channel.user_id)
+    .eq('channel_id', channel.id)
     .not('publish_datetime', 'is', null)
     .lte('publish_datetime', new Date().toISOString())
     .order('created_at', { ascending: false });
   if (moviesError) throw moviesError;
-  return { channel, movies };
+  return { channel, movies: (movies || []).map((m) => ({ ...m, channels: channel })) };
 }
