@@ -6,12 +6,15 @@ import {
     ClockIcon,
     PlusIcon,
     EyeIcon,
-    PlayIcon
+    PlayIcon,
+    MagicWandIcon,
+    FloppyDiskIcon
 } from '@phosphor-icons/react';
 import { Animation, Scene } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import SceneEditor from './SceneEditor';
 import { uuid } from '../lib/uuid';
+import { insertMovie, updateMovie, getUserChannels } from '../lib/supabaseClient';
 
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 270;
@@ -28,6 +31,14 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         scenes: []
     });
     const [activeSceneIndex, setActiveSceneIndex] = useState(0);
+    const [showGenerator, setShowGenerator] = useState(false);
+    const [storyText, setStoryText] = useState(movie?.story || '');
+    const [generating, setGenerating] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [movieId, setMovieId] = useState<string | undefined>(movie?.id);
+    const [channelId, setChannelId] = useState<string | undefined>(movie?.channel_id);
+    const [saving, setSaving] = useState(false);
+    const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
     useEffect(() => {
         if (movie?.animation) {
@@ -38,7 +49,20 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                     movie.description ?? movie.animation.description ?? '',
             });
         }
+        if (movie?.id) setMovieId(movie.id);
+        if (movie?.channel_id) setChannelId(movie.channel_id);
+        if (movie?.story) setStoryText(movie.story);
     }, [movie]);
+
+    useEffect(() => {
+        if (!channelId) {
+            getUserChannels()
+                .then(ch => {
+                    if (ch && ch.length > 0) setChannelId(ch[0].id);
+                })
+                .catch(() => {});
+        }
+    }, [channelId]);
 
     const updateScene = (idx: number, scene: Scene) => {
         setAnimation((a) => {
@@ -89,6 +113,55 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         setActiveSceneIndex(idx + 1);
     };
 
+    const saveMovie = async () => {
+        setSaving(true);
+        setSaveMessage(null);
+        try {
+            const payload = {
+                channel_id: channelId!,
+                title: animation.title,
+                description: animation.description,
+                story: storyText,
+                animation,
+            };
+            let saved;
+            if (movieId) {
+                saved = await updateMovie({ id: movieId, ...payload });
+            } else {
+                if (!channelId) throw new Error('No channel');
+                saved = await insertMovie(payload);
+            }
+            setMovieId(saved.id);
+            setSaveMessage('Saved!');
+        } catch (e: any) {
+            setSaveMessage(e.message || 'Failed to save');
+        } finally {
+            setSaving(false);
+            setTimeout(() => setSaveMessage(null), 3000);
+        }
+    };
+
+    const generateWithAI = async () => {
+        setGenerating(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/storyboard', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ story: storyText })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error || 'Failed to generate');
+            setAnimation(data.animation as Animation);
+            setActiveSceneIndex(0);
+            setShowGenerator(false);
+        } catch (e: any) {
+            setError(e.message || 'Unknown error');
+        } finally {
+            setGenerating(false);
+        }
+    };
+
     return (
         <div className="h-screen flex flex-col bg-gray-50">
             {/* Header */}
@@ -112,6 +185,24 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                     onChange={(e) => setAnimation((a) => ({ ...a, fps: Number(e.target.value) || 30 }))}
                                 />
                             </div>
+                            <button
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+                                onClick={saveMovie}
+                                disabled={saving || !channelId}
+                            >
+                                <FloppyDiskIcon size={16} />
+                                {saving ? 'Saving…' : 'Save'}
+                            </button>
+                            <button
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                onClick={() => setShowGenerator(true)}
+                            >
+                                <MagicWandIcon size={16} />
+                                Generate with AI
+                            </button>
+                            {saveMessage && (
+                                <span className="text-sm text-gray-600">{saveMessage}</span>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -124,6 +215,33 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                             onChange={(e) => setAnimation((a) => ({ ...a, title: e.target.value }))}
                         />
                     </div>
+                    {showGenerator && (
+                        <div className="mt-4">
+                            <textarea
+                                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                rows={3}
+                                placeholder="Describe your story..."
+                                value={storyText}
+                                onChange={(e) => setStoryText(e.target.value)}
+                            />
+                            <div className="mt-2 flex gap-2">
+                                <button
+                                    className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                    onClick={generateWithAI}
+                                    disabled={generating || !storyText.trim()}
+                                >
+                                    {generating ? 'Generating…' : 'Generate'}
+                                </button>
+                                <button
+                                    className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                                    onClick={() => setShowGenerator(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+                        </div>
+                    )}
                 </div>
             </div>
 
