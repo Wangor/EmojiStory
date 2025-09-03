@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
-import { Scene, Actor, Keyframe, TextActor } from './AnimationTypes';
+import { Scene, Actor, Keyframe, TextActor, CompositeActor } from './AnimationTypes';
 
 import SceneCanvasToolbar from './SceneCanvasToolbar';
 
@@ -275,6 +275,101 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
     const renderActor = (a: Actor, isBg: boolean) => {
         const t = Math.round(currentFrame * frameMs);
         const pose = sample(a, t);
+
+        if (a.type === 'composite') {
+            const comp = a as CompositeActor;
+            if (comp.parts.length === 0) return null;
+
+            let minX = Infinity,
+                minY = Infinity,
+                maxX = -Infinity,
+                maxY = -Infinity;
+            for (const p of comp.parts) {
+                const s = p.start?.scale ?? 1;
+                const x0 = p.start?.x ?? 0;
+                const y0 = p.start?.y ?? 0;
+                minX = Math.min(minX, x0);
+                minY = Math.min(minY, y0);
+                maxX = Math.max(maxX, x0 + s);
+                maxY = Math.max(maxY, y0 + s);
+            }
+
+            const dominant = Math.max(...comp.parts.map((p) => p.start?.scale ?? 1));
+            const unitSize = comp.meta?.sizeOverride ?? Math.round((48 * (a.start?.scale ?? 1)) / dominant);
+            const widthPx = (maxX - minX) * unitSize;
+            const heightPx = (maxY - minY) * unitSize;
+
+            const style: React.CSSProperties = {
+                left: pose.x * 100 + '%',
+                top: pose.y * 100 + '%',
+                transform: `translate(-50%, -50%)${comp.flipX ? ' scaleX(-1)' : ''} scale(${pose.scale}) rotate(${pose.rotate}deg)`,
+                transformOrigin: 'center center',
+                opacity: layer === 'actors' && isBg ? 0.5 : 1,
+                width: widthPx,
+                height: heightPx
+            };
+
+            const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
+            const isSelected = selected === a.id;
+
+            return (
+                <div
+                    key={a.id}
+                    onPointerDown={
+                        interactive && tool === 'move'
+                            ? (e) => handleMoveStart(a.id, e)
+                            : interactive && tool === 'rotate'
+                                ? (e) => handleRotateStart(e, a.id)
+                                : () => interactive && setSelected(a.id)
+                    }
+                    className={`absolute select-none ${
+                        interactive && tool === 'move' ? 'cursor-move' :
+                            interactive && tool === 'rotate' ? 'cursor-alias' : 'cursor-pointer'
+                    } ${
+                        isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
+                    } ${interactive ? 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-1' : ''}`}
+                    style={style}
+                >
+                    {comp.parts.map((p) => {
+                        const ps = p.start?.scale ?? 1;
+                        const partSize = unitSize * ps;
+                        const offsetX = ((p.start?.x ?? 0) - minX) * unitSize;
+                        const offsetY = ((p.start?.y ?? 0) - minY) * unitSize;
+                        return (
+                            <span
+                                key={p.id}
+                                style={{
+                                    position: 'absolute',
+                                    left: offsetX,
+                                    top: offsetY,
+                                    fontSize: partSize
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        display: 'inline-block',
+                                        transform: p.flipX ? 'scaleX(-1)' : undefined
+                                    }}
+                                >
+                                    {p.emoji}
+                                </span>
+                            </span>
+                        );
+                    })}
+                    {interactive && isSelected && tool === 'scale' && (
+                        <div
+                            onPointerDown={(e) => handleScaleStart(e, a.id)}
+                            className="absolute w-3 h-3 bg-white border-2 border-blue-500 bottom-0 right-0 cursor-se-resize rounded-sm shadow-sm"
+                        />
+                    )}
+                    {interactive && isSelected && tool === 'rotate' && (
+                        <div className="absolute -top-8 left-1/2 -ml-1.5 w-3 h-3 bg-white border-2 border-green-500 rounded-full shadow-sm cursor-alias">
+                            <div className="absolute top-3 left-1/2 w-0.5 h-5 bg-green-500 -ml-px"></div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
 
         const baseFontSize = a.type === 'emoji'
             ? Math.round(48 * (a.start?.scale ?? 1))
