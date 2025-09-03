@@ -110,6 +110,7 @@ export async function updateMovie(movie: { id: string; channel_id?: string; titl
   const { data, error } = await supabase
     .from('movies')
     .update({
+      user_id: user.id,
       channel_id: movie.channel_id,
       title: movie.title,
       description: movie.description,
@@ -117,7 +118,6 @@ export async function updateMovie(movie: { id: string; channel_id?: string; titl
       animation: movie.animation,
     })
     .eq('id', movie.id)
-    .eq('user_id', user.id)
     .select()
     .single();
   if (error) throw error;
