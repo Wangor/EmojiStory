@@ -78,6 +78,14 @@ export function Navbar() {
             {user ? (
               <>
                 <Link
+                  href="/profile"
+                  prefetch={false}
+                  className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
+                >
+                  <User size={18} weight="bold" />
+                  <span>Profile</span>
+                </Link>
+                <Link
                   href="/mychannel"
                   prefetch={false}
                   className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"

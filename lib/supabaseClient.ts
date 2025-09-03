@@ -28,6 +28,38 @@ export async function getUser() {
   return data.user;
 }
 
+export async function getProfile() {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateProfile(params: { display_name?: string; avatar_url?: string; metadata?: any }) {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await supabase
+    .from('profiles')
+    .upsert(
+      {
+        user_id: user.id,
+        display_name: params.display_name,
+        avatar_url: params.avatar_url,
+        metadata: params.metadata,
+      },
+      { onConflict: 'user_id' }
+    )
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function insertMovie(movie: { title: string; description: string; story: string; animation: any; }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
