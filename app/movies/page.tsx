@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { PlayIcon, FilmSlateIcon, ClockIcon } from '@phosphor-icons/react';
+import { PlayIcon, FilmSlateIcon, ClockIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import { getMoviesByUser } from '../../lib/supabaseClient';
 import { MovieCard } from '../../components/MovieCard';
 
@@ -114,16 +114,25 @@ function MoviesContent() {
                       {movie.story}
                     </p>
 
-                    {/* Play Button */}
-                    <Link
-                      href={`/movies/${movie.id}`}
-                      className="group/play w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium mt-auto"
-                    >
-                      <div className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover/play:bg-white/30 transition-colors">
-                        <PlayIcon weight="fill" size={12} className="text-white ml-0.5" />
-                      </div>
-                      Watch Movie
-                    </Link>
+                    {/* Action Buttons */}
+                    <div className="mt-auto flex gap-2">
+                      <Link
+                        href={`/movies/${movie.id}`}
+                        className="group/play flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                      >
+                        <div className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover/play:bg-white/30 transition-colors">
+                          <PlayIcon weight="fill" size={12} className="text-white ml-0.5" />
+                        </div>
+                        Watch
+                      </Link>
+                      <Link
+                        href={`/editor?id=${movie.id}`}
+                        className="group/edit flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                      >
+                        <PencilSimpleIcon weight="bold" size={12} className="text-white" />
+                        Edit
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
