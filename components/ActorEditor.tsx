@@ -31,6 +31,7 @@ export type ActorEditorProps = {
 export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: ActorEditorProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showEmojiCatalogue, setShowEmojiCatalogue] = useState(false);
+    const [partCatalogueIndex, setPartCatalogueIndex] = useState<number | null>(null);
 
     const update = (fields: any) => onChange({ ...actor, ...fields });
 
@@ -100,7 +101,13 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
     };
 
     const handleEmojiSelect = (emoji: string) => {
-        update({ emoji });
+        if (partCatalogueIndex !== null) {
+            updatePart(partCatalogueIndex, { emoji });
+            setPartCatalogueIndex(null);
+        } else {
+            update({ emoji });
+        }
+        setShowEmojiCatalogue(false);
     };
 
     const updatePart = (idx: number, fields: Partial<EmojiActor>) => {
@@ -141,6 +148,73 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
         const parts = [...(actor as CompositeActor).parts];
         parts.splice(idx, 1);
         update({ parts });
+    };
+
+    const renderPartsPreview = () => {
+        if (actor.type !== 'composite') return null;
+        const comp = actor as CompositeActor;
+        if (comp.parts.length === 0) return null;
+
+        let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+        for (const p of comp.parts) {
+            const s = p.start?.scale ?? 1;
+            const x0 = p.start?.x ?? 0;
+            const y0 = p.start?.y ?? 0;
+            minX = Math.min(minX, x0);
+            minY = Math.min(minY, y0);
+            maxX = Math.max(maxX, x0 + s);
+            maxY = Math.max(maxY, y0 + s);
+        }
+
+        const dominant = Math.max(...comp.parts.map((p) => p.start?.scale ?? 1));
+        const unitSize = Math.round(32 / dominant);
+        const widthPx = (maxX - minX) * unitSize;
+        const heightPx = (maxY - minY) * unitSize;
+        const scale = Math.min(48 / widthPx, 48 / heightPx);
+
+        return (
+            <div className="w-12 h-12 overflow-hidden relative">
+                <div
+                    style={{
+                        width: widthPx,
+                        height: heightPx,
+                        transform: `scale(${scale})`,
+                        transformOrigin: 'top left',
+                        position: 'relative'
+                    }}
+                >
+                    {comp.parts.map((p) => {
+                        const ps = p.start?.scale ?? 1;
+                        const partSize = unitSize * ps;
+                        const offsetX = ((p.start?.x ?? 0) - minX) * unitSize;
+                        const offsetY = ((p.start?.y ?? 0) - minY) * unitSize;
+                        return (
+                            <span
+                                key={p.id}
+                                style={{
+                                    position: 'absolute',
+                                    left: offsetX,
+                                    top: offsetY,
+                                    fontSize: partSize
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        display: 'inline-block',
+                                        transform: p.flipX ? 'scaleX(-1)' : undefined
+                                    }}
+                                >
+                                    {p.emoji}
+                                </span>
+                            </span>
+                        );
+                    })}
+                </div>
+            </div>
+        );
     };
 
     const getActorPreview = () => {
@@ -290,10 +364,13 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
 
                             {actor.type === 'composite' && (
                                 <div>
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                        <UsersIcon size={14} />
-                                        Parts
-                                    </label>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                            <UsersIcon size={14} />
+                                            Parts
+                                        </label>
+                                        {renderPartsPreview()}
+                                    </div>
                                     <div className="space-y-3">
                                         {(actor as CompositeActor).parts.map((p, idx) => (
                                             <div key={p.id} className="border border-gray-200 rounded-md p-3 bg-white space-y-2">
@@ -303,6 +380,13 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                         value={p.emoji}
                                                         onChange={(e) => updatePart(idx, { emoji: e.target.value })}
                                                     />
+                                                    <button
+                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                                        onClick={() => setPartCatalogueIndex(idx)}
+                                                    >
+                                                        <SmileyWinkIcon size={12} />
+                                                        Browse
+                                                    </button>
                                                     <button
                                                         className="ml-auto text-xs text-red-600 hover:text-red-700"
                                                         onClick={() => removePart(idx)}
@@ -507,8 +591,11 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
 
             {/* Emoji Catalogue Modal */}
             <EmojiCatalogue
-                isOpen={showEmojiCatalogue}
-                onClose={() => setShowEmojiCatalogue(false)}
+                isOpen={showEmojiCatalogue || partCatalogueIndex !== null}
+                onClose={() => {
+                    setShowEmojiCatalogue(false);
+                    setPartCatalogueIndex(null);
+                }}
                 onSelectEmoji={handleEmojiSelect}
             />
         </>
