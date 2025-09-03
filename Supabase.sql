@@ -124,8 +124,8 @@ alter table public.profiles enable row level security;
 create policy "Users can insert their own profile" on public.profiles
   for insert with check (auth.uid() = user_id);
 
-create policy "Users can read their own profile" on public.profiles
-  for select using (auth.uid() = user_id);
+create policy "Profiles are viewable by everyone" on public.profiles
+  for select using (true);
 
 create policy "Users can update their own profile" on public.profiles
   for update using (auth.uid() = user_id);
