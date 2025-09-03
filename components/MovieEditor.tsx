@@ -14,7 +14,7 @@ import { Animation, Scene } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import SceneEditor from './SceneEditor';
 import { uuid } from '../lib/uuid';
-import { insertMovie, updateMovie } from '../lib/supabaseClient';
+import { insertMovie, updateMovie, getUserChannels } from '../lib/supabaseClient';
 
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 270;
@@ -53,6 +53,16 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         if (movie?.channel_id) setChannelId(movie.channel_id);
         if (movie?.story) setStoryText(movie.story);
     }, [movie]);
+
+    useEffect(() => {
+        if (!channelId) {
+            getUserChannels()
+                .then(ch => {
+                    if (ch && ch.length > 0) setChannelId(ch[0].id);
+                })
+                .catch(() => {});
+        }
+    }, [channelId]);
 
     const updateScene = (idx: number, scene: Scene) => {
         setAnimation((a) => {
@@ -178,7 +188,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                             <button
                                 className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
                                 onClick={saveMovie}
-                                disabled={saving}
+                                disabled={saving || !channelId}
                             >
                                 <FloppyDiskIcon size={16} />
                                 {saving ? 'Saving…' : 'Save'}

@@ -117,6 +117,7 @@ export async function updateMovie(movie: { id: string; channel_id?: string; titl
       animation: movie.animation,
     })
     .eq('id', movie.id)
+    .eq('user_id', user.id)
     .select()
     .single();
   if (error) throw error;
