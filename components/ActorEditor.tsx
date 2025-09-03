@@ -174,6 +174,8 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
         const widthPx = (maxX - minX) * unitSize;
         const heightPx = (maxY - minY) * unitSize;
         const scale = Math.min(48 / widthPx, 48 / heightPx);
+        const offsetX = (48 - widthPx * scale) / 2;
+        const offsetY = (48 - heightPx * scale) / 2;
 
         return (
             <div className="w-12 h-12 overflow-hidden relative">
@@ -181,9 +183,11 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                     style={{
                         width: widthPx,
                         height: heightPx,
+                        position: 'absolute',
+                        left: offsetX,
+                        top: offsetY,
                         transform: `scale(${scale})`,
-                        transformOrigin: 'top left',
-                        position: 'relative'
+                        transformOrigin: 'top left'
                     }}
                 >
                     {comp.parts.map((p) => {
