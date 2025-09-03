@@ -68,6 +68,13 @@ export function Navbar() {
           </div>
 
           <div className="flex gap-6 items-center ml-4">
+            <Link
+              href="/movies"
+              className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
+            >
+              <FilmSlateIcon size={18} weight="fill" />
+              <span>Movies</span>
+            </Link>
             {user ? (
               <>
                 <Link
@@ -79,7 +86,7 @@ export function Navbar() {
                   <span>My Channel</span>
                 </Link>
                 <Link
-                  href="/movies"
+                  href="/mymovies"
                   className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
                 >
                   <FilmSlateIcon size={18} weight="fill" />

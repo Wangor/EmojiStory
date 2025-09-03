@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signIn(email, password);
-      router.push('/movies');
+      router.push('/mymovies');
     } catch (err: any) {
       setError(err.message);
     }

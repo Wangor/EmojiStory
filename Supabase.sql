@@ -5,6 +5,7 @@ create table if not exists public.movies (
   description text,
   story text,
   animation jsonb,
+  publish_datetime timestamptz,
   created_at timestamptz default now()
 );
 
@@ -27,6 +28,9 @@ alter table public.movies
   add column if not exists description text;
 
 update public.movies set description = coalesce(description, '');
+
+alter table public.movies
+  add column if not exists publish_datetime timestamptz;
 
 -- Likes table for tracking movie likes
 create table if not exists public.likes (
