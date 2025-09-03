@@ -174,34 +174,28 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
         const widthPx = (maxX - minX) * unitSize;
         const heightPx = (maxY - minY) * unitSize;
         const scale = Math.min(48 / widthPx, 48 / heightPx);
-        const offsetX = (48 - widthPx * scale) / 2;
-        const offsetY = (48 - heightPx * scale) / 2;
 
         return (
-            <div className="w-12 h-12 overflow-hidden relative">
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
                 <div
                     style={{
-                        width: widthPx,
-                        height: heightPx,
-                        position: 'absolute',
-                        left: offsetX,
-                        top: offsetY,
-                        transform: `scale(${scale})`,
-                        transformOrigin: 'top left'
+                        width: widthPx * scale,
+                        height: heightPx * scale,
+                        position: 'relative'
                     }}
                 >
                     {comp.parts.map((p) => {
                         const ps = p.start?.scale ?? 1;
-                        const partSize = unitSize * ps;
-                        const offsetX = ((p.start?.x ?? 0) - minX) * unitSize;
-                        const offsetY = ((p.start?.y ?? 0) - minY) * unitSize;
+                        const partSize = unitSize * ps * scale;
+                        const x = ((p.start?.x ?? 0) - minX) * unitSize * scale;
+                        const y = ((p.start?.y ?? 0) - minY) * unitSize * scale;
                         return (
                             <span
                                 key={p.id}
                                 style={{
                                     position: 'absolute',
-                                    left: offsetX,
-                                    top: offsetY,
+                                    left: x,
+                                    top: y,
                                     fontSize: partSize
                                 }}
                             >
