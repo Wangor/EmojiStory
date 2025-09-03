@@ -7,12 +7,14 @@ import {
     PlusIcon,
     EyeIcon,
     PlayIcon,
-    MagicWandIcon
+    MagicWandIcon,
+    FloppyDiskIcon
 } from '@phosphor-icons/react';
 import { Animation, Scene } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import SceneEditor from './SceneEditor';
 import { uuid } from '../lib/uuid';
+import { insertMovie, updateMovie } from '../lib/supabaseClient';
 
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 270;
@@ -30,9 +32,13 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
     });
     const [activeSceneIndex, setActiveSceneIndex] = useState(0);
     const [showGenerator, setShowGenerator] = useState(false);
-    const [storyText, setStoryText] = useState('');
+    const [storyText, setStoryText] = useState(movie?.story || '');
     const [generating, setGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [movieId, setMovieId] = useState<string | undefined>(movie?.id);
+    const [channelId, setChannelId] = useState<string | undefined>(movie?.channel_id);
+    const [saving, setSaving] = useState(false);
+    const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
     useEffect(() => {
         if (movie?.animation) {
@@ -43,6 +49,9 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                     movie.description ?? movie.animation.description ?? '',
             });
         }
+        if (movie?.id) setMovieId(movie.id);
+        if (movie?.channel_id) setChannelId(movie.channel_id);
+        if (movie?.story) setStoryText(movie.story);
     }, [movie]);
 
     const updateScene = (idx: number, scene: Scene) => {
@@ -94,6 +103,34 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         setActiveSceneIndex(idx + 1);
     };
 
+    const saveMovie = async () => {
+        setSaving(true);
+        setSaveMessage(null);
+        try {
+            const payload = {
+                channel_id: channelId!,
+                title: animation.title,
+                description: animation.description,
+                story: storyText,
+                animation,
+            };
+            let saved;
+            if (movieId) {
+                saved = await updateMovie({ id: movieId, ...payload });
+            } else {
+                if (!channelId) throw new Error('No channel');
+                saved = await insertMovie(payload);
+            }
+            setMovieId(saved.id);
+            setSaveMessage('Saved!');
+        } catch (e: any) {
+            setSaveMessage(e.message || 'Failed to save');
+        } finally {
+            setSaving(false);
+            setTimeout(() => setSaveMessage(null), 3000);
+        }
+    };
+
     const generateWithAI = async () => {
         setGenerating(true);
         setError(null);
@@ -139,12 +176,23 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 />
                             </div>
                             <button
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+                                onClick={saveMovie}
+                                disabled={saving}
+                            >
+                                <FloppyDiskIcon size={16} />
+                                {saving ? 'Saving…' : 'Save'}
+                            </button>
+                            <button
                                 className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                                 onClick={() => setShowGenerator(true)}
                             >
                                 <MagicWandIcon size={16} />
                                 Generate with AI
                             </button>
+                            {saveMessage && (
+                                <span className="text-sm text-gray-600">{saveMessage}</span>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
