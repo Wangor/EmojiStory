@@ -7,6 +7,9 @@ out/
 dist/
 build/
 
+# Generated Tailwind CSS
+tailwind/output.css
+
 # TypeScript
 *.tsbuildinfo
 
