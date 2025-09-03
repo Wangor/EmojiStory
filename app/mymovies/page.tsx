@@ -11,7 +11,7 @@ function MoviesContent() {
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [releaseId, setReleaseId] = useState<string | null>(null);
+  const [releaseMovie, setReleaseMovie] = useState<any | null>(null);
 
   useEffect(() => {
     getMoviesByUser()
@@ -144,13 +144,13 @@ function MoviesContent() {
                               <PencilSimpleIcon weight="bold" size={12} />
                               Edit
                             </Link>
-                            <button
-                              onClick={() => setReleaseId(movie.id)}
-                              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded"
-                            >
-                              <UploadSimpleIcon weight="bold" size={12} className="text-white" />
-                              Publish
-                            </button>
+            <button
+              onClick={() => setReleaseMovie(movie)}
+              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded"
+            >
+              <UploadSimpleIcon weight="bold" size={12} className="text-white" />
+              Publish
+            </button>
                           </>
                         )}
                       </div>
@@ -176,17 +176,17 @@ function MoviesContent() {
         )}
       </div>
       <ReleaseModal
-        isOpen={releaseId !== null}
-        onClose={() => setReleaseId(null)}
+        isOpen={releaseMovie !== null}
+        onClose={() => setReleaseMovie(null)}
         onConfirm={async (date) => {
-          if (!releaseId) return;
+          if (!releaseMovie) return;
           try {
-            const updated = await publishMovie(releaseId, date.toISOString());
-            setMovies(m => m.map(x => x.id === releaseId ? updated : x));
+            const updated = await publishMovie(releaseMovie.id, releaseMovie.channel_id, date.toISOString());
+            setMovies(m => m.map(x => x.id === releaseMovie.id ? updated : x));
           } catch (e: any) {
             setError(e.message);
           } finally {
-            setReleaseId(null);
+            setReleaseMovie(null);
           }
         }}
       />

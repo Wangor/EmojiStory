@@ -8,7 +8,7 @@ import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
 import { MovieCard } from '../components/MovieCard';
 import { SAMPLE_ANIMATION } from '../lib/sampleAnimation';
-import { insertMovie, getUser, getAllMovies } from '../lib/supabaseClient';
+import { insertMovie, getUser, getAllMovies, getUserChannels } from '../lib/supabaseClient';
 
 export default function Page() {
   const [storyText, setStoryText] = useState<string>(
@@ -19,6 +19,8 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [movies, setMovies] = useState<any[]>([]);
+  const [channels, setChannels] = useState<any[]>([]);
+  const [channelId, setChannelId] = useState<string>('');
   const playerRef = useRef<{ play: () => void; stop: () => void } | null>(null);
   const router = useRouter();
 
@@ -26,7 +28,14 @@ export default function Page() {
   const wordCount = storyText.trim().split(/\s+/).filter(word => word.length > 0).length;
 
   useEffect(() => {
-    getUser().then(setUser);
+    getUser().then(async (u) => {
+      setUser(u);
+      if (u) {
+        const ch = await getUserChannels();
+        setChannels(ch);
+        if (ch.length > 0) setChannelId(ch[0].id);
+      }
+    });
     getAllMovies().then(setMovies).catch((e) => setError(e.message));
   }, []);
 
@@ -133,7 +142,12 @@ export default function Page() {
                   setError('Please login to save');
                   return;
                 }
+                if (!channelId) {
+                  setError('Please select a channel');
+                  return;
+                }
                 const saved = await insertMovie({
+                  channel_id: channelId,
                   title: animation?.title || storyText.substring(0, 30),
                   description: animation?.description || '',
                   story: storyText,
@@ -161,6 +175,27 @@ export default function Page() {
                 <p className="text-red-700">{error}</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Channel Selection */}
+        {user && channels.length > 0 && (
+          <div className="mb-8 text-center">
+            <label htmlFor="channel-select" className="block text-sm font-semibold text-gray-700 mb-2">
+              Select Channel
+            </label>
+            <select
+              id="channel-select"
+              value={channelId}
+              onChange={(e) => setChannelId(e.target.value)}
+              className="p-2 border rounded"
+            >
+              {channels.map((ch) => (
+                <option key={ch.id} value={ch.id}>
+                  {ch.name}
+                </option>
+              ))}
+            </select>
           </div>
         )}
 

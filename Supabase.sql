@@ -1,6 +1,7 @@
 create table if not exists public.movies (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id),
+  channel_id uuid references public.channels(id),
   title text,
   description text,
   story text,
@@ -15,13 +16,31 @@ create policy "Public read access" on public.movies
   for select using (true);
 
 create policy "Users can insert their own movies" on public.movies
-  for insert with check (auth.uid() = user_id);
+  for insert with check (
+    exists (
+      select 1 from public.channels
+      where channels.id = movies.channel_id
+        and channels.user_id = auth.uid()
+    )
+  );
 
 create policy "Users can update their own movies" on public.movies
-  for update using (auth.uid() = user_id);
+  for update using (
+    exists (
+      select 1 from public.channels
+      where channels.id = movies.channel_id
+        and channels.user_id = auth.uid()
+    )
+  );
 
 create policy "Users can delete their own movies" on public.movies
-  for delete using (auth.uid() = user_id);
+  for delete using (
+    exists (
+      select 1 from public.channels
+      where channels.id = movies.channel_id
+        and channels.user_id = auth.uid()
+    )
+  );
 
 -- Migration: ensure description column exists and backfill
 alter table public.movies
@@ -31,6 +50,18 @@ update public.movies set description = coalesce(description, '');
 
 alter table public.movies
   add column if not exists publish_datetime timestamptz;
+
+alter table public.movies
+  add column if not exists channel_id uuid references public.channels(id);
+
+update public.movies
+set channel_id = channels.id
+from public.channels
+where public.movies.channel_id is null
+  and public.movies.user_id = channels.user_id;
+
+alter table public.movies
+  alter column channel_id set not null;
 
 -- Likes table for tracking movie likes
 create table if not exists public.likes (
@@ -74,9 +105,11 @@ create policy "Users can delete their own comments" on public.comments
 create policy "Movie owners can delete comments" on public.comments
   for delete using (
     exists (
-      select 1 from public.movies
+      select 1
+      from public.movies
+      join public.channels on channels.id = movies.channel_id
       where movies.id = comments.movie_id
-        and movies.user_id = auth.uid()
+        and channels.user_id = auth.uid()
     )
   );
 
