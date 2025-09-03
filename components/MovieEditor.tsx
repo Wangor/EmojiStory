@@ -6,7 +6,8 @@ import {
     ClockIcon,
     PlusIcon,
     EyeIcon,
-    PlayIcon
+    PlayIcon,
+    MagicWandIcon
 } from '@phosphor-icons/react';
 import { Animation, Scene } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
@@ -28,6 +29,10 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         scenes: []
     });
     const [activeSceneIndex, setActiveSceneIndex] = useState(0);
+    const [showGenerator, setShowGenerator] = useState(false);
+    const [storyText, setStoryText] = useState('');
+    const [generating, setGenerating] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (movie?.animation) {
@@ -89,6 +94,27 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         setActiveSceneIndex(idx + 1);
     };
 
+    const generateWithAI = async () => {
+        setGenerating(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/storyboard', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ story: storyText })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error || 'Failed to generate');
+            setAnimation(data.animation as Animation);
+            setActiveSceneIndex(0);
+            setShowGenerator(false);
+        } catch (e: any) {
+            setError(e.message || 'Unknown error');
+        } finally {
+            setGenerating(false);
+        }
+    };
+
     return (
         <div className="h-screen flex flex-col bg-gray-50">
             {/* Header */}
@@ -112,6 +138,13 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                     onChange={(e) => setAnimation((a) => ({ ...a, fps: Number(e.target.value) || 30 }))}
                                 />
                             </div>
+                            <button
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                onClick={() => setShowGenerator(true)}
+                            >
+                                <MagicWandIcon size={16} />
+                                Generate with AI
+                            </button>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -124,6 +157,33 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                             onChange={(e) => setAnimation((a) => ({ ...a, title: e.target.value }))}
                         />
                     </div>
+                    {showGenerator && (
+                        <div className="mt-4">
+                            <textarea
+                                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                rows={3}
+                                placeholder="Describe your story..."
+                                value={storyText}
+                                onChange={(e) => setStoryText(e.target.value)}
+                            />
+                            <div className="mt-2 flex gap-2">
+                                <button
+                                    className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                    onClick={generateWithAI}
+                                    disabled={generating || !storyText.trim()}
+                                >
+                                    {generating ? 'Generating…' : 'Generate'}
+                                </button>
+                                <button
+                                    className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                                    onClick={() => setShowGenerator(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+                        </div>
+                    )}
                 </div>
             </div>
 
