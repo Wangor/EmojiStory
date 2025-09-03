@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { PlayIcon, FilmSlateIcon, ClockIcon, PencilSimpleIcon, UploadSimpleIcon } from '@phosphor-icons/react';
 import { getMoviesByUser, publishMovie } from '../../lib/supabaseClient';
 import { MovieCard } from '../../components/MovieCard';
+import ReleaseModal from '../../components/ReleaseModal';
 
 function MoviesContent() {
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [releaseId, setReleaseId] = useState<string | null>(null);
 
   useEffect(() => {
     getMoviesByUser()
@@ -117,43 +119,34 @@ function MoviesContent() {
                       </p>
 
                       {/* Action Buttons */}
-                      <div className="mt-auto flex gap-2">
+                      <div className="mt-auto flex gap-2 text-sm">
                         <Link
                           href={`/movies/${movie.id}`}
-                          className="group/play flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded"
                         >
-                          <div className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover/play:bg-white/30 transition-colors">
-                            <PlayIcon weight="fill" size={12} className="text-white ml-0.5" />
-                          </div>
+                          <PlayIcon weight="fill" size={12} className="text-white" />
                           Watch
                         </Link>
                         {released ? (
                           <Link
                             href={`/editor?copy=${movie.id}`}
-                            className="group/edit flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                            className="flex items-center justify-center gap-1 px-3 py-1.5 border rounded"
                           >
-                            <PencilSimpleIcon weight="bold" size={12} className="text-white" />
+                            <PencilSimpleIcon weight="bold" size={12} />
                             Copy
                           </Link>
                         ) : (
                           <>
                             <Link
                               href={`/editor?id=${movie.id}`}
-                              className="group/edit flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                              className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 border rounded"
                             >
-                              <PencilSimpleIcon weight="bold" size={12} className="text-white" />
+                              <PencilSimpleIcon weight="bold" size={12} />
                               Edit
                             </Link>
                             <button
-                              onClick={async () => {
-                                try {
-                                  const updated = await publishMovie(movie.id);
-                                  setMovies(m => m.map(x => x.id === movie.id ? updated : x));
-                                } catch (e: any) {
-                                  setError(e.message);
-                                }
-                              }}
-                              className="group/publish flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                              onClick={() => setReleaseId(movie.id)}
+                              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded"
                             >
                               <UploadSimpleIcon weight="bold" size={12} className="text-white" />
                               Publish
@@ -182,6 +175,21 @@ function MoviesContent() {
           </div>
         )}
       </div>
+      <ReleaseModal
+        isOpen={releaseId !== null}
+        onClose={() => setReleaseId(null)}
+        onConfirm={async (date) => {
+          if (!releaseId) return;
+          try {
+            const updated = await publishMovie(releaseId, date.toISOString());
+            setMovies(m => m.map(x => x.id === releaseId ? updated : x));
+          } catch (e: any) {
+            setError(e.message);
+          } finally {
+            setReleaseId(null);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -72,12 +72,12 @@ export async function getMovieById(id: string, opts: { allowReleased?: boolean }
   return data;
 }
 
-export async function publishMovie(id: string) {
+export async function publishMovie(id: string, publishDateTime: string) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('movies')
-    .update({ publish_datetime: new Date().toISOString() })
+    .update({ publish_datetime: publishDateTime })
     .eq('id', id)
     .eq('user_id', user.id)
     .select()
