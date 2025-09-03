@@ -72,6 +72,20 @@ export async function getMovieById(id: string, opts: { allowReleased?: boolean }
   return data;
 }
 
+export async function publishMovie(id: string) {
+  const user = await getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await supabase
+    .from('movies')
+    .update({ publish_datetime: new Date().toISOString() })
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function getAllMovies() {
   const { data, error } = await supabase
     .from('movies')

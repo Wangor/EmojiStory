@@ -14,7 +14,7 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       await signUp(email, password);
-      router.push('/movies');
+      router.push('/mymovies');
     } catch (err: any) {
       setError(err.message);
     }
