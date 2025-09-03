@@ -173,10 +173,11 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
         const unitSize = Math.round(32 / dominant);
         const widthPx = (maxX - minX) * unitSize;
         const heightPx = (maxY - minY) * unitSize;
-        const scale = Math.min(48 / widthPx, 48 / heightPx);
+        // Use a larger container but smaller scaling to fit more content
+        const scale = Math.min(96 / widthPx, 96 / heightPx, 1);
 
         return (
-            <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+            <div className="w-24 h-24 flex items-center justify-center overflow-hidden border border-gray-200 rounded-md bg-gray-50">
                 <div
                     style={{
                         width: widthPx * scale,
@@ -223,7 +224,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
         } else if (actor.type === 'composite') {
             return (actor as CompositeActor).parts.map((p) => p.emoji).join('');
         }
-        return actor.type;
+        return 'Unknown';
     };
 
     const getActorIcon = () => {
@@ -361,14 +362,18 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                             )}
 
                             {actor.type === 'composite' && (
+                                <div className="flex flex-col items-center mb-6">
+                                    <label className="text-sm font-medium text-gray-700 mb-3">Composite Preview</label>
+                                    {renderPartsPreview()}
+                                </div>
+                            )}
+
+                            {actor.type === 'composite' && (
                                 <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                                            <UsersIcon size={14} />
-                                            Parts
-                                        </label>
-                                        {renderPartsPreview()}
-                                    </div>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                                        <UsersIcon size={14} />
+                                        Parts
+                                    </label>
                                     <div className="space-y-3">
                                         {(actor as CompositeActor).parts.map((p, idx) => (
                                             <div key={p.id} className="border border-gray-200 rounded-md p-3 bg-white space-y-2">
@@ -599,4 +604,3 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
         </>
     );
 }
-
