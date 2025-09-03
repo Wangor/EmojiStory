@@ -1,18 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, HeartIcon } from '@phosphor-icons/react';
 import type { Animation } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import { ClipComments } from './ClipComments';
 import { ShareButton } from './ShareButton';
-import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
+import { likeMovie, getMovieLikes, getUserChannels } from '../lib/supabaseClient';
 
 export function MovieDetail({ movie }: { movie: any }) {
   const router = useRouter();
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [authorChannel, setAuthorChannel] = useState<string | null>(null);
 
   useEffect(() => {
     if (movie?.id) {
@@ -20,6 +22,11 @@ export function MovieDetail({ movie }: { movie: any }) {
         setLikes(count);
         setLiked(liked);
       });
+    }
+    if (movie?.user_id) {
+      getUserChannels(movie.user_id)
+        .then((chs) => setAuthorChannel(chs?.[0]?.name || null))
+        .catch(() => setAuthorChannel(null));
     }
   }, [movie]);
 
@@ -54,6 +61,15 @@ export function MovieDetail({ movie }: { movie: any }) {
               {movie.description}
             </p>
           )}
+          <div className="mt-2 text-sm text-gray-600">
+            By{' '}
+            <Link
+              href={`/users/${movie.user_id}`}
+              className="text-blue-600 hover:underline"
+            >
+              {authorChannel ? `@${authorChannel}` : 'Unknown'}
+            </Link>
+          </div>
           <div className="mt-4 flex justify-center gap-2">
             <button
               onClick={toggleLike}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { getComments, postComment, deleteComment, getUser } from '../lib/supabaseClient';
 
 interface Comment {
@@ -50,7 +51,13 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
         {comments.map((c) => (
           <li key={c.id} className="p-4 bg-white border border-gray-200 rounded-lg">
             <p className="text-gray-700 text-sm whitespace-pre-wrap">
-              <span className="font-medium">{c.username ?? 'Unknown'}:</span> {c.content}
+              <Link
+                href={`/users/${c.user_id}`}
+                className="font-medium hover:underline"
+              >
+                {c.username ?? 'Unknown'}
+              </Link>
+              : {c.content}
             </p>
             <div className="text-xs text-gray-500 mt-1">
               {new Date(c.created_at).toLocaleString()}

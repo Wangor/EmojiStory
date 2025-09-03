@@ -40,6 +40,16 @@ export async function getProfile() {
   return data;
 }
 
+export async function getProfileById(userId: string) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function updateProfile(params: { display_name?: string; avatar_url?: string; metadata?: any }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
@@ -60,13 +70,17 @@ export async function updateProfile(params: { display_name?: string; avatar_url?
   return data;
 }
 
-export async function getUserChannels() {
-  const user = await getUser();
-  if (!user) throw new Error('Not authenticated');
+export async function getUserChannels(userId?: string) {
+  let targetId = userId;
+  if (!targetId) {
+    const user = await getUser();
+    if (!user) throw new Error('Not authenticated');
+    targetId = user.id;
+  }
   const { data, error } = await supabase
     .from('channels')
     .select('*')
-    .eq('user_id', user.id);
+    .eq('user_id', targetId);
   if (error) throw error;
   return data;
 }
@@ -90,13 +104,17 @@ export async function insertMovie(movie: { channel_id: string; title: string; de
   return data;
 }
 
-export async function getMoviesByUser() {
-  const user = await getUser();
-  if (!user) throw new Error('Not authenticated');
+export async function getMoviesByUser(userId?: string) {
+  let targetId = userId;
+  if (!targetId) {
+    const user = await getUser();
+    if (!user) throw new Error('Not authenticated');
+    targetId = user.id;
+  }
   const { data, error } = await supabase
     .from('movies')
     .select(`*, channels!inner(name, id, user_id)`)
-    .eq('channels.user_id', user.id)
+    .eq('channels.user_id', targetId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
