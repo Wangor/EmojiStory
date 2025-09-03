@@ -8,24 +8,33 @@ import { getMovieById } from '../../lib/supabaseClient';
 export default function EditorPage() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
+  const copy = searchParams.get('copy');
   const [movie, setMovie] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    const targetId = id || copy;
+    if (targetId) {
       setLoading(true);
-      getMovieById(id)
-        .then(setMovie)
+      getMovieById(targetId, { allowReleased: !!copy })
+        .then(m => {
+          if (copy) {
+            const { id: _omit, ...rest } = m;
+            setMovie(rest);
+          } else {
+            setMovie(m);
+          }
+        })
         .catch((e: any) => setError(e.message))
         .finally(() => setLoading(false));
     }
-  }, [id]);
+  }, [id, copy]);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">
-        {id ? 'Edit Movie' : 'Movie Editor'}
+        {id ? 'Edit Movie' : copy ? 'Copy Movie' : 'Movie Editor'}
       </h1>
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">

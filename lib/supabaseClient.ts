@@ -58,13 +58,17 @@ export async function getMoviesByUser() {
   return data;
 }
 
-export async function getMovieById(id: string) {
+export async function getMovieById(id: string, opts: { allowReleased?: boolean } = {}) {
   const { data, error } = await supabase
     .from('movies')
     .select('*')
     .eq('id', id)
     .single();
   if (error) throw error;
+  const released = data.publish_datetime && new Date(data.publish_datetime) <= new Date();
+  if (released && !opts.allowReleased) {
+    throw new Error('Released movies cannot be edited');
+  }
   return data;
 }
 
@@ -77,6 +81,8 @@ export async function getAllMovies() {
         name
       )
     `)
+    .not('publish_datetime', 'is', null)
+    .lte('publish_datetime', new Date().toISOString())
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -84,6 +90,8 @@ export async function getAllMovies() {
     const { data: moviesData, error: moviesError } = await supabase
       .from('movies')
       .select('*')
+      .not('publish_datetime', 'is', null)
+      .lte('publish_datetime', new Date().toISOString())
       .order('created_at', { ascending: false });
 
     if (moviesError) throw moviesError;
@@ -128,6 +136,8 @@ export async function searchMovies(query: string) {
       )
     `)
     .or(`title.ilike.%${query}%,story.ilike.%${query}%`)
+    .not('publish_datetime', 'is', null)
+    .lte('publish_datetime', new Date().toISOString())
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -135,6 +145,8 @@ export async function searchMovies(query: string) {
       .from('movies')
       .select('*')
       .or(`title.ilike.%${query}%,story.ilike.%${query}%`)
+      .not('publish_datetime', 'is', null)
+      .lte('publish_datetime', new Date().toISOString())
       .order('created_at', { ascending: false });
 
     if (moviesError) throw moviesError;
@@ -304,6 +316,8 @@ export async function getChannelWithMovies(name: string) {
     .from('movies')
     .select('*')
     .eq('user_id', channel.user_id)
+    .not('publish_datetime', 'is', null)
+    .lte('publish_datetime', new Date().toISOString())
     .order('created_at', { ascending: false });
   if (moviesError) throw moviesError;
   return { channel, movies };

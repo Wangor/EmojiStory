@@ -87,55 +87,68 @@ function MoviesContent() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {movies.map(movie => (
-                <div
-                  key={movie.id}
-                  className="group bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-200 hover:border-gray-300 transition-all duration-300 overflow-hidden flex flex-col h-full"
-                >
-                  {/* Movie Card with Thumbnail */}
-                  <Link href={`/movies/${movie.id}`} className="p-4 block">
-                    <MovieCard movie={movie} />
-                  </Link>
+              {movies.map(movie => {
+                const released = movie.publish_datetime && new Date(movie.publish_datetime) <= new Date();
+                return (
+                  <div
+                    key={movie.id}
+                    className="group bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-200 hover:border-gray-300 transition-all duration-300 overflow-hidden flex flex-col h-full"
+                  >
+                    {/* Movie Card with Thumbnail */}
+                    <Link href={`/movies/${movie.id}`} className="p-4 block">
+                      <MovieCard movie={movie} />
+                    </Link>
 
-                  {/* Movie Info */}
-                  <div className="px-4 pb-4 flex-1 flex flex-col">
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                      <span className="flex items-center gap-1">
-                        <ClockIcon size={12} />
-                        {movie.animation?.scenes?.length || 0} scenes
-                      </span>
-                      {movie.created_at && (
-                        <span>{new Date(movie.created_at).toLocaleDateString()}</span>
-                      )}
-                    </div>
+                    {/* Movie Info */}
+                    <div className="px-4 pb-4 flex-1 flex flex-col">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                        <span className="flex items-center gap-1">
+                          <ClockIcon size={12} />
+                          {movie.animation?.scenes?.length || 0} scenes
+                        </span>
+                        {movie.created_at && (
+                          <span>{new Date(movie.created_at).toLocaleDateString()}</span>
+                        )}
+                      </div>
 
-                    {/* Story Preview */}
-                    <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">
-                      {movie.story}
-                    </p>
+                      {/* Story Preview */}
+                      <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">
+                        {movie.story}
+                      </p>
 
-                    {/* Action Buttons */}
-                    <div className="mt-auto flex gap-2">
-                      <Link
-                        href={`/movies/${movie.id}`}
-                        className="group/play flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
-                      >
-                        <div className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover/play:bg-white/30 transition-colors">
-                          <PlayIcon weight="fill" size={12} className="text-white ml-0.5" />
-                        </div>
-                        Watch
-                      </Link>
-                      <Link
-                        href={`/editor?id=${movie.id}`}
-                        className="group/edit flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
-                      >
-                        <PencilSimpleIcon weight="bold" size={12} className="text-white" />
-                        Edit
-                      </Link>
+                      {/* Action Buttons */}
+                      <div className="mt-auto flex gap-2">
+                        <Link
+                          href={`/movies/${movie.id}`}
+                          className="group/play flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                        >
+                          <div className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover/play:bg-white/30 transition-colors">
+                            <PlayIcon weight="fill" size={12} className="text-white ml-0.5" />
+                          </div>
+                          Watch
+                        </Link>
+                        {released ? (
+                          <Link
+                            href={`/editor?copy=${movie.id}`}
+                            className="group/edit flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                          >
+                            <PencilSimpleIcon weight="bold" size={12} className="text-white" />
+                            Copy
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/editor?id=${movie.id}`}
+                            className="group/edit flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                          >
+                            <PencilSimpleIcon weight="bold" size={12} className="text-white" />
+                            Edit
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
