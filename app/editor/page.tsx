@@ -1,11 +1,11 @@
 'use client';
 
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import MovieEditor from '../../components/MovieEditor';
 import { getMovieById } from '../../lib/supabaseClient';
 
-export default function EditorPage() {
+function EditorContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const [movie, setMovie] = useState<any | null>(null);
@@ -37,3 +37,10 @@ export default function EditorPage() {
   );
 }
 
+export default function EditorPage() {
+  return (
+    <Suspense fallback={<div className="p-6 max-w-6xl mx-auto">Loading editor...</div>}>
+      <EditorContent />
+    </Suspense>
+  );
+}

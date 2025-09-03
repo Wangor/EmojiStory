@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import type { Actor, Animation, Scene, Effect } from './AnimationTypes';
 
@@ -119,7 +119,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
     }
   }
 
-  function startRaf() {
+  const startRaf = useCallback(() => {
     clearRaf();
     const tick = (now: number) => {
       if (startedAtRef.current == null) {
@@ -151,7 +151,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
-  }
+  }, [duration, totalScenes, loop]);
 
   useImperativeHandle(
     ref,

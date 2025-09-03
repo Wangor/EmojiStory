@@ -15,7 +15,8 @@ import {
     PlusIcon,
     ArrowsClockwiseIcon,
     UserIcon,
-    UsersIcon
+    UsersIcon,
+    DotsSixVerticalIcon
 } from '@phosphor-icons/react';
 import { Actor, EmojiActor, TextActor, Keyframe, CompositeActor } from './AnimationTypes';
 import { uuid } from '../lib/uuid';
@@ -32,6 +33,8 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
     const [isExpanded, setIsExpanded] = useState(false);
     const [showEmojiCatalogue, setShowEmojiCatalogue] = useState(false);
     const [partCatalogueIndex, setPartCatalogueIndex] = useState<number | null>(null);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
     const update = (fields: any) => onChange({ ...actor, ...fields });
 
@@ -103,11 +106,11 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
     const handleEmojiSelect = (emoji: string) => {
         if (partCatalogueIndex !== null) {
             updatePart(partCatalogueIndex, { emoji });
-            setPartCatalogueIndex(null);
         } else {
             update({ emoji });
         }
         setShowEmojiCatalogue(false);
+        setPartCatalogueIndex(null);
     };
 
     const updatePart = (idx: number, fields: Partial<EmojiActor>) => {
@@ -148,6 +151,64 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
         const parts = [...(actor as CompositeActor).parts];
         parts.splice(idx, 1);
         update({ parts });
+    };
+
+    const reorderParts = (fromIndex: number, toIndex: number) => {
+        if (fromIndex === toIndex) return;
+        const parts = [...(actor as CompositeActor).parts];
+        const [movedPart] = parts.splice(fromIndex, 1);
+        parts.splice(toIndex, 0, movedPart);
+        update({ parts });
+    };
+
+    const handleDragStart = (e: React.DragEvent, index: number) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', ''); // For Firefox compatibility
+        // Set the drag image to be transparent to avoid visual conflicts
+        const dragImage = new Image();
+        dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+        e.dataTransfer.setDragImage(dragImage, 0, 0);
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        setDragOverIndex(index);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        // Only clear if we're actually leaving the container, not just moving to a child
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = e.clientX;
+        const y = e.clientY;
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+            setDragOverIndex(null);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        if (draggedIndex !== null && draggedIndex !== index) {
+            reorderParts(draggedIndex, index);
+        }
+        setDraggedIndex(null);
+        setDragOverIndex(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
+        setDragOverIndex(null);
+    };
+
+    const openEmojiCatalogueForPart = (idx: number) => {
+        setPartCatalogueIndex(idx);
+        setShowEmojiCatalogue(true);
+    };
+
+    const openEmojiCatalogueForActor = () => {
+        setPartCatalogueIndex(null);
+        setShowEmojiCatalogue(true);
     };
 
     const renderPartsPreview = () => {
@@ -308,7 +369,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         />
                                         <button
                                             className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-                                            onClick={() => setShowEmojiCatalogue(true)}
+                                            onClick={openEmojiCatalogueForActor}
                                         >
                                             <SmileyWinkIcon size={14} />
                                             Browse
@@ -376,8 +437,27 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                     </label>
                                     <div className="space-y-3">
                                         {(actor as CompositeActor).parts.map((p, idx) => (
-                                            <div key={p.id} className="border border-gray-200 rounded-md p-3 bg-white space-y-2">
+                                            <div
+                                                key={p.id}
+                                                className={`border border-gray-200 rounded-md p-3 bg-white space-y-2 ${
+                                                    draggedIndex === idx ? 'opacity-50' : ''
+                                                } ${
+                                                    dragOverIndex === idx ? 'border-blue-400 bg-blue-50' : ''
+                                                }`}
+                                                onDragOver={(e) => handleDragOver(e, idx)}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={(e) => handleDrop(e, idx)}
+                                            >
                                                 <div className="flex items-center gap-2">
+                                                    <div
+                                                        className="cursor-move text-gray-400 hover:text-gray-600 p-1 -m-1"
+                                                        draggable={true}
+                                                        onDragStart={(e) => handleDragStart(e, idx)}
+                                                        onDragEnd={handleDragEnd}
+                                                        title="Drag to reorder"
+                                                    >
+                                                        <DotsSixVerticalIcon size={14} />
+                                                    </div>
                                                     <input
                                                         className="border border-gray-300 rounded-md px-3 py-1 text-sm w-20 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                                                         value={p.emoji}
@@ -385,7 +465,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                     />
                                                     <button
                                                         className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                                        onClick={() => setPartCatalogueIndex(idx)}
+                                                        onClick={() => openEmojiCatalogueForPart(idx)}
                                                     >
                                                         <SmileyWinkIcon size={12} />
                                                         Browse
@@ -500,31 +580,33 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                 <div className="flex items-center justify-between mb-3">
                                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                                         <ClockIcon size={14} />
-                                        Animation Keyframes
+                                        Keyframes
                                     </label>
                                     <button
-                                        className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                                         onClick={addKeyframe}
                                     >
                                         <PlusIcon size={12} />
-                                        Add Keyframe
+                                        Add
                                     </button>
                                 </div>
-                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                <div className="space-y-2">
                                     {actor.tracks.map((track, idx) => (
-                                        <div key={idx} className="border border-gray-200 rounded-md p-3 bg-white">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-xs font-medium text-gray-600">
-                                                    Keyframe {idx + 1} - {track.t}ms
+                                        <div key={idx} className="border border-gray-200 rounded-md p-3 bg-white space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-gray-700">
+                                                    Keyframe {idx + 1}
                                                 </span>
-                                                <button
-                                                    className="text-xs text-red-600 hover:text-red-700"
-                                                    onClick={() => removeKeyframe(idx)}
-                                                >
-                                                    <TrashIcon size={12} />
-                                                </button>
+                                                {actor.tracks.length > 1 && (
+                                                    <button
+                                                        className="text-xs text-red-600 hover:text-red-700"
+                                                        onClick={() => removeKeyframe(idx)}
+                                                    >
+                                                        <TrashIcon size={12} />
+                                                    </button>
+                                                )}
                                             </div>
-                                            <div className="grid grid-cols-5 gap-2">
+                                            <div className="grid grid-cols-4 gap-2">
                                                 <div>
                                                     <label className="block text-xs text-gray-600 mb-1">Time (ms)</label>
                                                     <input
@@ -555,52 +637,77 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs text-gray-600 mb-1">Scale</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.1"
-                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                        value={track.scale ?? 1}
-                                                        onChange={(e) => updateTrack(idx, 'scale', Number(e.target.value))}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs text-gray-600 mb-1">
-                                                        <ArrowsClockwiseIcon size={10} className="inline mr-1" />
-                                                        Rotate (deg)
-                                                    </label>
+                                                    <label className="block text-xs text-gray-600 mb-1">Rotate</label>
                                                     <input
                                                         type="number"
                                                         step="1"
                                                         className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                        value={track.rotate ?? 0}
+                                                        value={track.rotate}
                                                         onChange={(e) => updateTrack(idx, 'rotate', Number(e.target.value))}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
-                                    {actor.tracks.length === 0 && (
-                                        <div className="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-md">
-                                            No keyframes yet. Add one to animate this actor.
-                                        </div>
-                                    )}
                                 </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                                        <ArrowsClockwiseIcon size={14} />
+                                        Loop
+                                    </label>
+                                    <select
+                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        value={(actor as any).loop ?? 'none'}
+                                        onChange={(e) => update({ loop: e.target.value })}
+                                    >
+                                        <option value="none">None</option>
+                                        <option value="float">Float</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                                        <ResizeIcon size={14} />
+                                        Z-Index
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        value={(actor as any).z ?? 0}
+                                        onChange={(e) => update({ z: Number(e.target.value) })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                                    <UserIcon size={14} />
+                                    Accessibility Label
+                                </label>
+                                <input
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    value={(actor as any).ariaLabel ?? ''}
+                                    placeholder="Describe this actor..."
+                                    onChange={(e) => update({ ariaLabel: e.target.value })}
+                                />
                             </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Emoji Catalogue Modal */}
-            <EmojiCatalogue
-                isOpen={showEmojiCatalogue || partCatalogueIndex !== null}
-                onClose={() => {
-                    setShowEmojiCatalogue(false);
-                    setPartCatalogueIndex(null);
-                }}
-                onSelectEmoji={handleEmojiSelect}
-            />
+            {showEmojiCatalogue && (
+                <EmojiCatalogue
+                    onSelectEmoji={handleEmojiSelect}
+                    isOpen={showEmojiCatalogue}
+                    onClose={() => {
+                        setShowEmojiCatalogue(false);
+                        setPartCatalogueIndex(null);
+                    }}
+                />
+            )}
         </>
     );
 }
