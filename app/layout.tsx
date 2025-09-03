@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import Head from 'next/head';
-import './globals.css';
+import '../tailwind/output.css';
 import { Navbar } from '../components/Navbar';
 
 export default function RootLayout({ children }: { children: ReactNode }) {

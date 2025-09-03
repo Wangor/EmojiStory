@@ -2,11 +2,14 @@
   "name": "emoji-movie-mvp-ai",
   "private": true,
   "scripts": {
+    "predev": "npm run generate:tailwind",
     "dev": "next dev",
+    "prebuild": "npm run generate:tailwind",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seo-check": "node scripts/seo-checklist.js"
+    "seo-check": "node scripts/seo-checklist.js",
+    "generate:tailwind": "tailwindcss -i ./tailwind/main.css -o ./tailwind/output.css"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.6",
