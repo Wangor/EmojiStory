@@ -109,3 +109,24 @@ insert into storage.buckets (id, name, public)
   values ('channel-pictures', 'channel-pictures', true)
   on conflict (id) do nothing;
 
+-- Profiles table for user accounts
+create table if not exists public.profiles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid unique references auth.users(id),
+  display_name text,
+  avatar_url text,
+  metadata jsonb default '{}'::jsonb,
+  created_at timestamptz default now()
+);
+
+alter table public.profiles enable row level security;
+
+create policy "Users can insert their own profile" on public.profiles
+  for insert with check (auth.uid() = user_id);
+
+create policy "Users can read their own profile" on public.profiles
+  for select using (auth.uid() = user_id);
+
+create policy "Users can update their own profile" on public.profiles
+  for update using (auth.uid() = user_id);
+
