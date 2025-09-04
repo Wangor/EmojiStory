@@ -12,15 +12,18 @@ type SceneCanvasProps = {
     width: number;
     height: number;
     onSceneChange: (s: Scene) => void;
+    emojiFont?: string;
 };
 
-export default function SceneCanvas({ scene, fps, width, height, onSceneChange }: SceneCanvasProps) {
+export default function SceneCanvas({ scene, fps, width, height, onSceneChange, emojiFont }: SceneCanvasProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ w: 0, h: 0 });
     const [currentFrame, setCurrentFrame] = useState(0);
     const [selected, setSelected] = useState<string | null>(null);
     const [tool, setTool] = useState<'move' | 'scale' | 'rotate'>('move');
     const [layer, setLayer] = useState<'actors' | 'background'>('actors');
+
+    const emojiStyle = emojiFont ? { fontFamily: emojiFont } : undefined;
 
     const dragRef = useRef<{
         id: string;
@@ -342,7 +345,8 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
                                     position: 'absolute',
                                     left: offsetX,
                                     top: offsetY,
-                                    fontSize: partSize
+                                    fontSize: partSize,
+                                    fontFamily: emojiFont
                                 }}
                             >
                                 <span
@@ -407,7 +411,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
                 } ${interactive ? 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-1' : ''}`}
                 style={style}
             >
-                {a.type === 'emoji' && <span>{(a as any).emoji}</span>}
+                {a.type === 'emoji' && <span style={emojiStyle}>{(a as any).emoji}</span>}
                 {a.type === 'text' && (
                     <span style={{ color: (a as TextActor).color }}>
             {(a as TextActor).text}

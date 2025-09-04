@@ -111,6 +111,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   const totalScenes = animation.scenes.length;
   const scene = animation.scenes[sceneIndex];
   const duration = Math.max(1, scene?.duration_ms ?? 1);
+  const emojiStyle = animation.emojiFont ? { fontFamily: animation.emojiFont } : undefined;
 
   function clearRaf() {
     if (rafRef.current != null) {
@@ -450,7 +451,8 @@ function ActorView({
           top: `${y}%`,
           fontSize: size,
           transformOrigin: 'center center',
-          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`,
+          ...emojiStyle,
         }}
       >
         <span style={{ display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}>
@@ -546,7 +548,8 @@ function ActorView({
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
-                  transformOrigin: 'center center'
+                  transformOrigin: 'center center',
+                  ...emojiStyle,
                 }}
               >
                 <span style={{ display: 'inline-block', transform: p.flipX ? 'scaleX(-1)' : undefined }}>

@@ -28,7 +28,8 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         title: 'Untitled Movie',
         description: '',
         fps: 30,
-        scenes: []
+        scenes: [],
+        emojiFont: undefined
     });
     const [activeSceneIndex, setActiveSceneIndex] = useState(0);
     const [showGenerator, setShowGenerator] = useState(false);
@@ -178,21 +179,41 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                             <h1 className="text-xl font-semibold text-gray-900">Movie Editor</h1>
                         </div>
                         <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <ClockIcon size={16} className="text-gray-500" />
+                            <label className="text-sm font-medium text-gray-700">FPS:</label>
+                            <input
+                                type="number"
+                                className="border border-gray-300 rounded-md px-2 py-1 w-16 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
+                                value={animation.fps}
+                                onChange={(e) => setAnimation((a) => ({ ...a, fps: Number(e.target.value) || 30 }))}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700">Emoji Font:</label>
+                            <select
+                                className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
+                                value={animation.emojiFont || ''}
+                                onChange={(e) =>
+                                    setAnimation((a) => ({
+                                        ...a,
+                                        emojiFont: e.target.value || undefined,
+                                    }))
+                                }
+                            >
+                                <option value="">System default</option>
+                                <option value="Noto Color Emoji">Noto Color Emoji</option>
+                                <option value="Twemoji">Twemoji</option>
+                                <option value="OpenMoji">OpenMoji</option>
+                                <option value="Blobmoji">Blobmoji</option>
+                                <option value="FxEmoji">FxEmoji</option>
+                            </select>
+                        </div>
+                        {channels.length > 1 && (
                             <div className="flex items-center gap-2">
-                                <ClockIcon size={16} className="text-gray-500" />
-                                <label className="text-sm font-medium text-gray-700">FPS:</label>
-                                <input
-                                    type="number"
-                                    className="border border-gray-300 rounded-md px-2 py-1 w-16 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
-                                    value={animation.fps}
-                                    onChange={(e) => setAnimation((a) => ({ ...a, fps: Number(e.target.value) || 30 }))}
-                                />
-                            </div>
-                            {channels.length > 1 && (
-                                <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium text-gray-700">Channel:</label>
-                                    <select
-                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
+                                <label className="text-sm font-medium text-gray-700">Channel:</label>
+                                <select
+                                    className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                         value={channelId || ''}
                                         onChange={(e) => setChannelId(e.target.value)}
                                     >
@@ -309,6 +330,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 onRemove={() => removeScene(activeSceneIndex)}
                                 onDuplicate={() => duplicateScene(activeSceneIndex)}
                                 sceneIndex={activeSceneIndex}
+                                emojiFont={animation.emojiFont}
                             />
                         ) : (
                             <div className="flex items-center justify-center h-64 text-gray-500">

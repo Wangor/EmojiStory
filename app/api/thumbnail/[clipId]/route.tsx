@@ -18,6 +18,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   } catch {}
 
   const scene: Scene | undefined = clip?.animation?.scenes?.[0];
+  const emojiFont = clip?.animation?.emojiFont;
   const width = 400;
   const height = Math.round((width * 9) / 16);
   const title = clip?.title || 'Emoji Clip';
@@ -39,6 +40,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
           left,
           top,
           fontSize: size,
+          fontFamily: emojiFont,
           ...(a.flipX ? { transform: 'scaleX(-1)' } : {}),
         }}
       >
@@ -106,6 +108,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
+                  fontFamily: emojiFont,
                   ...(p.flipX ? { transform: 'scaleX(-1)' } : {}),
                 }}
               >

@@ -11,7 +11,7 @@ import type {
 } from './AnimationTypes';
 import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
 
-function SceneThumbnail({ scene }: { scene: Scene }) {
+function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string }) {
   const width = 160;
   const height = (width * 9) / 16; // match EmojiPlayer aspect ratio
 
@@ -33,6 +33,7 @@ function SceneThumbnail({ scene }: { scene: Scene }) {
           top: `${top}%`,
           fontSize: size,
           transform: 'translate(-50%, -50%)',
+          fontFamily: emojiFont,
         }}
       >
         <span
@@ -105,6 +106,7 @@ function SceneThumbnail({ scene }: { scene: Scene }) {
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
+                  fontFamily: emojiFont,
                 }}
               >
                 <span
@@ -174,7 +176,9 @@ export function MovieCard({
 
   return (
     <div className="space-y-2">
-      {firstScene ? <SceneThumbnail scene={firstScene} /> : null}
+      {firstScene ? (
+        <SceneThumbnail scene={firstScene} emojiFont={movie.animation?.emojiFont} />
+      ) : null}
       <div className="space-y-1">
         <div className="text-sm font-medium truncate">
           {movie.title || movie.story.slice(0, 30)}

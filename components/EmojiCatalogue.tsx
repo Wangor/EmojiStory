@@ -47,12 +47,13 @@ type EmojiCatalogueProps = {
     onSelectEmoji: (emoji: string) => void;
     onClose: () => void;
     isOpen: boolean;
+    emojiFont?: string;
 };
 
 const normalize = (s: string) => s.normalize('NFKD').toLowerCase();
 const toCategory = (idx: number) => GROUPS[idx] ?? 'Other';
 
-export default function EmojiCatalogue({ onSelectEmoji, onClose, isOpen }: EmojiCatalogueProps) {
+export default function EmojiCatalogue({ onSelectEmoji, onClose, isOpen, emojiFont }: EmojiCatalogueProps) {
     const [allEmojis, setAllEmojis] = useState<EmojiItem[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -212,6 +213,7 @@ export default function EmojiCatalogue({ onSelectEmoji, onClose, isOpen }: Emoji
                                     className="aspect-square flex items-center justify-center text-2xl hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-300 focus:bg-blue-50"
                                     title={e.name}
                                     aria-label={e.name}
+                                    style={emojiFont ? { fontFamily: emojiFont } : undefined}
                                 >
                                     {e.emoji}
                                 </button>
