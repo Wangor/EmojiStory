@@ -160,7 +160,12 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
     const frameStream = new PassThrough();
     const command = ffmpeg()
       .input(frameStream)
-      .inputOptions(['-f image2pipe', '-vcodec png', `-framerate ${fps}`])
+      .inputOptions([
+        '-f rawvideo',
+        '-pix_fmt rgba',
+        `-s ${width}x${height}`,
+        `-framerate ${fps}`
+      ])
       .outputOptions(['-pix_fmt yuv420p', '-movflags frag_keyframe+empty_moov'])
       .videoCodec('libx264')
       .format('mp4');
@@ -180,14 +185,20 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
 
     (async () => {
       try {
+        const writeFrame = (frame: Buffer) =>
+          new Promise<void>((res) => {
+            if (!frameStream.write(frame)) frameStream.once('drain', res);
+            else res();
+          });
+
         for (const scene of animation.scenes) {
           const sceneFrames = Math.ceil((scene.duration_ms / 1000) * fps);
           for (let i = 0; i < sceneFrames; i++) {
             const progress = i / sceneFrames;
             drawScene(ctx, scene, width, height, progress);
             if (loadedWatermark) drawWatermark(ctx, { width, height }, loadedWatermark);
-            const frame = canvas.toBuffer('image/png');
-            frameStream.write(frame);
+            const frame = canvas.toBuffer('raw');
+            await writeFrame(frame);
           }
         }
         frameStream.end();
