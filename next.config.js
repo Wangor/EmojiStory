@@ -2,7 +2,7 @@
 const nextConfig = {
   experimental: {
     outputFileTracingIncludes: {
-      '/api/export': ['node_modules/ffmpeg-static/ffmpeg'],
+      '/api/export': ['./node_modules/ffmpeg-static/**'],
     },
   },
 };
