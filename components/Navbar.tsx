@@ -216,7 +216,7 @@ export function Navbar() {
                             <>
                                 <Link
                                     href="/auth/login"
-                                    className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
+                                    className="flex items-center gap-2 text-white hover:text-gray-200 transition-colors duration-200 px-4 py-2 rounded-md font-medium hover:bg-white/10"
                                 >
                                     <User size={18} weight="bold" />
                                     <span>Login</span>
