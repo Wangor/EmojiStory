@@ -14,6 +14,7 @@ import {
     MagnifyingGlass,
     CaretDown,
     List,
+    MagicWandIcon,
 } from '@phosphor-icons/react';
 
 export function Navbar() {
@@ -156,6 +157,13 @@ export function Navbar() {
                             <FilmSlateIcon size={18} weight="fill" />
                             <span>Movies</span>
                         </Link>
+                        <Link
+                            href={user ? '/editor' : '/auth/login'}
+                            className="flex items-center gap-2 bg-white text-brand-600 hover:bg-gray-100 transition-colors duration-200 px-4 py-2 rounded-md font-medium shadow-sm"
+                        >
+                            <MagicWandIcon size={18} weight="bold" />
+                            <span>Generate Movie</span>
+                        </Link>
 
                         {user ? (
                             <div className="relative" ref={dropdownRef}>
@@ -267,6 +275,14 @@ export function Navbar() {
                             >
                                 <FilmSlateIcon size={20} weight="fill" />
                                 Movies
+                            </Link>
+                            <Link
+                                href={user ? '/editor' : '/auth/login'}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-3 bg-white text-brand-600 hover:bg-gray-100 px-3 py-2 rounded-md font-medium transition-colors duration-200"
+                            >
+                                <MagicWandIcon size={20} weight="bold" />
+                                Generate Movie
                             </Link>
 
                             {user ? (

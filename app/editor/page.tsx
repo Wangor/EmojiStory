@@ -1,17 +1,29 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import MovieEditor from '../../components/MovieEditor';
-import { getMovieById } from '../../lib/supabaseClient';
+import { getMovieById, getUser } from '../../lib/supabaseClient';
 
 function EditorContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const copy = searchParams.get('copy');
+  const router = useRouter();
   const [movie, setMovie] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    getUser().then(u => {
+      if (!u) {
+        router.replace('/auth/login');
+      } else {
+        setAuthChecked(true);
+      }
+    });
+  }, [router]);
 
   useEffect(() => {
     const targetId = id || copy;
@@ -30,6 +42,10 @@ function EditorContent() {
         .finally(() => setLoading(false));
     }
   }, [id, copy]);
+
+  if (!authChecked) {
+    return <div className="p-6 max-w-6xl mx-auto">Checking authentication...</div>;
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
