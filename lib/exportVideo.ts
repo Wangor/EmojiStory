@@ -1,3 +1,7 @@
+import { createCanvas, loadImage, CanvasRenderingContext2D } from 'canvas';
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegPath from 'ffmpeg-static';
+import { PassThrough } from 'stream';
 import type { Animation, Scene, Actor } from '../components/AnimationTypes';
 
 export interface WatermarkOptions {
@@ -105,20 +109,10 @@ function drawScene(
   }
 }
 
-async function loadImage(url: string): Promise<HTMLImageElement> {
-  const img = new Image();
-  img.src = url;
-  await new Promise((resolve, reject) => {
-    img.onload = () => resolve(null);
-    img.onerror = reject;
-  });
-  return img;
-}
-
 function drawWatermark(
   ctx: CanvasRenderingContext2D,
   canvas: { width: number; height: number },
-  watermark: { text?: string; image?: HTMLImageElement; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }
+  watermark: { text?: string; image?: any; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }
 ) {
   const pos = watermark.position ?? 'bottom-right';
   const padding = 10;
@@ -134,7 +128,7 @@ function drawWatermark(
     const h = img.height;
     if (pos.includes('right')) x -= w;
     if (pos.includes('bottom')) y -= h;
-    ctx.drawImage(img, x, y);
+    ctx.drawImage(img, x, y, w, h);
   } else if (watermark.text) {
     ctx.font = '20px sans-serif';
     const metrics = ctx.measureText(watermark.text);
@@ -146,15 +140,13 @@ function drawWatermark(
   ctx.restore();
 }
 
-export async function exportVideo(animation: Animation, options: ExportOptions): Promise<Blob> {
+export async function exportVideo(animation: Animation, options: ExportOptions): Promise<Buffer> {
   const { width, height, fps, watermark } = options;
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+  const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Cannot acquire 2D context');
 
-  let loadedWatermark: { text?: string; image?: HTMLImageElement; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' } | undefined;
+  let loadedWatermark: { text?: string; image?: any; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' } | undefined;
   if (watermark) {
     loadedWatermark = { text: watermark.text, position: watermark.position };
     if (watermark.image) {
@@ -162,27 +154,42 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
     }
   }
 
-  const stream = canvas.captureStream(fps);
-  const chunks: BlobPart[] = [];
-  const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-  recorder.ondataavailable = (e) => {
-    if (e.data.size > 0) chunks.push(e.data);
-  };
-  recorder.start();
+  return new Promise<Buffer>((resolve, reject) => {
+    const frameStream = new PassThrough();
+    const command = ffmpeg()
+      .input(frameStream)
+      .inputFormat('image2pipe')
+      .fps(fps)
+      .videoCodec('libx264')
+      .outputOptions('-pix_fmt yuv420p')
+      .format('mp4')
+      .on('error', reject);
+    if (ffmpegPath) command.setFfmpegPath(ffmpegPath as string);
 
-  const frameDuration = 1000 / fps;
-  for (const scene of animation.scenes) {
-    const sceneFrames = Math.ceil((scene.duration_ms / 1000) * fps);
-    for (let i = 0; i < sceneFrames; i++) {
-      const progress = i / sceneFrames;
-      drawScene(ctx, scene, width, height, progress);
-      if (loadedWatermark) drawWatermark(ctx, canvas, loadedWatermark);
-      await new Promise((r) => setTimeout(r, frameDuration));
-    }
-  }
+    const chunks: Buffer[] = [];
+    command
+      .pipe()
+      .on('data', (c: Buffer) => chunks.push(c))
+      .on('end', () => resolve(Buffer.concat(chunks)))
+      .on('error', reject);
 
-  recorder.stop();
-  await new Promise((resolve) => (recorder.onstop = resolve));
-  return new Blob(chunks, { type: 'video/webm' });
+    (async () => {
+      try {
+        for (const scene of animation.scenes) {
+          const sceneFrames = Math.ceil((scene.duration_ms / 1000) * fps);
+          for (let i = 0; i < sceneFrames; i++) {
+            const progress = i / sceneFrames;
+            drawScene(ctx, scene, width, height, progress);
+            if (loadedWatermark) drawWatermark(ctx, { width, height }, loadedWatermark);
+            const frame = canvas.toBuffer('image/png');
+            frameStream.write(frame);
+          }
+        }
+        frameStream.end();
+      } catch (err) {
+        reject(err);
+      }
+    })();
+  });
 }
 
