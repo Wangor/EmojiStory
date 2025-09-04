@@ -3,6 +3,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import type { Actor, Animation, Scene, Effect } from './AnimationTypes';
+import { useEmojiFont } from '../lib/emojiFonts';
 
 const EFFECT_VARIANTS: Record<Effect, { hidden: any; show: any }> = {
   'fade-in': {
@@ -112,6 +113,8 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   const scene = animation.scenes[sceneIndex];
   const duration = Math.max(1, scene?.duration_ms ?? 1);
   const emojiStyle = animation.emojiFont ? { fontFamily: animation.emojiFont } : undefined;
+
+  useEmojiFont(animation.emojiFont);
 
   function clearRaf() {
     if (rafRef.current != null) {

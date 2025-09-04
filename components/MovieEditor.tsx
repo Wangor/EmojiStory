@@ -15,6 +15,7 @@ import { EmojiPlayer } from './EmojiPlayer';
 import SceneEditor from './SceneEditor';
 import { uuid } from '../lib/uuid';
 import { insertMovie, updateMovie, getUserChannels } from '../lib/supabaseClient';
+import { useEmojiFont } from '../lib/emojiFonts';
 
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 270;
@@ -41,6 +42,8 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
     const [channels, setChannels] = useState<any[]>([]);
     const [saving, setSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+    useEmojiFont(animation.emojiFont);
 
     useEffect(() => {
         if (movie?.animation) {

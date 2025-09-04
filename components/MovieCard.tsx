@@ -10,6 +10,7 @@ import type {
   CompositeActor,
 } from './AnimationTypes';
 import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
+import { useEmojiFont } from '../lib/emojiFonts';
 
 function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string }) {
   const width = 160;
@@ -155,6 +156,8 @@ export function MovieCard({
   const firstScene = movie.animation?.scenes?.[0];
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
+
+  useEmojiFont(movie.animation?.emojiFont);
 
   useEffect(() => {
     getMovieLikes(movie.id).then(({ count, liked }) => {

@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getClip } from '../../../../lib/supabaseServer';
+import { fetchEmojiFontData } from '../../../../lib/emojiFonts';
 import type { ReactNode } from 'react';
 import type {
   Scene,
@@ -19,6 +20,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
 
   const scene: Scene | undefined = clip?.animation?.scenes?.[0];
   const emojiFont = clip?.animation?.emojiFont;
+  const fonts = await fetchEmojiFontData(emojiFont);
   const width = 400;
   const height = Math.round((width * 9) / 16);
   const title = clip?.title || 'Emoji Clip';
@@ -143,6 +145,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
       {
         width,
         height,
+        fonts,
       }
     );
   }
@@ -181,6 +184,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
     {
       width,
       height,
+      fonts,
     }
   );
 }
