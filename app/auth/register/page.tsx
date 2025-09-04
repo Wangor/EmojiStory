@@ -62,14 +62,16 @@ export default function RegisterPage() {
           required
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button type="submit" className="bg-blue-600 text-white py-2 rounded">Register</button>
+        <div className="flex justify-center gap-2">
+          <button type="submit" className="bg-blue-600 text-white py-2 px-4 rounded">Register</button>
+          <Link
+            href="/auth/login"
+            className="py-2 px-4 border border-blue-600 text-blue-600 rounded hover:bg-blue-50"
+          >
+            Login
+          </Link>
+        </div>
       </form>
-      <p className="text-center text-sm mt-4">
-        Already have an account?{' '}
-        <Link href="/auth/login" className="text-blue-600 hover:underline">
-          Login
-        </Link>
-      </p>
     </div>
   );
 }
