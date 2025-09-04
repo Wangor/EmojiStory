@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { PlayIcon, FilmSlateIcon, ClockIcon, PencilSimpleIcon, UploadSimpleIcon } from '@phosphor-icons/react';
+import { PlayIcon, FilmSlateIcon, ClockIcon, PencilSimpleIcon, UploadSimpleIcon, DownloadSimpleIcon } from '@phosphor-icons/react';
 import { getMoviesByUser, publishMovie } from '../../lib/supabaseClient';
 import { MovieCard } from '../../components/MovieCard';
 import ReleaseModal from '../../components/ReleaseModal';
@@ -12,6 +12,7 @@ function MoviesContent() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [releaseMovie, setReleaseMovie] = useState<any | null>(null);
+  const [exportingId, setExportingId] = useState<string | null>(null);
 
   useEffect(() => {
     getMoviesByUser()
@@ -19,6 +20,31 @@ function MoviesContent() {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleExport(movie: any) {
+    try {
+      setExportingId(movie.id);
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ animation: movie.animation, options: { width: 900, height: 500, fps: 30 } })
+      });
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${movie.title || 'movie'}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setExportingId(null);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -127,6 +153,13 @@ function MoviesContent() {
                           <PlayIcon weight="fill" size={12} className="text-white" />
                           Watch
                         </Link>
+                        <button
+                          onClick={() => handleExport(movie)}
+                          className="flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded"
+                        >
+                          <DownloadSimpleIcon weight="bold" size={12} className="text-white" />
+                          {exportingId === movie.id ? 'Exporting…' : 'Export'}
+                        </button>
                         {released ? (
                           <Link
                             href={`/editor?copy=${movie.id}`}

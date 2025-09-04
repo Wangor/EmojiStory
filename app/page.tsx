@@ -1,15 +1,14 @@
 'use client';
 
 /* eslint-disable import/no-unresolved */
-import { FilmSlate, MagicWand, Play, Stop, DownloadSimple } from '@phosphor-icons/react';
-import { useState, useRef, useEffect, ChangeEvent } from 'react';
+import { FilmSlate, MagicWand, Play, Stop } from '@phosphor-icons/react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Animation } from '../components/AnimationTypes';
 import { EmojiPlayer } from '../components/EmojiPlayer';
 import { MovieCard } from '../components/MovieCard';
 import { SAMPLE_ANIMATION } from '../lib/sampleAnimation';
 import { insertMovie, getUser, getAllMovies, getUserChannels } from '../lib/supabaseClient';
-import type { ExportOptions } from '../lib/exportVideo';
 
 export default function Page() {
   const [storyText, setStoryText] = useState<string>(
@@ -22,17 +21,7 @@ export default function Page() {
   const [movies, setMovies] = useState<any[]>([]);
   const [channels, setChannels] = useState<any[]>([]);
   const [channelId, setChannelId] = useState<string>('');
-  const [exportWidth, setExportWidth] = useState(900);
-  const [exportHeight, setExportHeight] = useState(500);
-  const [exportFps, setExportFps] = useState(30);
-  const [watermarkText, setWatermarkText] = useState('');
-  const [watermarkImage, setWatermarkImage] = useState<HTMLImageElement | null>(null);
-  const [watermarkPosition, setWatermarkPosition] = useState<'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'>('bottom-right');
-  const playerRef = useRef<{
-    play: () => void;
-    stop: () => void;
-    exportToMp4: (options: ExportOptions) => Promise<Uint8Array>;
-  } | null>(null);
+  const playerRef = useRef<{ play: () => void; stop: () => void } | null>(null);
   const router = useRouter();
 
   const canPlay = !!animation && animation.scenes.length > 0;
@@ -65,52 +54,6 @@ export default function Page() {
       setError(e.message || 'Unknown error');
     } finally {
       setLoading(false);
-    }
-  }
-
-  function handleWatermarkFile(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setWatermarkImage(null);
-      return;
-    }
-    const img = new Image();
-    img.onload = () => setWatermarkImage(img);
-    img.src = URL.createObjectURL(file);
-  }
-
-  async function handleExport() {
-    if (!playerRef.current) return;
-    try {
-      const data = await playerRef.current.exportToMp4({
-        width: exportWidth,
-        height: exportHeight,
-        fps: exportFps,
-        watermark: watermarkImage
-          ? { image: watermarkImage, position: watermarkPosition }
-          : watermarkText
-            ? { text: watermarkText, position: watermarkPosition }
-            : undefined,
-      });
-      const blob = new Blob([data], { type: 'video/mp4' });
-      if ('showSaveFilePicker' in window) {
-        // Let the user choose a destination (e.g. the mymvideos folder)
-        const handle = await (window as any).showSaveFilePicker({
-          suggestedName: 'mymvideos.mp4',
-          types: [{ description: 'MP4 Video', accept: { 'video/mp4': ['.mp4'] } }],
-        });
-        const writable = await handle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'mymvideos.mp4';
-        a.click();
-      }
-    } catch (e: any) {
-      setError(e.message);
     }
   }
 
@@ -220,62 +163,6 @@ export default function Page() {
           >
             Save
           </button>
-
-          <button
-            onClick={handleExport}
-            disabled={!canPlay}
-            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-          <DownloadSimple weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
-          Export
-        </button>
-        </div>
-
-        <div className="flex flex-wrap gap-3 justify-center mb-8">
-          <input
-            type="number"
-            value={exportWidth}
-            onChange={(e) => setExportWidth(Number(e.target.value))}
-            className="w-24 p-2 border rounded"
-            placeholder="Width"
-          />
-          <input
-            type="number"
-            value={exportHeight}
-            onChange={(e) => setExportHeight(Number(e.target.value))}
-            className="w-24 p-2 border rounded"
-            placeholder="Height"
-          />
-          <input
-            type="number"
-            value={exportFps}
-            onChange={(e) => setExportFps(Number(e.target.value))}
-            className="w-20 p-2 border rounded"
-            placeholder="FPS"
-          />
-          <input
-            type="text"
-            value={watermarkText}
-            onChange={(e) => setWatermarkText(e.target.value)}
-            className="p-2 border rounded"
-            placeholder="Watermark text"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleWatermarkFile}
-            className="p-2 border rounded"
-          />
-          <select
-            value={watermarkPosition}
-            onChange={(e) => setWatermarkPosition(e.target.value as any)}
-            className="p-2 border rounded"
-          >
-            <option value="top-left">Top Left</option>
-            <option value="top-right">Top Right</option>
-            <option value="bottom-left">Bottom Left</option>
-            <option value="bottom-right">Bottom Right</option>
-          </select>
         </div>
 
         {/* Error Display */}

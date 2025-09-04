@@ -1,9 +1,10 @@
 import type { Animation, Scene, Actor } from '../components/AnimationTypes';
 import type { FFmpeg } from '@ffmpeg/ffmpeg';
+import { createCanvas, loadImage, Image } from 'canvas';
 
 export interface WatermarkOptions {
   text?: string;
-  image?: HTMLImageElement;
+  image?: string; // data URL or path
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
@@ -108,8 +109,8 @@ function drawScene(
 
 function drawWatermark(
   ctx: CanvasRenderingContext2D,
-  canvas: HTMLCanvasElement,
-  watermark: WatermarkOptions
+  canvas: { width: number; height: number },
+  watermark: { text?: string; image?: Image; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }
 ) {
   const pos = watermark.position ?? 'bottom-right';
   const padding = 10;
@@ -139,11 +140,17 @@ function drawWatermark(
 
 export async function exportVideo(animation: Animation, options: ExportOptions): Promise<Uint8Array> {
   const { width, height, fps, watermark } = options;
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+  const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Cannot acquire 2D context');
+
+  let loadedWatermark: { text?: string; image?: Image; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' } | undefined;
+  if (watermark) {
+    loadedWatermark = { text: watermark.text, position: watermark.position };
+    if (watermark.image) {
+      loadedWatermark.image = await loadImage(watermark.image);
+    }
+  }
 
   const frames: Uint8Array[] = [];
   for (const scene of animation.scenes) {
@@ -151,12 +158,9 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
     for (let i = 0; i < sceneFrames; i++) {
       const progress = i / sceneFrames;
       drawScene(ctx, scene, width, height, progress);
-      if (watermark) drawWatermark(ctx, canvas, watermark);
-      const dataUrl = canvas.toDataURL('image/png');
-      const binary = atob(dataUrl.split(',')[1]);
-      const array = new Uint8Array(binary.length);
-      for (let j = 0; j < binary.length; j++) array[j] = binary.charCodeAt(j);
-      frames.push(array);
+      if (loadedWatermark) drawWatermark(ctx, canvas, loadedWatermark);
+      const buffer = canvas.toBuffer('image/png');
+      frames.push(new Uint8Array(buffer));
     }
   }
 
