@@ -1,5 +1,5 @@
-import { createFFmpeg } from '@ffmpeg/ffmpeg';
 import type { Animation, Scene, Actor } from '../components/AnimationTypes';
+import type { FFmpeg } from '@ffmpeg/ffmpeg';
 
 export interface WatermarkOptions {
   text?: string;
@@ -160,7 +160,8 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
     }
   }
 
-  const ffmpeg = createFFmpeg({ log: false });
+  const { createFFmpeg } = await import('@ffmpeg/ffmpeg');
+  const ffmpeg: FFmpeg = createFFmpeg({ log: false });
   await ffmpeg.load();
   frames.forEach((frame, i) => {
     const name = `frame${String(i).padStart(5, '0')}.png`;

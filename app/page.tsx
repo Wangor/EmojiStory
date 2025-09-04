@@ -93,11 +93,22 @@ export default function Page() {
             : undefined,
       });
       const blob = new Blob([data], { type: 'video/mp4' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'animation.mp4';
-      a.click();
+      if ('showSaveFilePicker' in window) {
+        // Let the user choose a destination (e.g. the mymvideos folder)
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: 'mymvideos.mp4',
+          types: [{ description: 'MP4 Video', accept: { 'video/mp4': ['.mp4'] } }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mymvideos.mp4';
+        a.click();
+      }
     } catch (e: any) {
       setError(e.message);
     }
