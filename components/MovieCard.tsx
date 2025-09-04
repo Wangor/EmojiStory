@@ -185,7 +185,7 @@ export function MovieCard({
         {movie.channels && (
           <Link
             href={`/channel/${encodeURIComponent(movie.channels.name)}`}
-            className="group inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 hover:border-blue-300 rounded-full text-xs font-medium text-blue-700 hover:text-blue-800 transition-all duration-200 shadow-sm hover:shadow-md max-w-fit"
+            className="group inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-50 to-yellow-50 hover:from-orange-100 hover:to-orange-100 border border-orange-400 hover:border-orange-500 rounded-full text-xs font-medium text-orange-400 hover:text-orange-500 transition-all duration-200 shadow-sm hover:shadow-md max-w-fit"
             onClick={(e) => e.stopPropagation()}
           >
             <span className="text-blue-500 group-hover:text-blue-600">📺</span>
@@ -195,7 +195,7 @@ export function MovieCard({
         <div className="flex items-center gap-2">
           <button
             onClick={toggleLike}
-            className={`flex items-center gap-1 text-xs ${liked ? 'text-red-600' : 'text-gray-500'}`}
+            className={`flex items-center gap-1 text-xs ${liked ? 'text-orange-400' : 'text-gray-500'}`}
           >
             <HeartIcon weight={liked ? 'fill' : 'regular'} size={14} />
             <span>{likes}</span>

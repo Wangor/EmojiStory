@@ -26,13 +26,13 @@ function MoviesContent() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+            <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-xl shadow-lg">
               <FilmSlateIcon weight="bold" size={36} className="text-white" />
             </div>
             My Movie Collection
           </h1>
           <p className="text-gray-600 text-lg">
-            Your personal collection of AI-generated emoji movies
+            Your personal collection of emoji clips
           </p>
         </div>
 
@@ -40,7 +40,7 @@ function MoviesContent() {
         {loading && (
           <div className="flex justify-center items-center py-16">
             <div className="flex items-center gap-3 text-gray-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
               <span className="text-lg">Loading your movies...</span>
             </div>
           </div>
@@ -71,7 +71,7 @@ function MoviesContent() {
             </p>
             <a
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-400 to-yellow-400 hover:from-orange-500 hover:to-yellow-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
             >
               <FilmSlateIcon weight="bold" size={20} />
               Go to Studio
@@ -122,7 +122,7 @@ function MoviesContent() {
                       <div className="mt-auto flex gap-2 text-sm">
                         <Link
                           href={`/movies/${movie.id}`}
-                          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded"
+                          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-orange-400 text-white rounded"
                         >
                           <PlayIcon weight="fill" size={12} className="text-white" />
                           Watch
@@ -167,7 +167,7 @@ function MoviesContent() {
           <div className="text-center mt-12 pt-8 border-t border-gray-200">
             <a
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-orange-400 hover:bg-orange-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
             >
               <FilmSlateIcon weight="bold" size={20} />
               Create New Movie

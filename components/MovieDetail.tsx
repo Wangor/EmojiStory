@@ -65,7 +65,7 @@ export function MovieDetail({ movie }: { movie: any }) {
             By{' '}
             <Link
               href={`/users/${movie.user_id}`}
-              className="text-blue-600 hover:underline"
+              className="text-orange-400 hover:underline"
             >
               {authorChannel ? `@${authorChannel}` : 'Unknown'}
             </Link>
@@ -73,7 +73,7 @@ export function MovieDetail({ movie }: { movie: any }) {
           <div className="mt-4 flex justify-center gap-2">
             <button
               onClick={toggleLike}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${liked ? 'text-red-600 border-red-300 bg-red-50' : 'text-gray-600 border-gray-300'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${liked ? 'text-orange-400 border-orange-400 bg-red-50' : 'text-gray-600 border-gray-300'}`}
             >
               <HeartIcon weight={liked ? 'fill' : 'regular'} />
               <span>{likes}</span>

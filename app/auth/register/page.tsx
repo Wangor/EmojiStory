@@ -63,10 +63,10 @@ export default function RegisterPage() {
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <div className="flex justify-center gap-2">
-          <button type="submit" className="bg-blue-600 text-white py-2 px-4 rounded">Register</button>
+          <button type="submit" className="bg-orange-400 text-white py-2 px-4 rounded">Register</button>
           <Link
             href="/auth/login"
-            className="py-2 px-4 border border-blue-600 text-blue-600 rounded hover:bg-blue-50"
+            className="py-2 px-4 border border-orange-400 text-orange-400 rounded hover:bg-blue-50"
           >
             Login
           </Link>

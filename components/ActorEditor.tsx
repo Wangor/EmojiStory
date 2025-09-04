@@ -290,7 +290,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
 
     const getActorIcon = () => {
         if (actor.type === 'emoji') {
-            return <SmileyWinkIcon size={16} className="text-blue-600" />;
+            return <SmileyWinkIcon size={16} className="text-orange-400" />;
         } else if (actor.type === 'text') {
             return <TextTIcon size={16} className="text-purple-600" />;
         } else if (actor.type === 'composite') {
@@ -344,7 +344,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         Type
                                     </label>
                                     <select
-                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                         value={actor.type}
                                         onChange={(e) => handleTypeChange(e.target.value)}
                                     >
@@ -363,12 +363,12 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                     </label>
                                     <div className="flex items-center gap-2">
                                         <input
-                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-20 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-20 focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                             value={(actor as EmojiActor).emoji}
                                             onChange={(e) => update({ emoji: e.target.value })}
                                         />
                                         <button
-                                            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                            className="inline-flex items-center gap-2 px-3 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors text-sm"
                                             onClick={openEmojiCatalogueForActor}
                                         >
                                             <SmileyWinkIcon size={14} />
@@ -386,7 +386,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                             Text Content
                                         </label>
                                         <input
-                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                             value={(actor as TextActor).text}
                                             placeholder="Enter text..."
                                             onChange={(e) => update({ text: e.target.value })}
@@ -400,7 +400,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                             </label>
                                             <input
                                                 type="color"
-                                                className="border border-gray-300 rounded-md w-full h-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="border border-gray-300 rounded-md w-full h-10 focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                                 value={(actor as TextActor).color ?? '#ffffff'}
                                                 onChange={(e) => update({ color: e.target.value })}
                                             />
@@ -412,7 +412,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                             </label>
                                             <input
                                                 type="number"
-                                                className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                                 value={(actor as TextActor).fontSize ?? ''}
                                                 placeholder="32"
                                                 onChange={(e) => update({ fontSize: e.target.value ? Number(e.target.value) : undefined })}
@@ -459,12 +459,12 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                         <DotsSixVerticalIcon size={14} />
                                                     </div>
                                                     <input
-                                                        className="border border-gray-300 rounded-md px-3 py-1 text-sm w-20 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                        className="border border-gray-300 rounded-md px-3 py-1 text-sm w-20 focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                         value={p.emoji}
                                                         onChange={(e) => updatePart(idx, { emoji: e.target.value })}
                                                     />
                                                     <button
-                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-ornge-400 text-white rounded-md hover:bg-orange-500 transition-colors"
                                                         onClick={() => openEmojiCatalogueForPart(idx)}
                                                     >
                                                         <SmileyWinkIcon size={12} />
@@ -483,7 +483,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                         <input
                                                             type="number"
                                                             step="0.1"
-                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                             value={p.start?.x ?? 0}
                                                             onChange={(e) => updatePartStart(idx, 'x', Number(e.target.value))}
                                                         />
@@ -493,7 +493,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                         <input
                                                             type="number"
                                                             step="0.1"
-                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                             value={p.start?.y ?? 0}
                                                             onChange={(e) => updatePartStart(idx, 'y', Number(e.target.value))}
                                                         />
@@ -503,7 +503,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                         <input
                                                             type="number"
                                                             step="0.1"
-                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                            className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                             value={p.start?.scale ?? 1}
                                                             onChange={(e) => updatePartStart(idx, 'scale', Number(e.target.value))}
                                                         />
@@ -517,7 +517,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                             </div>
                                         )}
                                         <button
-                                            className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                                            className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors"
                                             onClick={addPart}
                                         >
                                             <PlusIcon size={12} />
@@ -538,7 +538,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         <input
                                             type="number"
                                             step="0.1"
-                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                             value={(actor.start?.x ?? 0).toString()}
                                             onChange={(e) => updateStart('x', Number(e.target.value))}
                                         />
@@ -548,7 +548,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         <input
                                             type="number"
                                             step="0.1"
-                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                             value={(actor.start?.y ?? 0).toString()}
                                             onChange={(e) => updateStart('y', Number(e.target.value))}
                                         />
@@ -558,7 +558,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         <input
                                             type="number"
                                             step="0.1"
-                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                             value={(actor.start?.scale ?? 1).toString()}
                                             onChange={(e) => updateStart('scale', Number(e.target.value))}
                                         />
@@ -568,7 +568,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         <input
                                             type="number"
                                             step="1"
-                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                             value="0"
                                             placeholder="0"
                                         />
@@ -583,7 +583,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         Keyframes
                                     </label>
                                     <button
-                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors"
                                         onClick={addKeyframe}
                                     >
                                         <PlusIcon size={12} />
@@ -611,7 +611,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                     <label className="block text-xs text-gray-600 mb-1">Time (ms)</label>
                                                     <input
                                                         type="number"
-                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                         value={track.t}
                                                         onChange={(e) => updateTrack(idx, 't', Number(e.target.value))}
                                                     />
@@ -621,7 +621,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                     <input
                                                         type="number"
                                                         step="0.1"
-                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                         value={track.x}
                                                         onChange={(e) => updateTrack(idx, 'x', Number(e.target.value))}
                                                     />
@@ -631,7 +631,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                     <input
                                                         type="number"
                                                         step="0.1"
-                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                         value={track.y}
                                                         onChange={(e) => updateTrack(idx, 'y', Number(e.target.value))}
                                                     />
@@ -641,7 +641,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                                     <input
                                                         type="number"
                                                         step="1"
-                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                        className="border border-gray-300 rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-orange-300 focus:border-transparent"
                                                         value={track.rotate}
                                                         onChange={(e) => updateTrack(idx, 'rotate', Number(e.target.value))}
                                                     />
@@ -659,7 +659,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                         Loop
                                     </label>
                                     <select
-                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                         value={(actor as any).loop ?? 'none'}
                                         onChange={(e) => update({ loop: e.target.value })}
                                     >
@@ -674,7 +674,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                     </label>
                                     <input
                                         type="number"
-                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                         value={(actor as any).z ?? 0}
                                         onChange={(e) => update({ z: Number(e.target.value) })}
                                     />
@@ -687,7 +687,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                     Accessibility Label
                                 </label>
                                 <input
-                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                     value={(actor as any).ariaLabel ?? ''}
                                     placeholder="Describe this actor..."
                                     onChange={(e) => update({ ariaLabel: e.target.value })}

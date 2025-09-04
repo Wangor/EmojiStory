@@ -326,7 +326,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
                         interactive && tool === 'move' ? 'cursor-move' :
                             interactive && tool === 'rotate' ? 'cursor-alias' : 'cursor-pointer'
                     } ${
-                        isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
+                        isSelected ? 'ring-2 ring-orange-300 ring-offset-2' : ''
                     } ${interactive ? 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-1' : ''}`}
                     style={style}
                 >
@@ -403,7 +403,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
                     interactive && tool === 'move' ? 'cursor-move' :
                         interactive && tool === 'rotate' ? 'cursor-alias' : 'cursor-pointer'
                 } ${
-                    isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
+                    isSelected ? 'ring-2 ring-orange-300 ring-offset-2' : ''
                 } ${interactive ? 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-1' : ''}`}
                 style={style}
             >
@@ -442,7 +442,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange }
                     <label className="text-sm font-medium text-gray-700">Frame:</label>
                     <input
                         type="range"
-                        className="flex-1"
+                        className="flex-1 bg-orange-400"
                         min="0"
                         max={Math.max(1, scene.duration_ms / frameMs)}
                         step="1"
