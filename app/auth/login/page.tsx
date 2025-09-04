@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { signIn } from '../../../lib/supabaseClient';
 
 export default function LoginPage() {
@@ -43,6 +44,12 @@ export default function LoginPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button type="submit" className="bg-blue-600 text-white py-2 rounded">Login</button>
       </form>
+      <p className="text-center text-sm mt-4">
+        Don&apos;t have an account?{' '}
+        <Link href="/auth/register" className="text-blue-600 hover:underline">
+          Register
+        </Link>
+      </p>
     </div>
   );
 }

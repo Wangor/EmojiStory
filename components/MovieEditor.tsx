@@ -37,6 +37,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
     const [error, setError] = useState<string | null>(null);
     const [movieId, setMovieId] = useState<string | undefined>(movie?.id);
     const [channelId, setChannelId] = useState<string | undefined>(movie?.channel_id);
+    const [channels, setChannels] = useState<any[]>([]);
     const [saving, setSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
@@ -55,14 +56,16 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
     }, [movie]);
 
     useEffect(() => {
-        if (!channelId) {
-            getUserChannels()
-                .then(ch => {
-                    if (ch && ch.length > 0) setChannelId(ch[0].id);
-                })
-                .catch(() => {});
-        }
-    }, [channelId]);
+        getUserChannels()
+            .then(ch => {
+                setChannels(ch);
+                if (!channelId && ch.length === 1) {
+                    setChannelId(ch[0].id);
+                }
+            })
+            .catch(() => {});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const updateScene = (idx: number, scene: Scene) => {
         setAnimation((a) => {
@@ -185,6 +188,25 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                     onChange={(e) => setAnimation((a) => ({ ...a, fps: Number(e.target.value) || 30 }))}
                                 />
                             </div>
+                            {channels.length > 1 && (
+                                <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium text-gray-700">Channel:</label>
+                                    <select
+                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        value={channelId || ''}
+                                        onChange={(e) => setChannelId(e.target.value)}
+                                    >
+                                        <option value="" disabled>
+                                            Select channel
+                                        </option>
+                                        {channels.map((ch) => (
+                                            <option key={ch.id} value={ch.id}>
+                                                {ch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                             <button
                                 className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
                                 onClick={saveMovie}
