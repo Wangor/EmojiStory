@@ -159,7 +159,7 @@ export default function EmojiCatalogue({ onSelectEmoji, onClose, isOpen }: Emoji
                         <MagnifyingGlass size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
-                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                             placeholder="Search emojis by name or keyword…"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -185,7 +185,7 @@ export default function EmojiCatalogue({ onSelectEmoji, onClose, isOpen }: Emoji
                                 onClick={() => setSelectedCategory(category)}
                                 className={`px-3 py-2 text-sm rounded-lg transition-colors ${
                                     selectedCategory === category
-                                        ? 'bg-blue-600 text-white'
+                                        ? 'bg-orange-400 text-white'
                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                             >
@@ -209,7 +209,7 @@ export default function EmojiCatalogue({ onSelectEmoji, onClose, isOpen }: Emoji
                                 <button
                                     key={`${e.emoji}-${idx}`}
                                     onClick={() => handleEmojiClick(e.emoji)}
-                                    className="aspect-square flex items-center justify-center text-2xl hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-blue-50"
+                                    className="aspect-square flex items-center justify-center text-2xl hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-300 focus:bg-blue-50"
                                     title={e.name}
                                     aria-label={e.name}
                                 >

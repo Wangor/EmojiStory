@@ -42,11 +42,11 @@ export default function LoginPage() {
           required
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button type="submit" className="bg-blue-600 text-white py-2 rounded">Login</button>
+        <button type="submit" className="bg-orange-400 text-white py-2 rounded">Login</button>
       </form>
       <p className="text-center text-sm mt-4">
         Don&apos;t have an account?{' '}
-        <Link href="/auth/register" className="text-blue-600 hover:underline">
+        <Link href="/auth/register" className="text-orange-400 hover:underline">
           Register
         </Link>
       </p>

@@ -172,7 +172,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
+                            <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-lg shadow-sm">
                                 <FilmSlateIcon weight="bold" size={24} className="text-white" />
                             </div>
                             <h1 className="text-xl font-semibold text-gray-900">Movie Editor</h1>
@@ -183,7 +183,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 <label className="text-sm font-medium text-gray-700">FPS:</label>
                                 <input
                                     type="number"
-                                    className="border border-gray-300 rounded-md px-2 py-1 w-16 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="border border-gray-300 rounded-md px-2 py-1 w-16 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                     value={animation.fps}
                                     onChange={(e) => setAnimation((a) => ({ ...a, fps: Number(e.target.value) || 30 }))}
                                 />
@@ -192,7 +192,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 <div className="flex items-center gap-2">
                                     <label className="text-sm font-medium text-gray-700">Channel:</label>
                                     <select
-                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                         value={channelId || ''}
                                         onChange={(e) => setChannelId(e.target.value)}
                                     >
@@ -208,7 +208,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 </div>
                             )}
                             <button
-                                className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors disabled:opacity-50"
                                 onClick={saveMovie}
                                 disabled={saving || !channelId}
                             >
@@ -216,7 +216,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 {saving ? 'Saving…' : 'Save'}
                             </button>
                             <button
-                                className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-orange-400 text-orange-400 rounded-md transition-colors"
                                 onClick={() => setShowGenerator(true)}
                             >
                                 <MagicWandIcon size={16} />
@@ -231,7 +231,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                         <FilmSlateIcon size={16} className="text-gray-500" />
                         <label className="text-sm font-medium text-gray-700">Title:</label>
                         <input
-                            className="border border-gray-300 rounded-md px-3 py-2 flex-1 max-w-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="border border-gray-300 rounded-md px-3 py-2 flex-1 max-w-md focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                             value={animation.title}
                             placeholder="Enter movie title..."
                             onChange={(e) => setAnimation((a) => ({ ...a, title: e.target.value }))}
@@ -240,7 +240,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                     {showGenerator && (
                         <div className="mt-4">
                             <textarea
-                                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                                 rows={3}
                                 placeholder="Describe your story..."
                                 value={storyText}
@@ -248,7 +248,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                             />
                             <div className="mt-2 flex gap-2">
                                 <button
-                                    className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                    className="px-3 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors disabled:opacity-50"
                                     onClick={generateWithAI}
                                     disabled={generating || !storyText.trim()}
                                 >
@@ -278,7 +278,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                     <button
                                         className={`px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap flex items-center gap-2 transition-colors ${
                                             activeSceneIndex === idx
-                                                ? 'bg-white border-b-2 border-b-blue-500 text-blue-600 font-medium shadow-sm'
+                                                ? 'bg-white border-b-2 border-b-orange-500 text-orange-400 font-medium shadow-sm'
                                                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                         }`}
                                         onClick={() => setActiveSceneIndex(idx)}
@@ -319,7 +319,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                     <p className="text-lg font-medium mb-2">No scenes yet</p>
                                     <p className="text-sm text-gray-400 mb-4">Create your first scene to get started</p>
                                     <button
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors shadow-sm"
                                         onClick={addScene}
                                     >
                                         <PlusIcon size={16} />

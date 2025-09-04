@@ -18,7 +18,7 @@ export default function SceneCanvasToolbar({ layer, setLayer, tool, setTool }: S
                     <button
                         className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                             layer === 'actors'
-                                ? 'bg-white text-blue-600 shadow-sm'
+                                ? 'bg-white text-orange-400 shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
                         }`}
                         onClick={() => setLayer('actors')}
@@ -29,7 +29,7 @@ export default function SceneCanvasToolbar({ layer, setLayer, tool, setTool }: S
                     <button
                         className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                             layer === 'background'
-                                ? 'bg-white text-green-600 shadow-sm'
+                                ? 'bg-white text-orange-400 shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
                         }`}
                         onClick={() => setLayer('background')}
@@ -44,7 +44,7 @@ export default function SceneCanvasToolbar({ layer, setLayer, tool, setTool }: S
                 <button
                     className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                         tool === 'move'
-                            ? 'bg-white text-blue-600 shadow-sm'
+                            ? 'bg-white text-orange-400 shadow-sm'
                             : 'text-gray-600 hover:text-gray-900'
                     }`}
                     onClick={() => setTool('move')}
@@ -55,7 +55,7 @@ export default function SceneCanvasToolbar({ layer, setLayer, tool, setTool }: S
                 <button
                     className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                         tool === 'scale'
-                            ? 'bg-white text-blue-600 shadow-sm'
+                            ? 'bg-white text-orange-400 shadow-sm'
                             : 'text-gray-600 hover:text-gray-900'
                     }`}
                     onClick={() => setTool('scale')}
@@ -66,7 +66,7 @@ export default function SceneCanvasToolbar({ layer, setLayer, tool, setTool }: S
                 <button
                     className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                         tool === 'rotate'
-                            ? 'bg-white text-green-600 shadow-sm'
+                            ? 'bg-white text-orange-400 shadow-sm'
                             : 'text-gray-600 hover:text-gray-900'
                     }`}
                     onClick={() => setTool('rotate')}

@@ -120,13 +120,13 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <FilmSlateIcon size={16} className="text-blue-600" />
+                            <FilmSlateIcon size={16} className="text-orange-400" />
                         </div>
                         <h3 className="font-semibold text-gray-900">Scene {sceneIndex + 1} Settings</h3>
                     </div>
                     <div className="flex gap-2">
                         <button
-                            className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs text-orange-400 hover:bg-orange-100 rounded-md transition-colors"
                             onClick={onDuplicate}
                         >
                             <CopyIcon size={12} />
@@ -149,7 +149,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         </label>
                         <input
                             type="number"
-                            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                             value={scene.duration_ms}
                             onChange={(e) => update({ duration_ms: parseInt(e.target.value) || 0 })}
                         />
@@ -160,7 +160,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                             Caption
                         </label>
                         <input
-                            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
                             value={scene.caption ?? ''}
                             placeholder="Optional caption..."
                             onChange={(e) => update({ caption: e.target.value })}
@@ -196,7 +196,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                             key={key}
                             className={`flex items-center gap-2 px-4 py-3 text-sm transition-colors ${
                                 activeSection === key
-                                    ? 'border-b-2 border-b-blue-500 text-blue-600 font-medium'
+                                    ? 'border-b-2 border-b-orange-300 text-orange-400 font-medium'
                                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                             }`}
                             onClick={() => setActiveSection(key as any)}
@@ -229,7 +229,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                             <h4 className="font-medium text-gray-900">Background Actors</h4>
                         </div>
                         <button
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors shadow-sm"
                             onClick={addBackground}
                         >
                             <PlusIcon size={16} />

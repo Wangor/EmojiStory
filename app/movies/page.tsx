@@ -23,7 +23,7 @@ function MoviesContent() {
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+            <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-xl shadow-lg">
               <FilmSlateIcon weight="bold" size={36} className="text-white" />
             </div>
             Released Movies

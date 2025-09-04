@@ -46,7 +46,7 @@ export default function ChannelPage() {
             <div className="max-w-2xl mx-auto px-4 py-12">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl shadow-lg mb-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-2xl shadow-lg mb-4">
                         <UserIcon weight="bold" size={28} className="text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Channel Settings</h1>
@@ -93,7 +93,7 @@ export default function ChannelPage() {
                                         <CameraIcon size={24} className="text-gray-500" />
                                     </div>
                                 )}
-                                <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors duration-200">
+                                <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-400 hover:bg-orange-500 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors duration-200">
                                     <CameraIcon size={16} className="text-white" />
                                     <input
                                         type="file"
@@ -118,7 +118,7 @@ export default function ChannelPage() {
                                 onChange={(e) => setName(e.target.value)}
                                 required
                                 placeholder="Enter your channel name"
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white focus:bg-white"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white focus:bg-white"
                             />
                         </div>
 
@@ -133,7 +133,7 @@ export default function ChannelPage() {
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={4}
                                 placeholder="Tell viewers about your channel..."
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white focus:bg-white resize-none"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white focus:bg-white resize-none"
                             />
                             <p className="text-xs text-gray-500 mt-2">
                                 {description.length}/500 characters
@@ -145,7 +145,7 @@ export default function ChannelPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-orange-400 hover:bg-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? (
                                     <>
@@ -164,22 +164,22 @@ export default function ChannelPage() {
                 </div>
 
                 {/* Tips Card */}
-                <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-6">
-                    <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                <div className="mt-6 bg-orange-50 border border-orange-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-orange-400 mb-3 flex items-center gap-2">
                         <UserIcon size={16} />
                         Channel Tips
                     </h3>
-                    <ul className="text-sm text-blue-800 space-y-2">
+                    <ul className="text-sm text-orange-400 space-y-2">
                         <li className="flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0"></span>
                             Choose a memorable channel name that reflects your content
                         </li>
                         <li className="flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0"></span>
                             Write a clear description to help viewers understand your channel
                         </li>
                         <li className="flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0"></span>
                             Upload an eye-catching channel picture to make your profile stand out
                         </li>
                     </ul>
