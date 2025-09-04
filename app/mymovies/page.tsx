@@ -29,7 +29,10 @@ function MoviesContent() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ animation: movie.animation, options: { width: 900, height: 500, fps: 30 } })
       });
-      if (!res.ok) throw new Error('Export failed');
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || 'Export failed');
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

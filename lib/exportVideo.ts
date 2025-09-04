@@ -1,6 +1,9 @@
 import type { Animation, Scene, Actor } from '../components/AnimationTypes';
 import type { FFmpeg } from '@ffmpeg/ffmpeg';
 import { createCanvas, loadImage, Image } from 'canvas';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 export interface WatermarkOptions {
   text?: string;
@@ -165,7 +168,8 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
   }
 
   const { createFFmpeg } = await import('@ffmpeg/ffmpeg');
-  const ffmpeg: FFmpeg = createFFmpeg({ log: false });
+  const corePath = require.resolve('@ffmpeg/core/dist/ffmpeg-core.js');
+  const ffmpeg: FFmpeg = createFFmpeg({ log: false, corePath });
   await ffmpeg.load();
   frames.forEach((frame, i) => {
     const name = `frame${String(i).padStart(5, '0')}.png`;
