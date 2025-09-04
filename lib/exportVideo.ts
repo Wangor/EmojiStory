@@ -1,9 +1,12 @@
 import type { Animation, Scene, Actor } from '../components/AnimationTypes';
-import type { FFmpeg } from '@ffmpeg/ffmpeg';
 import { createCanvas, loadImage, Image } from 'canvas';
-import { createRequire } from 'module';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegStatic from 'ffmpeg-static';
 
-const require = createRequire(import.meta.url);
+ffmpeg.setFfmpegPath(ffmpegStatic as string);
 
 export interface WatermarkOptions {
   text?: string;
@@ -155,28 +158,35 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
     }
   }
 
-  const frames: Uint8Array[] = [];
-  for (const scene of animation.scenes) {
-    const sceneFrames = Math.ceil((scene.duration_ms / 1000) * fps);
-    for (let i = 0; i < sceneFrames; i++) {
-      const progress = i / sceneFrames;
-      drawScene(ctx, scene, width, height, progress);
-      if (loadedWatermark) drawWatermark(ctx, canvas, loadedWatermark);
-      const buffer = canvas.toBuffer('image/png');
-      frames.push(new Uint8Array(buffer));
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'emoji-export-'));
+  try {
+    let frameIndex = 0;
+    for (const scene of animation.scenes) {
+      const sceneFrames = Math.ceil((scene.duration_ms / 1000) * fps);
+      for (let i = 0; i < sceneFrames; i++) {
+        const progress = i / sceneFrames;
+        drawScene(ctx, scene, width, height, progress);
+        if (loadedWatermark) drawWatermark(ctx, canvas, loadedWatermark);
+        const buffer = canvas.toBuffer('image/png');
+        const name = `frame${String(frameIndex++).padStart(5, '0')}.png`;
+        await fs.writeFile(path.join(tmpDir, name), buffer);
+      }
     }
-  }
 
-  const { createFFmpeg } = await import('@ffmpeg/ffmpeg');
-  const corePath = require.resolve('@ffmpeg/core/dist/ffmpeg-core.js');
-  const ffmpeg: FFmpeg = createFFmpeg({ log: false, corePath });
-  await ffmpeg.load();
-  frames.forEach((frame, i) => {
-    const name = `frame${String(i).padStart(5, '0')}.png`;
-    ffmpeg.FS('writeFile', name, frame);
-  });
-  await ffmpeg.run('-framerate', String(fps), '-i', 'frame%05d.png', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', 'out.mp4');
-  const data = ffmpeg.FS('readFile', 'out.mp4');
-  return data;
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg()
+        .input(path.join(tmpDir, 'frame%05d.png'))
+        .inputFPS(fps)
+        .outputOptions(['-c:v libx264', '-pix_fmt yuv420p'])
+        .save(path.join(tmpDir, 'out.mp4'))
+        .on('end', () => resolve())
+        .on('error', reject);
+    });
+
+    const data = await fs.readFile(path.join(tmpDir, 'out.mp4'));
+    return new Uint8Array(data);
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  }
 }
 
