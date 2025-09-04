@@ -1,10 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/export': ['./node_modules/@ffmpeg-installer/**'],
-    },
-  },
-};
+const nextConfig = {};
 
 module.exports = nextConfig;

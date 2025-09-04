@@ -1,6 +1,5 @@
 import { createCanvas, loadImage, CanvasRenderingContext2D } from 'canvas';
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import { PassThrough } from 'stream';
 import type { Animation, Scene, Actor } from '../components/AnimationTypes';
 
@@ -164,7 +163,7 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
       .outputOptions('-pix_fmt yuv420p')
       .format('mp4')
       .on('error', reject);
-    const ffmpegPath = ffmpegInstaller.path;
+    const ffmpegPath = process.env.FFMPEG_PATH;
     if (ffmpegPath) command.setFfmpegPath(ffmpegPath);
 
     const chunks: Buffer[] = [];
