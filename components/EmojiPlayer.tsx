@@ -264,6 +264,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
             width={width}
             height={height}
             progress={progress}
+            emojiStyle={emojiStyle}
           />
         )}
 
@@ -355,12 +356,14 @@ function SceneView({
   scene,
   width,
   height,
-  progress
+  progress,
+  emojiStyle
 }: {
   scene: Scene;
   width: number;
   height: number;
   progress: number;
+  emojiStyle?: React.CSSProperties;
 }) {
   const content = (
     <div style={{ position: 'relative', width, height }}>
@@ -375,6 +378,7 @@ function SceneView({
             h={height}
             duration={scene.duration_ms}
             progress={progress}
+            emojiStyle={emojiStyle}
           />
         ))}
       {scene.actors
@@ -388,6 +392,7 @@ function SceneView({
             h={height}
             duration={scene.duration_ms}
             progress={progress}
+            emojiStyle={emojiStyle}
           />
         ))}
       {scene.caption && (
@@ -407,13 +412,15 @@ function ActorView({
   w: _w,
   h: _h,
   duration,
-  progress
+  progress,
+  emojiStyle
 }: {
   actor: Actor;
   w: number;
   h: number;
   duration: number;
   progress: number;
+  emojiStyle?: React.CSSProperties;
 }) {
   const frames = [
     actor.start && {
