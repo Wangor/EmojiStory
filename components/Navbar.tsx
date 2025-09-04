@@ -155,7 +155,7 @@ export function Navbar() {
                             className="flex items-center gap-2 text-black hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
                         >
                             <FilmSlateIcon size={18} weight="fill" />
-                            <span>Movies</span>
+                            <span>Clips</span>
                         </Link>
                         <Link
                             href={user ? '/editor' : '/auth/login'}
@@ -199,7 +199,7 @@ export function Navbar() {
                                             className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors duration-200"
                                         >
                                             <FilmSlateIcon size={16} weight="fill" />
-                                            My Movies
+                                            My Clips
                                         </Link>
                                         <hr className="my-1 border-gray-200" />
                                         <button
@@ -274,7 +274,7 @@ export function Navbar() {
                                 className="flex items-center gap-3 text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors duration-200"
                             >
                                 <FilmSlateIcon size={20} weight="fill" />
-                                Movies
+                                Clips
                             </Link>
                             <Link
                                 href={user ? '/editor' : '/auth/login'}
@@ -315,7 +315,7 @@ export function Navbar() {
                                         className="flex items-center gap-3 text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors duration-200 ml-6"
                                     >
                                         <FilmSlateIcon size={20} weight="fill" />
-                                        My Movies
+                                        My Clips
                                     </Link>
                                     <button
                                         onClick={handleSignOut}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { HeartIcon } from '@phosphor-icons/react';
+import { HeartIcon, TelevisionSimpleIcon } from '@phosphor-icons/react';
 import { ShareButton } from './ShareButton';
 import type {
   Animation,
@@ -188,7 +188,7 @@ export function MovieCard({
             className="group inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-50 to-yellow-50 hover:from-orange-100 hover:to-orange-100 border border-orange-400 hover:border-orange-500 rounded-full text-xs font-medium text-orange-400 hover:text-orange-500 transition-all duration-200 shadow-sm hover:shadow-md max-w-fit"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-blue-500 group-hover:text-blue-600">📺</span>
+            <TelevisionSimpleIcon weight="bold"></TelevisionSimpleIcon>
             <span className="truncate">@{movie.channels.name}</span>
           </Link>
         )}
