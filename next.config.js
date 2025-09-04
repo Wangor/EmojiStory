@@ -1,10 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    outputFileTracingIncludes: {
-      'app/api/export/route.ts': ['./node_modules/ffmpeg-static/ffmpeg']
-    }
-  }
-};
+const nextConfig = {};
 
 module.exports = nextConfig;

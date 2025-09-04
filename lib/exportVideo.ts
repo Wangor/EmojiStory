@@ -1,16 +1,8 @@
 import type { Animation, Scene, Actor } from '../components/AnimationTypes';
-import { createCanvas, loadImage, Image } from 'canvas';
-import fs from 'fs/promises';
-import os from 'os';
-import path from 'path';
-import ffmpeg from 'fluent-ffmpeg';
-import ffmpegStatic from 'ffmpeg-static';
-
-ffmpeg.setFfmpegPath(ffmpegStatic as string);
 
 export interface WatermarkOptions {
   text?: string;
-  image?: string; // data URL or path
+  image?: string; // data URL
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
@@ -113,10 +105,20 @@ function drawScene(
   }
 }
 
+async function loadImage(url: string): Promise<HTMLImageElement> {
+  const img = new Image();
+  img.src = url;
+  await new Promise((resolve, reject) => {
+    img.onload = () => resolve(null);
+    img.onerror = reject;
+  });
+  return img;
+}
+
 function drawWatermark(
   ctx: CanvasRenderingContext2D,
   canvas: { width: number; height: number },
-  watermark: { text?: string; image?: Image; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }
+  watermark: { text?: string; image?: HTMLImageElement; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }
 ) {
   const pos = watermark.position ?? 'bottom-right';
   const padding = 10;
@@ -144,13 +146,15 @@ function drawWatermark(
   ctx.restore();
 }
 
-export async function exportVideo(animation: Animation, options: ExportOptions): Promise<Uint8Array> {
+export async function exportVideo(animation: Animation, options: ExportOptions): Promise<Blob> {
   const { width, height, fps, watermark } = options;
-  const canvas = createCanvas(width, height);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Cannot acquire 2D context');
 
-  let loadedWatermark: { text?: string; image?: Image; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' } | undefined;
+  let loadedWatermark: { text?: string; image?: HTMLImageElement; position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' } | undefined;
   if (watermark) {
     loadedWatermark = { text: watermark.text, position: watermark.position };
     if (watermark.image) {
@@ -158,35 +162,27 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
     }
   }
 
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'emoji-export-'));
-  try {
-    let frameIndex = 0;
-    for (const scene of animation.scenes) {
-      const sceneFrames = Math.ceil((scene.duration_ms / 1000) * fps);
-      for (let i = 0; i < sceneFrames; i++) {
-        const progress = i / sceneFrames;
-        drawScene(ctx, scene, width, height, progress);
-        if (loadedWatermark) drawWatermark(ctx, canvas, loadedWatermark);
-        const buffer = canvas.toBuffer('image/png');
-        const name = `frame${String(frameIndex++).padStart(5, '0')}.png`;
-        await fs.writeFile(path.join(tmpDir, name), buffer);
-      }
+  const stream = canvas.captureStream(fps);
+  const chunks: BlobPart[] = [];
+  const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+  recorder.ondataavailable = (e) => {
+    if (e.data.size > 0) chunks.push(e.data);
+  };
+  recorder.start();
+
+  const frameDuration = 1000 / fps;
+  for (const scene of animation.scenes) {
+    const sceneFrames = Math.ceil((scene.duration_ms / 1000) * fps);
+    for (let i = 0; i < sceneFrames; i++) {
+      const progress = i / sceneFrames;
+      drawScene(ctx, scene, width, height, progress);
+      if (loadedWatermark) drawWatermark(ctx, canvas, loadedWatermark);
+      await new Promise((r) => setTimeout(r, frameDuration));
     }
-
-    await new Promise<void>((resolve, reject) => {
-      ffmpeg()
-        .input(path.join(tmpDir, 'frame%05d.png'))
-        .inputFPS(fps)
-        .outputOptions(['-c:v libx264', '-pix_fmt yuv420p'])
-        .save(path.join(tmpDir, 'out.mp4'))
-        .on('end', () => resolve())
-        .on('error', reject);
-    });
-
-    const data = await fs.readFile(path.join(tmpDir, 'out.mp4'));
-    return new Uint8Array(data);
-  } finally {
-    await fs.rm(tmpDir, { recursive: true, force: true });
   }
+
+  recorder.stop();
+  await new Promise((resolve) => (recorder.onstop = resolve));
+  return new Blob(chunks, { type: 'video/webm' });
 }
 

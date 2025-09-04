@@ -6,6 +6,7 @@ import { PlayIcon, FilmSlateIcon, ClockIcon, PencilSimpleIcon, UploadSimpleIcon,
 import { getMoviesByUser, publishMovie } from '../../lib/supabaseClient';
 import { MovieCard } from '../../components/MovieCard';
 import ReleaseModal from '../../components/ReleaseModal';
+import { exportVideo } from '../../lib/exportVideo';
 
 function MoviesContent() {
   const [movies, setMovies] = useState<any[]>([]);
@@ -24,20 +25,15 @@ function MoviesContent() {
   async function handleExport(movie: any) {
     try {
       setExportingId(movie.id);
-      const res = await fetch('/api/export', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ animation: movie.animation, options: { width: 900, height: 500, fps: 30 } })
+      const blob = await exportVideo(movie.animation, {
+        width: 900,
+        height: 500,
+        fps: 30
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error || 'Export failed');
-      }
-      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${movie.title || 'movie'}.mp4`;
+      a.download = `${movie.title || 'movie'}.webm`;
       document.body.appendChild(a);
       a.click();
       a.remove();
