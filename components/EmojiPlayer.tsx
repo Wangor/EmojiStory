@@ -3,6 +3,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import type { Actor, Animation, Scene, Effect } from './AnimationTypes';
+import { exportVideo, ExportOptions } from '../lib/exportVideo';
 
 const EFFECT_VARIANTS: Record<Effect, { hidden: any; show: any }> = {
   'fade-in': {
@@ -94,7 +95,11 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
     onPlayChange?: (p: boolean) => void;
     loop?: boolean;
   },
-  ref: React.Ref<{ play: () => void; stop: () => void }>
+  ref: React.Ref<{
+    play: () => void;
+    stop: () => void;
+    exportToMp4: (options: ExportOptions) => Promise<Uint8Array>;
+  }>
 ) {
   const [sceneIndex, setSceneIndex] = useState(0);
   // Start in playing state so the animation begins automatically
@@ -167,9 +172,12 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
         startedAtRef.current = null;
         setProgress(0);
         setSceneIndex(0);
+      },
+      exportToMp4(options: ExportOptions) {
+        return exportVideo(animation, options);
       }
     }),
-    []
+    [animation]
   );
 
   useEffect(() => {

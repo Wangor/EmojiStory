@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "latest",
     "emojibase-data": "latest",
     "framer-motion": "11.2.10",
+    "@ffmpeg/ffmpeg": "^0.12.7",
     "next": "14.2.5",
     "openai": "^4.57.0",
     "react": "18.3.1",
