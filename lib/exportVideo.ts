@@ -157,20 +157,22 @@ export async function exportVideo(animation: Animation, options: ExportOptions):
     const frameStream = new PassThrough();
     const command = ffmpeg()
       .input(frameStream)
-      .inputFormat('image2pipe')
-      .fps(fps)
+      .inputOptions(['-f image2pipe', '-vcodec png', `-framerate ${fps}`])
+      .outputOptions(['-pix_fmt yuv420p', '-movflags frag_keyframe+empty_moov'])
       .videoCodec('libx264')
-      .outputOptions('-pix_fmt yuv420p')
-      .format('mp4')
-      .on('error', reject);
+      .format('mp4');
+
     const ffmpegPath = process.env.FFMPEG_PATH;
     if (ffmpegPath) command.setFfmpegPath(ffmpegPath);
 
     const chunks: Buffer[] = [];
     command
+      .on('error', reject)
+      .on('end', () => resolve(Buffer.concat(chunks)));
+
+    command
       .pipe()
       .on('data', (c: Buffer) => chunks.push(c))
-      .on('end', () => resolve(Buffer.concat(chunks)))
       .on('error', reject);
 
     (async () => {
