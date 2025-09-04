@@ -216,7 +216,7 @@ export function Navbar() {
                             <>
                                 <Link
                                     href="/auth/login"
-                                    className="flex items-center gap-2 border border-white text-white hover:bg-white/10 transition-colors duration-200 px-4 py-2 rounded-md font-medium"
+                                    className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 px-4 py-2 rounded-md font-medium shadow-sm"
                                 >
                                     <User size={18} weight="bold" />
                                     <span>Login</span>
@@ -330,7 +330,7 @@ export function Navbar() {
                                     <Link
                                         href="/auth/login"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 text-white border border-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors duration-200"
+                                        className="flex items-center gap-3 bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-md font-medium transition-colors duration-200 shadow-sm"
                                     >
                                         <User size={20} weight="bold" />
                                         Login
