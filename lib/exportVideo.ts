@@ -96,6 +96,9 @@ function drawScene(
   progress: number
 ) {
   ctx.clearRect(0, 0, w, h);
+  // Fill with a solid background so transparent frames don't appear black
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, w, h);
   [...scene.backgroundActors, ...scene.actors]
     .slice()
     .sort((a, b) => (a.z ?? 0) - (b.z ?? 0))
