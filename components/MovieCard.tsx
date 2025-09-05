@@ -131,8 +131,8 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
       className="relative w-full aspect-video rounded-md overflow-hidden border"
       style={{ backgroundColor: scene.backgroundColor ?? defaultBg }}
     >
-      {scene.backgroundActors.map((a) => renderActor(a))}
-      {scene.actors.map((a) => renderActor(a))}
+      {(scene.backgroundActors || []).map((a) => renderActor(a))}
+      {(scene.actors || []).map((a) => renderActor(a))}
     </div>
   );
 }
@@ -145,17 +145,21 @@ export function MovieCard({
     title?: string;
     description?: string;
     story: string;
-    animation: Animation;
+    animation: Animation | string;
     channels?: {
       name: string;
       user_id: string;
     };
   };
 }) {
-  const firstScene = movie.animation?.scenes?.[0];
+  const animation =
+    typeof movie.animation === 'string'
+      ? JSON.parse(movie.animation)
+      : movie.animation;
+  const firstScene = animation?.scenes?.[0];
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
-  const emojiFont = movie.animation?.emojiFont || (movie as any).emoji_font;
+  const emojiFont = animation?.emojiFont || (movie as any).emoji_font;
 
   useEmojiFont(emojiFont);
 
