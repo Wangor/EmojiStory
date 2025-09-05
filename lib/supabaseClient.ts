@@ -194,11 +194,14 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
 
   const parseAnimation = (movie: any) => {
     let animation = movie.animation;
-    if (typeof animation === 'string') {
+    // Some rows store the animation JSON double-encoded as a string.
+    // Parse repeatedly until we get an object or hit a parsing error.
+    while (typeof animation === 'string') {
       try {
         animation = JSON.parse(animation);
       } catch {
         animation = null;
+        break;
       }
     }
     return { ...movie, animation };

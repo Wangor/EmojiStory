@@ -156,11 +156,17 @@ export function MovieCard({
 }) {
   let animation: Animation | null = null;
   if (typeof movie.animation === 'string') {
-    try {
-      animation = JSON.parse(movie.animation);
-    } catch {
-      animation = null;
+    let anim: any = movie.animation;
+    // Handle double-encoded JSON strings by parsing until it's an object.
+    while (typeof anim === 'string') {
+      try {
+        anim = JSON.parse(anim);
+      } catch {
+        anim = null;
+        break;
+      }
     }
+    animation = anim;
   } else {
     animation = movie.animation;
   }
