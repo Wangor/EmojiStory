@@ -43,4 +43,6 @@ POST `/render` with JSON body matching `AnimationRequest`:
 
 The service renders each actor to a frame using SkiaSharp and encodes the sequence with `ffmpeg`. The resulting MP4 is returned as `video/mp4`.
 
+Place any fonts your animation requires in the `fonts/` folder. By default the API tries `fonts/NotoColorEmoji.ttf` for emoji and `fonts/NotoSans-Regular.ttf` for text. If these files are missing, SkiaSharp falls back to its built-in typeface and emoji may render as empty rectangles.
+
 > Requires .NET 8 SDK and `ffmpeg` to be installed on the host.

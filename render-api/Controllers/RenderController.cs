@@ -21,10 +21,8 @@ public class RenderController : ControllerBase
                          request.Animation.Fps / 1000.0));
 
         // Preload fonts if available
-        var emojiTypeface = !string.IsNullOrEmpty(request.Animation.EmojiFont)
-            ? SKTypeface.FromFile(request.Animation.EmojiFont)
-            : null;
-        var textTypeface = SKTypeface.FromFamilyName("Arial");
+        var emojiTypeface = LoadTypeface(request.Animation.EmojiFont ?? "fonts/NotoColorEmoji.ttf");
+        var textTypeface = LoadTypeface("fonts/NotoSans-Regular.ttf") ?? SKTypeface.Default;
 
         for (int i = 0; i < totalFrames; i++)
         {
@@ -188,5 +186,13 @@ public class RenderController : ControllerBase
         if (string.IsNullOrEmpty(hex)) return null;
         if (!hex.StartsWith('#')) hex = "#" + hex;
         return SKColor.TryParse(hex, out var c) ? c : null;
+    }
+
+    private static SKTypeface? LoadTypeface(string path)
+    {
+        var fullPath = Path.IsPathRooted(path)
+            ? path
+            : Path.Combine(AppContext.BaseDirectory, path);
+        return System.IO.File.Exists(fullPath) ? SKTypeface.FromFile(fullPath) : null;
     }
 }

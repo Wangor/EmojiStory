@@ -8,4 +8,9 @@
     <PackageReference Include="SkiaSharp" Version="2.88.6" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.6" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="fonts/**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
