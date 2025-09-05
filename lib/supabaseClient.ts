@@ -170,8 +170,9 @@ export async function publishMovie(id: string, channelId: string, publishDateTim
   return data;
 }
 
-export async function getAllMovies() {
-  const { data, error } = await supabase
+export async function getAllMovies(range?: { from?: number; to?: number }) {
+  const { from = 0, to } = range || {};
+  let query = supabase
     .from('movies')
     .select(`
       *,
@@ -185,14 +186,26 @@ export async function getAllMovies() {
     .lte('publish_datetime', new Date().toISOString())
     .order('created_at', { ascending: false });
 
+  if (typeof to === 'number') {
+    query = query.range(from, to);
+  }
+
+  const { data, error } = await query;
+
   if (error) {
     // If the foreign key approach doesn't work, fall back to manual join
-    const { data: moviesData, error: moviesError } = await supabase
+    let moviesQuery = supabase
       .from('movies')
       .select('*')
       .not('publish_datetime', 'is', null)
       .lte('publish_datetime', new Date().toISOString())
       .order('created_at', { ascending: false });
+
+    if (typeof to === 'number') {
+      moviesQuery = moviesQuery.range(from, to);
+    }
+
+    const { data: moviesData, error: moviesError } = await moviesQuery;
 
     if (moviesError) throw moviesError;
 

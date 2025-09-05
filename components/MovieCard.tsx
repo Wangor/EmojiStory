@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { HeartIcon, TelevisionSimpleIcon } from '@phosphor-icons/react';
+import { HeartIcon } from '@phosphor-icons/react';
 import { ShareButton } from './ShareButton';
 import type {
   Animation,
@@ -13,8 +13,6 @@ import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
 import { useEmojiFont } from '../lib/emojiFonts';
 
 function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string }) {
-  const width = 160;
-  const height = (width * 9) / 16; // match EmojiPlayer aspect ratio
   const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
 
   const renderEmoji = (a: EmojiActor) => {
@@ -130,12 +128,8 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
 
   return (
     <div
-      className="relative rounded-md overflow-hidden border"
-      style={{
-        width,
-        height,
-        backgroundColor: scene.backgroundColor ?? defaultBg,
-      }}
+      className="relative w-full aspect-video rounded-md overflow-hidden border"
+      style={{ backgroundColor: scene.backgroundColor ?? defaultBg }}
     >
       {scene.backgroundActors.map((a) => renderActor(a))}
       {scene.actors.map((a) => renderActor(a))}
@@ -184,28 +178,26 @@ export function MovieCard({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col">
       {firstScene ? (
         <SceneThumbnail scene={firstScene} emojiFont={emojiFont} />
       ) : null}
-      <div className="space-y-1">
-        <div className="text-sm font-medium truncate">
+      <div className="mt-2 flex flex-col gap-1">
+        <div className="text-sm font-semibold leading-tight line-clamp-2">
           {movie.title || movie.story.slice(0, 30)}
         </div>
-        {movie.description && (
-          <div className="text-xs text-gray-500 truncate">{movie.description}</div>
-        )}
-        {movie.channels && (
+        {movie.channels ? (
           <Link
             href={`/channel/${encodeURIComponent(movie.channels.name)}`}
-            className="group inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-50 to-yellow-50 hover:from-orange-100 hover:to-orange-100 border border-orange-400 hover:border-orange-500 rounded-full text-xs font-medium text-orange-400 hover:text-orange-500 transition-all duration-200 shadow-sm hover:shadow-md max-w-fit"
+            className="text-xs text-gray-500 truncate hover:text-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <TelevisionSimpleIcon weight="bold"></TelevisionSimpleIcon>
-            <span className="truncate">@{movie.channels.name}</span>
+            @{movie.channels.name}
           </Link>
+        ) : (
+          <div className="text-xs text-gray-500 truncate">Unknown channel</div>
         )}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-1">
           <button
             onClick={toggleLike}
             className={`flex items-center gap-1 text-xs ${liked ? 'text-orange-400' : 'text-gray-500'}`}

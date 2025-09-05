@@ -2,7 +2,7 @@
 
 /* eslint-disable import/no-unresolved */
 import { FilmSlate, MagicWand } from '@phosphor-icons/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { MovieCard } from '../components/MovieCard';
 import { getAllMovies } from '../lib/supabaseClient';
@@ -10,11 +10,48 @@ import { getAllMovies } from '../lib/supabaseClient';
 export default function Page() {
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
+  const pageSize = 8;
+
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    try {
+      const newMovies = await getAllMovies({
+        from: page * pageSize,
+        to: page * pageSize + pageSize - 1,
+      });
+      setMovies((prev) => [...prev, ...newMovies]);
+      if (newMovies.length < pageSize) {
+        setHasMore(false);
+      }
+      setPage((p) => p + 1);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, loading, hasMore]);
 
   useEffect(() => {
-    getAllMovies().then(setMovies).catch((e) => setError(e.message));
-  }, []);
+    loadMore();
+  }, [loadMore]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.body.offsetHeight - 300
+      ) {
+        loadMore();
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadMore]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -30,17 +67,6 @@ export default function Page() {
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Create AI-powered emoji movies from your stories
           </p>
-        </div>
-
-        {/* Call to Action */}
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={() => router.push('/create')}
-            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
-          >
-            <MagicWand weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
-            Create
-          </button>
         </div>
 
         {/* Error Display */}
@@ -59,7 +85,7 @@ export default function Page() {
         {movies.length > 0 && (
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4 text-center">Latest Movies</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {movies.map((m) => (
                 <div
                   key={m.id}
@@ -75,8 +101,30 @@ export default function Page() {
                 </div>
               ))}
             </div>
+            {hasMore && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                >
+                  {loading ? 'Loading...' : 'Load more'}
+                </button>
+              </div>
+            )}
           </div>
         )}
+
+        {/* Call to Action */}
+        <div className="flex justify-center mt-12 mb-6">
+          <button
+            onClick={() => router.push('/create')}
+            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+          >
+            <MagicWand weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
+            Create
+          </button>
+        </div>
       </div>
     </main>
   );
