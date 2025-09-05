@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SkiaSharp;
 using System.Diagnostics;
+using System.Linq;
 using VideoRendererApi.Models;
 
 namespace VideoRendererApi.Controllers;
@@ -15,7 +16,11 @@ public class RenderController : ControllerBase
         var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(tempDir);
 
-        for (int i = 0; i < request.TotalFrames; i++)
+        var totalFrames = (int)Math.Max(1,
+            Math.Ceiling(request.Animation.Scenes.Sum(s => s.DurationMs) *
+                         request.Animation.Fps / 1000.0));
+
+        for (int i = 0; i < totalFrames; i++)
         {
             using var bmp = new SKBitmap(request.Width, request.Height);
             using var canvas = new SKCanvas(bmp);
@@ -34,7 +39,7 @@ public class RenderController : ControllerBase
         var psi = new ProcessStartInfo
         {
             FileName = "ffmpeg",
-            Arguments = "-y -framerate 30 -i f_%06d.png -c:v libx264 -pix_fmt yuv420p animation.mp4",
+            Arguments = $"-y -framerate {request.Animation.Fps} -i f_%06d.png -c:v libx264 -pix_fmt yuv420p animation.mp4",
             WorkingDirectory = tempDir,
             RedirectStandardOutput = true,
             RedirectStandardError = true
