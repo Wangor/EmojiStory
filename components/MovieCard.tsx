@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { HeartIcon, TelevisionSimpleIcon } from '@phosphor-icons/react';
@@ -8,6 +10,7 @@ import type {
   Actor,
   EmojiActor,
   CompositeActor,
+  TextActor,
 } from './AnimationTypes';
 import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
 import { useEmojiFont } from '../lib/emojiFonts';
@@ -49,9 +52,39 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
     );
   };
 
+  const renderText = (a: TextActor) => {
+    const first = a.tracks?.[0];
+    const start =
+      a.start ||
+      (first
+        ? { x: first.x, y: first.y, scale: first.scale ?? 1 }
+        : { x: 0, y: 0, scale: 1 });
+    const size = a.fontSize ?? Math.round(32 * start.scale);
+    const left = start.x * 100;
+    const top = start.y * 100;
+    return (
+      <span
+        key={a.id}
+        style={{
+          position: 'absolute',
+          left: `${left}%`,
+          top: `${top}%`,
+          fontSize: size,
+          transform: 'translate(-50%, -50%)',
+          color: a.color || '#000',
+        }}
+      >
+        {a.text}
+      </span>
+    );
+  };
+
   const renderActor = (actor: Actor): React.ReactNode => {
     if (actor.type === 'emoji') {
       return renderEmoji(actor);
+    }
+    if (actor.type === 'text') {
+      return renderText(actor);
     }
     if (actor.type === 'composite') {
       const comp = actor as CompositeActor;
