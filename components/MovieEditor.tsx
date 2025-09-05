@@ -124,12 +124,16 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         setSaving(true);
         setSaveMessage(null);
         try {
+            const animationToSave = { ...animation };
+            if (!animationToSave.emojiFont) {
+                delete (animationToSave as any).emojiFont;
+            }
             const payload = {
                 channel_id: channelId!,
                 title: animation.title,
                 description: animation.description,
                 story: storyText,
-                animation,
+                animation: animationToSave,
             };
             let saved;
             if (movieId) {
@@ -209,7 +213,6 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 <option value="Twemoji">Twemoji</option>
                                 <option value="OpenMoji">OpenMoji</option>
                                 <option value="Blobmoji">Blobmoji</option>
-                                <option value="FxEmoji">FxEmoji</option>
                             </select>
                         </div>
                         {channels.length > 1 && (
