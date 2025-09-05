@@ -96,7 +96,7 @@ export async function insertMovie(movie: { channel_id: string; title: string; de
       title: movie.title,
       description: movie.description,
       story: movie.story,
-      emoji_font: movie.emoji_font,
+      emoji_font: movie.emoji_font ?? null,
       animation: movie.animation,
     })
     .select()
@@ -116,7 +116,7 @@ export async function updateMovie(movie: { id: string; channel_id?: string; titl
       title: movie.title,
       description: movie.description,
       story: movie.story,
-      emoji_font: movie.emoji_font,
+      emoji_font: movie.emoji_font ?? null,
       animation: movie.animation,
     })
     .eq('id', movie.id)

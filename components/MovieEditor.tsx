@@ -126,7 +126,8 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         setSaveMessage(null);
         try {
             const animationToSave = { ...animation };
-            if (!animationToSave.emojiFont) {
+            const selectedFont = animationToSave.emojiFont;
+            if (!selectedFont) {
                 delete (animationToSave as any).emojiFont;
             }
             const payload = {
@@ -134,7 +135,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                 title: animation.title,
                 description: animation.description,
                 story: storyText,
-                emoji_font: animationToSave.emojiFont,
+                emoji_font: selectedFont ?? null,
                 animation: animationToSave,
             } as const;
             let saved;

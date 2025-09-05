@@ -5,6 +5,7 @@ create table if not exists public.movies (
   title text,
   description text,
   story text,
+  emoji_font text,
   animation jsonb,
   publish_datetime timestamptz,
   created_at timestamptz default now()
@@ -53,6 +54,9 @@ alter table public.movies
 
 alter table public.movies
   add column if not exists channel_id uuid references public.channels(id);
+
+alter table public.movies
+  add column if not exists emoji_font text;
 
 update public.movies
 set channel_id = channels.id
