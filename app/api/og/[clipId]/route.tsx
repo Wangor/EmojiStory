@@ -21,6 +21,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   const scene: Scene | undefined = clip?.animation?.scenes?.[0];
   const emojiFont = clip?.animation?.emojiFont || clip?.emoji_font;
   const fonts = await fetchEmojiFontData(emojiFont);
+  const defaultBg = emojiFont === 'Noto Emoji' ? '#fff' : '#000';
   const width = 1200;
   const height = Math.round((width * 9) / 16);
   const baseUnit = width / 12.5;
@@ -135,7 +136,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: '#fff',
+            background: defaultBg,
             fontSize: Math.round(baseUnit * 1.5),
             fontWeight: 700,
           }}
@@ -158,7 +159,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
           position: 'relative',
           width: '100%',
           height: '100%',
-          background: '#fff',
+          background: scene.backgroundColor ?? defaultBg,
           display: 'flex',
         }}
       >

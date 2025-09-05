@@ -15,6 +15,7 @@ import { useEmojiFont } from '../lib/emojiFonts';
 function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string }) {
   const width = 160;
   const height = (width * 9) / 16; // match EmojiPlayer aspect ratio
+  const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
 
   const renderEmoji = (a: EmojiActor) => {
     const start = a.start ?? {
@@ -129,8 +130,12 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
 
   return (
     <div
-      className="relative bg-white rounded-md overflow-hidden border"
-      style={{ width, height }}
+      className="relative rounded-md overflow-hidden border"
+      style={{
+        width,
+        height,
+        backgroundColor: scene.backgroundColor ?? defaultBg,
+      }}
     >
       {scene.backgroundActors.map((a) => renderActor(a))}
       {scene.actors.map((a) => renderActor(a))}
