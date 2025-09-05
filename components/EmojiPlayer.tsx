@@ -113,6 +113,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   const scene = animation.scenes[sceneIndex];
   const duration = Math.max(1, scene?.duration_ms ?? 1);
   const emojiStyle = animation.emojiFont ? { fontFamily: animation.emojiFont } : undefined;
+  const defaultBg = animation.emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
 
   useEmojiFont(animation.emojiFont);
 
@@ -268,6 +269,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
             height={height}
             progress={progress}
             emojiStyle={emojiStyle}
+            backgroundColor={scene.backgroundColor ?? defaultBg}
           />
         )}
 
@@ -360,16 +362,18 @@ function SceneView({
   width,
   height,
   progress,
-  emojiStyle
+  emojiStyle,
+  backgroundColor
 }: {
   scene: Scene;
   width: number;
   height: number;
   progress: number;
   emojiStyle?: React.CSSProperties;
+  backgroundColor: string;
 }) {
   const content = (
-    <div style={{ position: 'relative', width, height }}>
+    <div style={{ position: 'relative', width, height, backgroundColor }}>
       {scene.backgroundActors
         .slice()
         .sort((a, b) => (a.z ?? 0) - (b.z ?? 0))

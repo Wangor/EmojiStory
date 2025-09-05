@@ -24,6 +24,7 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
     const [layer, setLayer] = useState<'actors' | 'background'>('actors');
 
     const emojiStyle = emojiFont ? { fontFamily: emojiFont } : undefined;
+    const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
 
     const dragRef = useRef<{
         id: string;
@@ -465,11 +466,12 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
             {/* Canvas */}
             <div
                 ref={containerRef}
-                className="relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+                className="relative border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                 style={{
                     aspectRatio: `${width}/${height}`,
                     width: '100%',
-                    maxHeight: '400px'
+                    maxHeight: '400px',
+                    backgroundColor: scene.backgroundColor ?? defaultBg
                 }}
             >
                 {/* Background Actors */}
