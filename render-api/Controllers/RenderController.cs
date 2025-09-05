@@ -20,9 +20,10 @@ public class RenderController : ControllerBase
             Math.Ceiling(request.Animation.Scenes.Sum(s => s.DurationMs) *
                          request.Animation.Fps / 1000.0));
 
-        // Preload fonts if available
-        var emojiTypeface = LoadTypeface(request.Animation.EmojiFont ?? "fonts/NotoColorEmoji.ttf");
-        var textTypeface = LoadTypeface("fonts/NotoSans-Regular.ttf") ?? SKTypeface.Default;
+        // Preload fonts if available. `EmojiFont` is resolved relative to the `fonts` directory
+        // so callers can simply pass the filename (e.g., "NotoColorEmoji.ttf").
+        var emojiTypeface = LoadTypeface(request.Animation.EmojiFont ?? "NotoColorEmoji.ttf");
+        var textTypeface = LoadTypeface("NotoSans-Regular.ttf") ?? SKTypeface.Default;
 
         for (int i = 0; i < totalFrames; i++)
         {
@@ -188,11 +189,25 @@ public class RenderController : ControllerBase
         return SKColor.TryParse(hex, out var c) ? c : null;
     }
 
-    private static SKTypeface? LoadTypeface(string path)
+    private static SKTypeface? LoadTypeface(string name)
     {
-        var fullPath = Path.IsPathRooted(path)
-            ? path
-            : Path.Combine(AppContext.BaseDirectory, path);
-        return System.IO.File.Exists(fullPath) ? SKTypeface.FromFile(fullPath) : null;
+        var baseDir = AppContext.BaseDirectory;
+        var candidates = Path.IsPathRooted(name)
+            ? new[] { name }
+            : new[]
+            {
+                Path.Combine(baseDir, name),
+                Path.Combine(baseDir, "fonts", name)
+            };
+
+        foreach (var path in candidates)
+        {
+            if (System.IO.File.Exists(path))
+            {
+                return SKTypeface.FromFile(path);
+            }
+        }
+
+        return null;
     }
 }
