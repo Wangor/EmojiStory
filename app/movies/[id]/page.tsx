@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getClip } from '../../../lib/supabaseServer';
-import { MovieDetail } from '../../../components/MovieDetail';
+import MovieDetail from '../../../components/MovieDetail';
 
 interface Props {
   params: { id: string };

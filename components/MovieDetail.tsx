@@ -10,7 +10,7 @@ import { ClipComments } from './ClipComments';
 import { ShareButton } from './ShareButton';
 import { likeMovie, getMovieLikes, getUserChannels } from '../lib/supabaseClient';
 
-export function MovieDetail({ movie }: { movie: any }) {
+export default function MovieDetail({ movie }: { movie: any }) {
   const router = useRouter();
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
