@@ -192,19 +192,33 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
 
   const { data, error } = await query;
 
-  const parseAnimation = (movie: any) => {
-    let animation = movie.animation;
-    // Some rows store the animation JSON double-encoded as a string.
-    // Parse repeatedly until we get an object or hit a parsing error.
-    while (typeof animation === 'string') {
+  const deepParse = (value: any): any => {
+    if (typeof value === 'string') {
       try {
-        animation = JSON.parse(animation);
+        return deepParse(JSON.parse(value));
       } catch {
-        animation = null;
-        break;
+        return value;
       }
     }
-    return { ...movie, animation };
+    if (Array.isArray(value)) {
+      return value.map((v) => deepParse(v));
+    }
+    if (value && typeof value === 'object') {
+      const result: any = {};
+      for (const [k, v] of Object.entries(value)) {
+        result[k] = deepParse(v);
+      }
+      return result;
+    }
+    return value;
+  };
+
+  const parseAnimation = (movie: any) => {
+    const parsed = deepParse(movie.animation);
+    return {
+      ...movie,
+      animation: typeof parsed === 'object' ? parsed : null,
+    };
   };
 
   if (error) {

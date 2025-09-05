@@ -133,8 +133,11 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
       className="relative w-full aspect-video rounded-md overflow-hidden border"
       style={{ backgroundColor: scene.backgroundColor ?? defaultBg }}
     >
-      {(scene.backgroundActors || []).map((a) => renderActor(a))}
-      {(scene.actors || []).map((a) => renderActor(a))}
+      {(Array.isArray(scene.backgroundActors)
+        ? scene.backgroundActors
+        : []
+      ).map((a) => renderActor(a))}
+      {(Array.isArray(scene.actors) ? scene.actors : []).map((a) => renderActor(a))}
     </div>
   );
 }
@@ -154,23 +157,31 @@ export function MovieCard({
     };
   };
 }) {
-  let animation: Animation | null = null;
-  if (typeof movie.animation === 'string') {
-    let anim: any = movie.animation;
-    // Handle double-encoded JSON strings by parsing until it's an object.
-    while (typeof anim === 'string') {
+  const deepParse = (value: any): any => {
+    if (typeof value === 'string') {
       try {
-        anim = JSON.parse(anim);
+        return deepParse(JSON.parse(value));
       } catch {
-        anim = null;
-        break;
+        return value;
       }
     }
-    animation = anim;
-  } else {
-    animation = movie.animation;
-  }
-  const firstScene = animation?.scenes?.[0];
+    if (Array.isArray(value)) {
+      return value.map((v) => deepParse(v));
+    }
+    if (value && typeof value === 'object') {
+      const result: any = {};
+      for (const [k, v] of Object.entries(value)) {
+        result[k] = deepParse(v);
+      }
+      return result;
+    }
+    return value;
+  };
+
+  const animation = deepParse(movie.animation) as Animation | null;
+  const firstScene = Array.isArray((animation as any)?.scenes)
+    ? ((animation as any).scenes[0] as Scene)
+    : undefined;
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
   const emojiFont = animation?.emojiFont || (movie as any).emoji_font;
