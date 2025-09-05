@@ -141,7 +141,8 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
 
     const findActor = (id: string) => {
         const list = layer === 'actors' ? scene.actors : scene.backgroundActors;
-        return list.find((a) => a.id === id)!;
+        const actor = list.find((a) => a.id === id);
+        return actor;
     };
 
     const handleMoveStart = (actorId: string, e: React.PointerEvent) => {
@@ -151,7 +152,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
         setSelected(actorId);
         const rect = containerRef.current.getBoundingClientRect();
         const t = Math.round(currentFrame * frameMs);
-        const pose = sample(findActor(actorId), t);
+        const actor = findActor(actorId);
+        if (!actor) return; // Safety check
+        const pose = sample(actor, t);
         const left = rect.left + pose.x * rect.width;
         const top = rect.top + pose.y * rect.height;
         const offsetX = e.clientX - left;
@@ -168,7 +171,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
         const x = clamp01((e.clientX - rect.left - offsetX) / rect.width);
         const y = clamp01((e.clientY - rect.top - offsetY) / rect.height);
         const t = Math.round(currentFrame * frameMs);
-        const pose = sample(findActor(id), t);
+        const actor = findActor(id);
+        if (!actor) return; // Safety check
+        const pose = sample(actor, t);
         updateActor(id, { t, x, y, scale: pose.scale, rotate: pose.rotate });
     };
 
@@ -183,7 +188,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
         e.stopPropagation();
         setSelected(actorId);
         const t = Math.round(currentFrame * frameMs);
-        const pose = sample(findActor(actorId), t);
+        const actor = findActor(actorId);
+        if (!actor) return; // Safety check
+        const pose = sample(actor, t);
         scaleRef.current = {
             id: actorId,
             startScale: pose.scale,
@@ -202,7 +209,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
         const diff = e.clientY - s.startY;
         const t = Math.round(currentFrame * frameMs);
         const newScale = Math.max(0.1, s.startScale + diff / 100);
-        const pose = sample(findActor(s.id), t);
+        const actor = findActor(s.id);
+        if (!actor) return; // Safety check
+        const pose = sample(actor, t);
         updateActor(s.id, { t, x: s.x, y: s.y, scale: newScale, rotate: pose.rotate });
     };
 
@@ -218,7 +227,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
         e.stopPropagation();
         setSelected(actorId);
         const t = Math.round(currentFrame * frameMs);
-        const pose = sample(findActor(actorId), t);
+        const actor = findActor(actorId);
+        if (!actor) return; // Safety check
+        const pose = sample(actor, t);
         const rect = containerRef.current.getBoundingClientRect();
         const centerX = rect.left + pose.x * rect.width;
         const centerY = rect.top + pose.y * rect.height;
@@ -252,7 +263,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
         const newRotation = r.startRotation + angleDiff;
 
         const t = Math.round(currentFrame * frameMs);
-        const pose = sample(findActor(r.id), t);
+        const actor = findActor(r.id);
+        if (!actor) return; // Safety check
+        const pose = sample(actor, t);
         updateActor(r.id, { t, x: r.x, y: r.y, scale: pose.scale, rotate: newRotation });
     };
 
@@ -435,6 +448,11 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
 
     const allActors: Actor[] = [...(scene.backgroundActors as Actor[]), ...scene.actors];
 
+    const handleLayerChange = (newLayer: 'actors' | 'background') => {
+        setLayer(newLayer);
+        setSelected(null); // Clear selection when switching layers
+    };
+
     return (
         <div className="space-y-4">
             {/* Controls */}
@@ -505,9 +523,14 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
                 )}
             </div>
 
-            {/* Actor Info */}
-            {selected && (
-                <SceneCanvasActorInfo actor={findActor(selected)} currentFrame={currentFrame} frameMs={frameMs} sample={sample} />
+            {/* Actor Info Panel */}
+            {selected && findActor(selected) && (
+                <SceneCanvasActorInfo
+                    actor={findActor(selected)!}
+                    currentFrame={currentFrame}
+                    frameMs={frameMs}
+                    sample={sample}
+                />
             )}
         </div>
     );
