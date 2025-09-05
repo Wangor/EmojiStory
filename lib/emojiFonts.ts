@@ -1,10 +1,10 @@
 import React from "react";
 export const EMOJI_FONT_URLS: Record<string, string> = {
-  'Noto Color Emoji': 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf',
-  'Twemoji': 'https://github.com/mozilla/twemoji-colr/raw/master/TwemojiMozilla.ttf',
-  'OpenMoji': 'https://github.com/hfg-gmuend/openmoji/raw/main/font/Color/SVGinOT/OpenMojiColor.otf',
-  'Blobmoji': 'https://github.com/C1710/blobmoji/releases/latest/download/Blobmoji.ttf',
-  'FxEmoji': 'https://github.com/mozilla/fxemoji/raw/master/FxEmoji.ttf',
+  'Noto Color Emoji': 'https://cdn.jsdelivr.net/gh/googlefonts/noto-emoji@main/fonts/NotoColorEmoji.ttf',
+  'Twemoji': 'https://cdn.jsdelivr.net/gh/mozilla/twemoji-colr@master/TwemojiMozilla.ttf',
+  'OpenMoji': 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@master/font/Color/SVGinOT/OpenMojiColor.otf',
+  'Blobmoji': 'https://cdn.jsdelivr.net/gh/C1710/blobmoji@master/Blobmoji.ttf',
+  'FxEmoji': 'https://cdn.jsdelivr.net/gh/mozilla/fxemoji@master/FxEmoji.ttf',
 };
 
 const loadedFonts = new Set<string>();
