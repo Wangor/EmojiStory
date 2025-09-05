@@ -16,11 +16,12 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
   const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
 
   const renderEmoji = (a: EmojiActor) => {
-    const start = a.start ?? {
-      x: a.tracks[0].x,
-      y: a.tracks[0].y,
-      scale: a.tracks[0].scale ?? 1,
-    };
+    const first = a.tracks?.[0];
+    const start =
+      a.start ||
+      (first
+        ? { x: first.x, y: first.y, scale: first.scale ?? 1 }
+        : { x: 0, y: 0, scale: 1 });
     const size = Math.round(32 * start.scale);
     const left = start.x * 100;
     const top = start.y * 100;
@@ -77,7 +78,8 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
 
       const widthP = (maxX - minX) * unitSize;
       const heightP = (maxY - minY) * unitSize;
-      const pos = comp.start ?? { x: comp.tracks[0].x, y: comp.tracks[0].y };
+      const first = comp.tracks?.[0];
+      const pos = comp.start ?? (first ? { x: first.x, y: first.y } : { x: 0, y: 0 });
       const left = pos.x * 100;
       const top = pos.y * 100;
 
@@ -152,10 +154,16 @@ export function MovieCard({
     };
   };
 }) {
-  const animation =
-    typeof movie.animation === 'string'
-      ? JSON.parse(movie.animation)
-      : movie.animation;
+  let animation: Animation | null = null;
+  if (typeof movie.animation === 'string') {
+    try {
+      animation = JSON.parse(movie.animation);
+    } catch {
+      animation = null;
+    }
+  } else {
+    animation = movie.animation;
+  }
   const firstScene = animation?.scenes?.[0];
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);

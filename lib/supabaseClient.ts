@@ -192,13 +192,17 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
 
   const { data, error } = await query;
 
-  const parseAnimation = (movie: any) => ({
-    ...movie,
-    animation:
-      typeof movie.animation === 'string'
-        ? JSON.parse(movie.animation)
-        : movie.animation,
-  });
+  const parseAnimation = (movie: any) => {
+    let animation = movie.animation;
+    if (typeof animation === 'string') {
+      try {
+        animation = JSON.parse(animation);
+      } catch {
+        animation = null;
+      }
+    }
+    return { ...movie, animation };
+  };
 
   if (error) {
     // If the foreign key approach doesn't work, fall back to manual join
