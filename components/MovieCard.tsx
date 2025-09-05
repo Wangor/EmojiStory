@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { HeartIcon } from '@phosphor-icons/react';
+import { HeartIcon, TelevisionSimpleIcon } from '@phosphor-icons/react';
 import { ShareButton } from './ShareButton';
 import type {
   Animation,
@@ -181,7 +181,9 @@ export function MovieCard({
     <div className="flex flex-col">
       {firstScene ? (
         <SceneThumbnail scene={firstScene} emojiFont={emojiFont} />
-      ) : null}
+      ) : (
+        <div className="w-full aspect-video rounded-md bg-gray-200" />
+      )}
       <div className="mt-2 flex flex-col gap-1">
         <div className="text-sm font-semibold leading-tight line-clamp-2">
           {movie.title || movie.story.slice(0, 30)}
@@ -189,13 +191,19 @@ export function MovieCard({
         {movie.channels ? (
           <Link
             href={`/channel/${encodeURIComponent(movie.channels.name)}`}
-            className="text-xs text-gray-500 truncate hover:text-gray-700"
+            className="group inline-flex items-center gap-1 text-xs text-gray-500 truncate hover:text-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
-            @{movie.channels.name}
+            <TelevisionSimpleIcon weight="bold" className="group-hover:text-gray-700" />
+            <span className="truncate">@{movie.channels.name}</span>
           </Link>
         ) : (
           <div className="text-xs text-gray-500 truncate">Unknown channel</div>
+        )}
+        {movie.description && (
+          <div className="text-xs text-gray-500 truncate">
+            {movie.description}
+          </div>
         )}
         <div className="flex items-center gap-2 mt-1">
           <button

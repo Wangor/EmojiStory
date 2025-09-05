@@ -2,7 +2,7 @@
 
 /* eslint-disable import/no-unresolved */
 import { FilmSlate, MagicWand } from '@phosphor-icons/react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { MovieCard } from '../components/MovieCard';
 import { getAllMovies } from '../lib/supabaseClient';
@@ -10,7 +10,7 @@ import { getAllMovies } from '../lib/supabaseClient';
 export default function Page() {
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
+  const pageRef = useRef(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
@@ -20,25 +20,25 @@ export default function Page() {
     if (loading || !hasMore) return;
     setLoading(true);
     try {
-      const newMovies = await getAllMovies({
-        from: page * pageSize,
-        to: page * pageSize + pageSize - 1,
-      });
+      const from = pageRef.current * pageSize;
+      const to = from + pageSize - 1;
+      const newMovies = await getAllMovies({ from, to });
       setMovies((prev) => [...prev, ...newMovies]);
       if (newMovies.length < pageSize) {
         setHasMore(false);
       }
-      setPage((p) => p + 1);
+      pageRef.current += 1;
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, loading, hasMore]);
+  }, [pageSize, loading, hasMore]);
 
   useEffect(() => {
     loadMore();
-  }, [loadMore]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
