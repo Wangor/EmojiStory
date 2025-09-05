@@ -8,7 +8,12 @@ import type { Animation } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import { ClipComments } from './ClipComments';
 import { ShareButton } from './ShareButton';
-import { likeMovie, getMovieLikes, getUserChannels } from '../lib/supabaseClient';
+import {
+  likeMovie,
+  getMovieLikes,
+  getUserChannels,
+  recordPlay,
+} from '../lib/supabaseClient';
 
 export default function MovieDetail({ movie }: { movie: any }) {
   const router = useRouter();
@@ -22,6 +27,7 @@ export default function MovieDetail({ movie }: { movie: any }) {
         setLikes(count);
         setLiked(liked);
       });
+      recordPlay(movie.id).catch(() => {});
     }
     if (movie?.user_id) {
       getUserChannels(movie.user_id)

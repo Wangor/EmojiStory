@@ -86,6 +86,25 @@ create policy "Users can insert their own likes" on public.likes
 create policy "Users can delete their own likes" on public.likes
   for delete using (auth.uid() = user_id);
 
+-- Plays table for tracking movie play events
+create table if not exists public.plays (
+  id uuid primary key default gen_random_uuid(),
+  movie_id uuid references public.movies(id) on delete cascade,
+  user_id uuid references auth.users(id),
+  created_at timestamptz default now()
+);
+
+alter table public.plays enable row level security;
+
+create policy "Public read access" on public.plays
+  for select using (true);
+
+create policy "Allow anonymous plays" on public.plays
+  for insert with check (auth.uid() is null and user_id is null);
+
+create policy "Users can insert their own plays" on public.plays
+  for insert with check (auth.uid() = user_id);
+
 -- Comments table for movie comments
 create table if not exists public.comments (
   id uuid primary key default gen_random_uuid(),
