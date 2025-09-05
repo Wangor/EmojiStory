@@ -4,7 +4,7 @@ export const EMOJI_FONT_URLS: Record<string, string> = {
   'Noto Color Emoji':
     'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf',
   'Noto Emoji':
-    'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/fonts/NotoEmoji-Regular.ttf',
+    '/fonts/NotoEmoji-Regular.ttf',
   'Twemoji': '/fonts/twemoji.ttf',
   'OpenMoji': '/fonts/OpenMoji-color-colr1_svg.woff2',
   'Blobmoji': '/fonts/Blobmoji.ttf',
