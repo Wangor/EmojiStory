@@ -416,7 +416,7 @@ function SceneView({
 
 function ActorView({
   actor,
-  w: _w,
+  w,
   h: _h,
   duration,
   progress,
@@ -429,6 +429,8 @@ function ActorView({
   progress: number;
   emojiStyle?: React.CSSProperties;
 }) {
+  const baseEmojiSize = w / 10;
+  const baseTextSize = w / 15;
   const frames = [
     actor.start && {
       t: 0,
@@ -454,7 +456,7 @@ function ActorView({
   const scale = sampleAt(times, scaleVals, progress);
 
   if (actor.type === 'emoji') {
-    const size = Math.round(48 * (actor.start?.scale ?? 1));
+    const size = Math.round(baseEmojiSize * (actor.start?.scale ?? 1));
     const node = (
       <span
         role="img"
@@ -477,7 +479,8 @@ function ActorView({
     return wrapWithEffects(node, actor.effects, 'span');
   }
   if (actor.type === 'text') {
-    const size = actor.fontSize ?? Math.round(32 * (actor.start?.scale ?? 1));
+    const size =
+      actor.fontSize ?? Math.round(baseTextSize * (actor.start?.scale ?? 1));
     const node = (
       <span
         style={{
@@ -517,9 +520,12 @@ function ActorView({
     const bbox = { minX, minY, maxX, maxY };
 
     // Dominant part determines base scale
-    const dominantScale = Math.max(...actor.parts.map((p) => p.start?.scale ?? 1));
+    const dominantScale = Math.max(
+      ...actor.parts.map((p) => p.start?.scale ?? 1)
+    );
     const unitSize =
-      actor.meta?.sizeOverride ?? Math.round((48 * (actor.start?.scale ?? 1)) / dominantScale);
+      actor.meta?.sizeOverride ??
+      Math.round((baseEmojiSize * (actor.start?.scale ?? 1)) / dominantScale);
 
     const width = (bbox.maxX - bbox.minX) * unitSize;
     const height = (bbox.maxY - bbox.minY) * unitSize;

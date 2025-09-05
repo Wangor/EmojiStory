@@ -24,7 +24,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   const defaultBg = emojiFont === 'Noto Emoji' ? '#fff' : '#000';
   const width = 1200;
   const height = Math.round((width * 9) / 16);
-  const baseUnit = width / 12.5;
+  const baseUnit = width / 10;
   const title = clip?.title || 'Emoji Clip';
 
   function renderEmoji(a: EmojiActor) {

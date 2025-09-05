@@ -24,6 +24,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   const defaultBg = emojiFont === 'Noto Emoji' ? '#fff' : '#000';
   const width = 400;
   const height = Math.round((width * 9) / 16);
+  const baseUnit = width / 10;
   const title = clip?.title || 'Emoji Clip';
 
   function renderEmoji(a: EmojiActor) {
@@ -32,7 +33,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
       y: a.tracks[0].y,
       scale: a.tracks[0].scale ?? 1,
     };
-    const size = Math.round(32 * start.scale);
+    const size = Math.round(baseUnit * start.scale);
     const left = start.x * width - size / 2;
     const top = start.y * height - size / 2;
     return (
@@ -74,10 +75,12 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
         maxY = Math.max(maxY, y0 + s);
       }
 
-      const dominant = Math.max(...comp.parts.map((p) => p.start?.scale ?? 1));
+      const dominant = Math.max(
+        ...comp.parts.map((p) => p.start?.scale ?? 1)
+      );
       const unitSize =
         comp.meta?.sizeOverride ??
-        Math.round((32 * (comp.start?.scale ?? 1)) / dominant);
+        Math.round((baseUnit * (comp.start?.scale ?? 1)) / dominant);
 
       const widthP = (maxX - minX) * unitSize;
       const heightP = (maxY - minY) * unitSize;
@@ -136,7 +139,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
             alignItems: 'center',
             justifyContent: 'center',
             background: defaultBg,
-            fontSize: 48,
+            fontSize: Math.round(baseUnit * 1.2),
             fontWeight: 700,
           }}
         >
@@ -171,7 +174,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
             left: 0,
             width: '100%',
             padding: '12px 16px',
-            fontSize: 32,
+            fontSize: Math.round(baseUnit * 0.8),
             fontWeight: 700,
             textAlign: 'center',
             background:

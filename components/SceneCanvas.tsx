@@ -292,6 +292,8 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
     const renderActor = (a: Actor, isBg: boolean) => {
         const t = Math.round(currentFrame * frameMs);
         const pose = sample(a, t);
+        const baseEmojiSize = size.w / 10;
+        const baseTextSize = size.w / 15;
 
         if (a.type === 'composite') {
             const comp = a as CompositeActor;
@@ -312,7 +314,9 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
             }
 
             const dominant = Math.max(...comp.parts.map((p) => p.start?.scale ?? 1));
-            const unitSize = comp.meta?.sizeOverride ?? Math.round((48 * (a.start?.scale ?? 1)) / dominant);
+            const unitSize =
+                comp.meta?.sizeOverride ??
+                Math.round((baseEmojiSize * (a.start?.scale ?? 1)) / dominant);
             const widthPx = (maxX - minX) * unitSize;
             const heightPx = (maxY - minY) * unitSize;
 
@@ -390,10 +394,10 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
         }
 
         const baseFontSize = a.type === 'emoji'
-            ? Math.round(48 * (a.start?.scale ?? 1))
+            ? Math.round(baseEmojiSize * (a.start?.scale ?? 1))
             : a.type === 'text' && (a as any).fontSize
                 ? (a as any).fontSize
-                : Math.round(32 * (a.start?.scale ?? 1));
+                : Math.round(baseTextSize * (a.start?.scale ?? 1));
 
         const style: React.CSSProperties = {
             left: pose.x * 100 + '%',
