@@ -37,7 +37,7 @@ public class Sfx
     public SfxType Type { get; set; }
 }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(EnumMemberJsonConverter<SfxType>))]
 public enum SfxType
 {
     [EnumMember(Value = "pop")] Pop,
@@ -45,21 +45,21 @@ public enum SfxType
     [EnumMember(Value = "ding")] Ding
 }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(EnumMemberJsonConverter<Effect>))]
 public enum Effect
 {
     [EnumMember(Value = "fade-in")] FadeIn,
     [EnumMember(Value = "bounce")] Bounce
 }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(EnumMemberJsonConverter<LoopType>))]
 public enum LoopType
 {
     [EnumMember(Value = "float")] Float,
     [EnumMember(Value = "none")] None
 }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(EnumMemberJsonConverter<Ease>))]
 public enum Ease
 {
     [EnumMember(Value = "linear")] Linear,
