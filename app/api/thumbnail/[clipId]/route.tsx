@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getClip } from '../../../../lib/supabaseServer';
-import { fetchEmojiFontData } from '../../../../lib/emojiFonts';
+import { fetchEmojiFontData } from '../../../../lib/emojiFontData';
 import type { ReactNode } from 'react';
 import type {
   Scene,
@@ -9,7 +9,7 @@ import type {
   CompositeActor,
 } from '../../../../components/AnimationTypes';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET(request: Request, { params }: { params: { clipId: string } }) {
   const { clipId } = params;

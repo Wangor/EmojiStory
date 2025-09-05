@@ -25,33 +25,3 @@ export function useEmojiFont(name?: string) {
   }, [name]);
 }
 
-export async function fetchEmojiFontData(name?: string) {
-  if (!name) return undefined;
-  const url = EMOJI_FONT_URLS[name];
-  if (!url) return undefined;
-  try {
-    let data: ArrayBuffer;
-    if (url.startsWith('/')) {
-      const [{ readFile }, { join }] = await Promise.all([
-        import('fs/promises'),
-        import('path'),
-      ]);
-      const filePath = join(process.cwd(), 'public', url.slice(1));
-      const buf = await readFile(filePath);
-      data = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-    } else {
-      const res = await fetch(url);
-      if (!res.ok) return undefined;
-      data = await res.arrayBuffer();
-    }
-    return [
-      {
-        name,
-        data,
-        style: 'normal' as const,
-      },
-    ];
-  } catch {
-    return undefined;
-  }
-}

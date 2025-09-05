@@ -85,7 +85,7 @@ export async function getUserChannels(userId?: string) {
   return data;
 }
 
-export async function insertMovie(movie: { channel_id: string; title: string; description: string; story: string; animation: any; emoji_font?: string; }) {
+export async function insertMovie(movie: { channel_id: string; title: string; description: string; story: string; animation: any; emoji_font?: string | null; }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
@@ -105,7 +105,7 @@ export async function insertMovie(movie: { channel_id: string; title: string; de
   return data;
 }
 
-export async function updateMovie(movie: { id: string; channel_id?: string; title?: string; description?: string; story?: string; animation?: any; emoji_font?: string; }) {
+export async function updateMovie(movie: { id: string; channel_id?: string; title?: string; description?: string; story?: string; animation?: any; emoji_font?: string | null; }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
