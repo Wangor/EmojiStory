@@ -192,6 +192,14 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
 
   const { data, error } = await query;
 
+  const parseAnimation = (movie: any) => ({
+    ...movie,
+    animation:
+      typeof movie.animation === 'string'
+        ? JSON.parse(movie.animation)
+        : movie.animation,
+  });
+
   if (error) {
     // If the foreign key approach doesn't work, fall back to manual join
     let moviesQuery = supabase
@@ -214,7 +222,7 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
     }
 
     // Get unique channel IDs from movies
-    const channelIds = [...new Set(moviesData.map(movie => movie.channel_id))];
+    const channelIds = [...new Set(moviesData.map((movie) => movie.channel_id))];
 
     // Fetch channels for these ids
     const { data: channelsData, error: channelsError } = await supabase
@@ -226,17 +234,19 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
 
     // Create a map of channel_id to channel for quick lookup
     const channelsMap = new Map(
-      (channelsData || []).map(channel => [channel.id, channel])
+      (channelsData || []).map((channel) => [channel.id, channel])
     );
 
     // Combine movies with their corresponding channels
-    return moviesData.map(movie => ({
-      ...movie,
-      channels: channelsMap.get(movie.channel_id) || null
-    }));
+    return moviesData.map((movie) =>
+      parseAnimation({
+        ...movie,
+        channels: channelsMap.get(movie.channel_id) || null,
+      })
+    );
   }
 
-  return data;
+  return (data || []).map(parseAnimation);
 }
 
 export async function searchMovies(query: string) {

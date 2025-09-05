@@ -11,6 +11,7 @@ export default function Page() {
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const pageRef = useRef(0);
+  const loadedIds = useRef(new Set<string>());
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
@@ -23,7 +24,9 @@ export default function Page() {
       const from = pageRef.current * pageSize;
       const to = from + pageSize - 1;
       const newMovies = await getAllMovies({ from, to });
-      setMovies((prev) => [...prev, ...newMovies]);
+      const unique = newMovies.filter((m) => !loadedIds.current.has(m.id));
+      unique.forEach((m) => loadedIds.current.add(m.id));
+      setMovies((prev) => [...prev, ...unique]);
       if (newMovies.length < pageSize) {
         setHasMore(false);
       }
