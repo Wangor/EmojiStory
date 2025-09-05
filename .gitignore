@@ -44,3 +44,7 @@ Thumbs.db
 
 # Vercel project config
 .vercel/
+
+# .NET build outputs
+**/bin/
+**/obj/
