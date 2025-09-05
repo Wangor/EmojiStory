@@ -58,6 +58,8 @@ export type Scene = {
   duration_ms: number; // scene duration
   backgroundActors: EmojiActor[]; // actors rendered behind foreground
   caption?: string;
+  /** Optional solid background color for the scene */
+  backgroundColor?: string;
   actors: Actor[];
   effects?: Effect[];
   sfx?: { at_ms: number; type: 'pop' | 'whoosh' | 'ding' }[];

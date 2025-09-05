@@ -8,6 +8,7 @@ import {
     ArrowsOutCardinalIcon,
     UserIcon,
     MountainsIcon,
+    PaletteIcon,
     UsersIcon,
     PlusIcon,
     SmileyWinkIcon,
@@ -37,6 +38,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
     const [activeSection, setActiveSection] = useState<'canvas' | 'actors' | 'background'>('canvas');
 
     const update = (fields: Partial<Scene>) => onChange({ ...scene, ...fields });
+    const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
 
     const updateActor = (idx: number, actor: Actor) => {
         const actors = [...scene.actors];
@@ -142,7 +144,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         </button>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div>
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                             <ClockIcon size={14} />
@@ -166,6 +168,26 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                             placeholder="Optional caption..."
                             onChange={(e) => update({ caption: e.target.value })}
                         />
+                    </div>
+                    <div>
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                            <PaletteIcon size={14} />
+                            Background
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="color"
+                                className="h-10 w-12 rounded-md border border-gray-300"
+                                value={scene.backgroundColor ?? defaultBg}
+                                onChange={(e) => update({ backgroundColor: e.target.value })}
+                            />
+                            <button
+                                className="text-xs text-gray-500 hover:text-gray-700"
+                                onClick={() => update({ backgroundColor: undefined })}
+                            >
+                                Reset
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
