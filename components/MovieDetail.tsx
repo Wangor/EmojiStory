@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, HeartIcon } from '@phosphor-icons/react';
@@ -21,20 +21,25 @@ export default function MovieDetail({ movie }: { movie: any }) {
   const [liked, setLiked] = useState(false);
   const [authorChannel, setAuthorChannel] = useState<string | null>(null);
 
+  const hasRecorded = useRef(false);
+
   useEffect(() => {
     if (movie?.id) {
       getMovieLikes(movie.id).then(({ count, liked }) => {
         setLikes(count);
         setLiked(liked);
       });
-      recordPlay(movie.id).catch(() => {});
+      if (!hasRecorded.current) {
+        hasRecorded.current = true;
+        recordPlay(movie.id).catch(() => {});
+      }
     }
     if (movie?.user_id) {
       getUserChannels(movie.user_id)
         .then((chs) => setAuthorChannel(chs?.[0]?.name || null))
         .catch(() => setAuthorChannel(null));
     }
-  }, [movie]);
+  }, [movie?.id, movie?.user_id]);
 
   const toggleLike = async () => {
     if (!movie?.id) return;
