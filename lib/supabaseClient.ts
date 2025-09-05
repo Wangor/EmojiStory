@@ -410,6 +410,15 @@ export async function getMovieLikes(movieId: string) {
   return { count, liked };
 }
 
+export async function getMoviePlays(movieId: string) {
+  const { data, error } = await supabase
+    .from('plays')
+    .select('id')
+    .eq('movie_id', movieId);
+  if (error) throw error;
+  return data.length;
+}
+
 export async function postComment(movieId: string, content: string) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
