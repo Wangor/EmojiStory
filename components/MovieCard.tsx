@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { HeartIcon, TelevisionSimpleIcon } from '@phosphor-icons/react';
@@ -8,21 +10,21 @@ import type {
   Actor,
   EmojiActor,
   CompositeActor,
+  TextActor,
 } from './AnimationTypes';
 import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
 import { useEmojiFont } from '../lib/emojiFonts';
 
 function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string }) {
-  const width = 160;
-  const height = (width * 9) / 16; // match EmojiPlayer aspect ratio
   const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
 
   const renderEmoji = (a: EmojiActor) => {
-    const start = a.start ?? {
-      x: a.tracks[0].x,
-      y: a.tracks[0].y,
-      scale: a.tracks[0].scale ?? 1,
-    };
+    const first = a.tracks?.[0];
+    const start =
+      a.start ||
+      (first
+        ? { x: first.x, y: first.y, scale: first.scale ?? 1 }
+        : { x: 0, y: 0, scale: 1 });
     const size = Math.round(32 * start.scale);
     const left = start.x * 100;
     const top = start.y * 100;
@@ -50,9 +52,39 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
     );
   };
 
+  const renderText = (a: TextActor) => {
+    const first = a.tracks?.[0];
+    const start =
+      a.start ||
+      (first
+        ? { x: first.x, y: first.y, scale: first.scale ?? 1 }
+        : { x: 0, y: 0, scale: 1 });
+    const size = a.fontSize ?? Math.round(32 * start.scale);
+    const left = start.x * 100;
+    const top = start.y * 100;
+    return (
+      <span
+        key={a.id}
+        style={{
+          position: 'absolute',
+          left: `${left}%`,
+          top: `${top}%`,
+          fontSize: size,
+          transform: 'translate(-50%, -50%)',
+          color: a.color || '#000',
+        }}
+      >
+        {a.text}
+      </span>
+    );
+  };
+
   const renderActor = (actor: Actor): React.ReactNode => {
     if (actor.type === 'emoji') {
       return renderEmoji(actor);
+    }
+    if (actor.type === 'text') {
+      return renderText(actor);
     }
     if (actor.type === 'composite') {
       const comp = actor as CompositeActor;
@@ -79,7 +111,8 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
 
       const widthP = (maxX - minX) * unitSize;
       const heightP = (maxY - minY) * unitSize;
-      const pos = comp.start ?? { x: comp.tracks[0].x, y: comp.tracks[0].y };
+      const first = comp.tracks?.[0];
+      const pos = comp.start ?? (first ? { x: first.x, y: first.y } : { x: 0, y: 0 });
       const left = pos.x * 100;
       const top = pos.y * 100;
 
@@ -130,15 +163,14 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
 
   return (
     <div
-      className="relative rounded-md overflow-hidden border"
-      style={{
-        width,
-        height,
-        backgroundColor: scene.backgroundColor ?? defaultBg,
-      }}
+      className="relative w-full aspect-video rounded-md overflow-hidden border"
+      style={{ backgroundColor: scene.backgroundColor ?? defaultBg }}
     >
-      {scene.backgroundActors.map((a) => renderActor(a))}
-      {scene.actors.map((a) => renderActor(a))}
+      {(Array.isArray(scene.backgroundActors)
+        ? scene.backgroundActors
+        : []
+      ).map((a) => renderActor(a))}
+      {(Array.isArray(scene.actors) ? scene.actors : []).map((a) => renderActor(a))}
     </div>
   );
 }
@@ -151,17 +183,41 @@ export function MovieCard({
     title?: string;
     description?: string;
     story: string;
-    animation: Animation;
+    animation: Animation | string;
     channels?: {
       name: string;
       user_id: string;
     };
   };
 }) {
-  const firstScene = movie.animation?.scenes?.[0];
+  const deepParse = (value: any): any => {
+    if (typeof value === 'string') {
+      try {
+        return deepParse(JSON.parse(value));
+      } catch {
+        return value;
+      }
+    }
+    if (Array.isArray(value)) {
+      return value.map((v) => deepParse(v));
+    }
+    if (value && typeof value === 'object') {
+      const result: any = {};
+      for (const [k, v] of Object.entries(value)) {
+        result[k] = deepParse(v);
+      }
+      return result;
+    }
+    return value;
+  };
+
+  const animation = deepParse(movie.animation) as Animation | null;
+  const firstScene = Array.isArray((animation as any)?.scenes)
+    ? ((animation as any).scenes[0] as Scene)
+    : undefined;
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
-  const emojiFont = movie.animation?.emojiFont || (movie as any).emoji_font;
+  const emojiFont = animation?.emojiFont || (movie as any).emoji_font;
 
   useEmojiFont(emojiFont);
 
@@ -184,28 +240,34 @@ export function MovieCard({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col">
       {firstScene ? (
         <SceneThumbnail scene={firstScene} emojiFont={emojiFont} />
-      ) : null}
-      <div className="space-y-1">
-        <div className="text-sm font-medium truncate">
+      ) : (
+        <div className="w-full aspect-video rounded-md bg-gray-200" />
+      )}
+      <div className="mt-2 flex flex-col gap-1">
+        <div className="text-sm font-semibold leading-tight line-clamp-2">
           {movie.title || movie.story.slice(0, 30)}
         </div>
-        {movie.description && (
-          <div className="text-xs text-gray-500 truncate">{movie.description}</div>
-        )}
-        {movie.channels && (
+        {movie.channels ? (
           <Link
             href={`/channel/${encodeURIComponent(movie.channels.name)}`}
-            className="group inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-50 to-yellow-50 hover:from-orange-100 hover:to-orange-100 border border-orange-400 hover:border-orange-500 rounded-full text-xs font-medium text-orange-400 hover:text-orange-500 transition-all duration-200 shadow-sm hover:shadow-md max-w-fit"
+            className="group inline-flex items-center gap-1 text-xs text-gray-500 truncate hover:text-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <TelevisionSimpleIcon weight="bold"></TelevisionSimpleIcon>
+            <TelevisionSimpleIcon weight="bold" className="group-hover:text-gray-700" />
             <span className="truncate">@{movie.channels.name}</span>
           </Link>
+        ) : (
+          <div className="text-xs text-gray-500 truncate">Unknown channel</div>
         )}
-        <div className="flex items-center gap-2">
+        {movie.description && (
+          <div className="text-xs text-gray-500 truncate">
+            {movie.description}
+          </div>
+        )}
+        <div className="flex items-center gap-2 mt-1">
           <button
             onClick={toggleLike}
             className={`flex items-center gap-1 text-xs ${liked ? 'text-orange-400' : 'text-gray-500'}`}
