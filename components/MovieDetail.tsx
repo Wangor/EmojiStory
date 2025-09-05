@@ -41,6 +41,8 @@ export function MovieDetail({ movie }: { movie: any }) {
     }
   };
 
+  const emojiFont = movie.animation?.emojiFont || (movie as any).emoji_font;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       <div className="max-w-6xl mx-auto px-6 py-8">
@@ -85,7 +87,7 @@ export function MovieDetail({ movie }: { movie: any }) {
         <div className="flex justify-center">
           <div className="w-full max-w-5xl">
             <EmojiPlayer
-              animation={movie.animation as Animation}
+              animation={{ ...(movie.animation as Animation), emojiFont }}
               width={1000}
               height={600}
             />

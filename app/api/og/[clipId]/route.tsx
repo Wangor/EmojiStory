@@ -19,7 +19,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   } catch {}
 
   const scene: Scene | undefined = clip?.animation?.scenes?.[0];
-  const emojiFont = clip?.animation?.emojiFont;
+  const emojiFont = clip?.animation?.emojiFont || clip?.emoji_font;
   const fonts = await fetchEmojiFontData(emojiFont);
   const width = 1200;
   const height = Math.round((width * 9) / 16);

@@ -156,8 +156,9 @@ export function MovieCard({
   const firstScene = movie.animation?.scenes?.[0];
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
+  const emojiFont = movie.animation?.emojiFont || (movie as any).emoji_font;
 
-  useEmojiFont(movie.animation?.emojiFont);
+  useEmojiFont(emojiFont);
 
   useEffect(() => {
     getMovieLikes(movie.id).then(({ count, liked }) => {
@@ -180,7 +181,7 @@ export function MovieCard({
   return (
     <div className="space-y-2">
       {firstScene ? (
-        <SceneThumbnail scene={firstScene} emojiFont={movie.animation?.emojiFont} />
+        <SceneThumbnail scene={firstScene} emojiFont={emojiFont} />
       ) : null}
       <div className="space-y-1">
         <div className="text-sm font-medium truncate">

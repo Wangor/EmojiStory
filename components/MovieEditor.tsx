@@ -49,6 +49,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         if (movie?.animation) {
             setAnimation({
                 ...movie.animation,
+                emojiFont: movie.emoji_font || movie.animation.emojiFont,
                 title: movie.title ?? movie.animation.title ?? 'Untitled Movie',
                 description:
                     movie.description ?? movie.animation.description ?? '',
@@ -133,8 +134,9 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                 title: animation.title,
                 description: animation.description,
                 story: storyText,
+                emoji_font: animationToSave.emojiFont,
                 animation: animationToSave,
-            };
+            } as const;
             let saved;
             if (movieId) {
                 saved = await updateMovie({ id: movieId, ...payload });
