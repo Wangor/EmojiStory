@@ -1,20 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon, HeartIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, HeartIcon, PlayIcon } from '@phosphor-icons/react';
 import type { Animation } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import { ClipComments } from './ClipComments';
 import { ShareButton } from './ShareButton';
-import { likeMovie, getMovieLikes, getUserChannels } from '../lib/supabaseClient';
+import {
+  likeMovie,
+  getMovieLikes,
+  getUserChannels,
+  recordPlay,
+  getMoviePlays,
+} from '../lib/supabaseClient';
+import { formatCount } from '../lib/format';
 
 export default function MovieDetail({ movie }: { movie: any }) {
   const router = useRouter();
+  const [plays, setPlays] = useState(0);
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
   const [authorChannel, setAuthorChannel] = useState<string | null>(null);
+
+  const hasRecorded = useRef(false);
 
   useEffect(() => {
     if (movie?.id) {
@@ -22,13 +32,20 @@ export default function MovieDetail({ movie }: { movie: any }) {
         setLikes(count);
         setLiked(liked);
       });
+      getMoviePlays(movie.id).then(setPlays);
+      if (!hasRecorded.current) {
+        hasRecorded.current = true;
+        recordPlay(movie.id)
+          .then(() => setPlays((p) => p + 1))
+          .catch(() => {});
+      }
     }
     if (movie?.user_id) {
       getUserChannels(movie.user_id)
         .then((chs) => setAuthorChannel(chs?.[0]?.name || null))
         .catch(() => setAuthorChannel(null));
     }
-  }, [movie]);
+  }, [movie?.id, movie?.user_id]);
 
   const toggleLike = async () => {
     if (!movie?.id) return;
@@ -73,6 +90,10 @@ export default function MovieDetail({ movie }: { movie: any }) {
             </Link>
           </div>
           <div className="mt-4 flex justify-center gap-2">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg border text-gray-600 border-gray-300">
+              <PlayIcon />
+              <span>{formatCount(plays)}</span>
+            </div>
             <button
               onClick={toggleLike}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${liked ? 'text-orange-400 border-orange-400 bg-red-50' : 'text-gray-600 border-gray-300'}`}

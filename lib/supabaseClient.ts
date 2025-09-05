@@ -6,6 +6,34 @@ const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+const deepParse = (value: any): any => {
+  if (typeof value === 'string') {
+    try {
+      return deepParse(JSON.parse(value));
+    } catch {
+      return value;
+    }
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => deepParse(v));
+  }
+  if (value && typeof value === 'object') {
+    const result: any = {};
+    for (const [k, v] of Object.entries(value)) {
+      result[k] = deepParse(v);
+    }
+    return result;
+  }
+  return value;
+};
+
+const parseAnimation = (movie: any) => {
+  const parsed = deepParse(movie.animation);
+  return {
+    ...movie,
+    animation: typeof parsed === 'object' ? parsed : null,
+  };
+};
 
 export async function signUp(email: string, password: string) {
   const { error } = await supabase.auth.signUp({ email, password });
@@ -192,35 +220,6 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
 
   const { data, error } = await query;
 
-  const deepParse = (value: any): any => {
-    if (typeof value === 'string') {
-      try {
-        return deepParse(JSON.parse(value));
-      } catch {
-        return value;
-      }
-    }
-    if (Array.isArray(value)) {
-      return value.map((v) => deepParse(v));
-    }
-    if (value && typeof value === 'object') {
-      const result: any = {};
-      for (const [k, v] of Object.entries(value)) {
-        result[k] = deepParse(v);
-      }
-      return result;
-    }
-    return value;
-  };
-
-  const parseAnimation = (movie: any) => {
-    const parsed = deepParse(movie.animation);
-    return {
-      ...movie,
-      animation: typeof parsed === 'object' ? parsed : null,
-    };
-  };
-
   if (error) {
     // If the foreign key approach doesn't work, fall back to manual join
     let moviesQuery = supabase
@@ -270,6 +269,53 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
   return (data || []).map(parseAnimation);
 }
 
+export async function getTrendingMovies(limit = 8) {
+  const { data, error } = await supabase
+    .from('movies')
+    .select(`
+      *,
+      channels!movies_channel_id_fkey(
+        id,
+        name,
+        user_id
+      ),
+      likes(user_id)
+    `)
+    .not('publish_datetime', 'is', null)
+    .lte('publish_datetime', new Date().toISOString())
+    .limit(50);
+  if (error) throw error;
+  const movies = (data || []).map(parseAnimation);
+  movies.sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0));
+  return movies.slice(0, limit);
+}
+
+export async function getRecommendedMovies(limit = 8) {
+  const user = await getUser();
+  if (!user) return [];
+  const { data, error } = await supabase
+    .from('movies')
+    .select(`
+      *,
+      channels!movies_channel_id_fkey(
+        id,
+        name,
+        user_id
+      ),
+      likes(user_id)
+    `)
+    .not('publish_datetime', 'is', null)
+    .lte('publish_datetime', new Date().toISOString())
+    .neq('user_id', user.id)
+    .limit(50);
+  if (error) throw error;
+  const movies = (data || []).map(parseAnimation);
+  const filtered = movies.filter(
+    (m) => !(m.likes || []).some((l: any) => l.user_id === user.id)
+  );
+  filtered.sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0));
+  return filtered.slice(0, limit);
+}
 export async function searchMovies(query: string) {
   const { data, error } = await supabase
     .from('movies')
@@ -362,6 +408,15 @@ export async function getMovieLikes(movieId: string) {
   const count = data.length;
   const liked = !!user && data.some((l) => l.user_id === user.id);
   return { count, liked };
+}
+
+export async function getMoviePlays(movieId: string) {
+  const { data, error } = await supabase
+    .from('plays')
+    .select('id')
+    .eq('movie_id', movieId);
+  if (error) throw error;
+  return data.length;
 }
 
 export async function postComment(movieId: string, content: string) {
@@ -468,3 +523,11 @@ export async function getChannelWithMovies(name: string) {
   if (moviesError) throw moviesError;
   return { channel, movies: (movies || []).map((m) => ({ ...m, channels: channel })) };
 }
+
+export const recordPlay = async (movieId: string) => {
+  const user = await getUser().catch(() => null);
+  const { error } = await supabase
+    .from('plays')
+    .insert({ movie_id: movieId, user_id: user?.id ?? null });
+  if (error) throw error;
+};

@@ -5,10 +5,17 @@ import { FilmSlate, MagicWand } from '@phosphor-icons/react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { MovieCard } from '../components/MovieCard';
-import { getAllMovies } from '../lib/supabaseClient';
+import {
+  getAllMovies,
+  getTrendingMovies,
+  getRecommendedMovies,
+} from '../lib/supabaseClient';
 
 export default function Page() {
   const [movies, setMovies] = useState<any[]>([]);
+  const [trending, setTrending] = useState<any[]>([]);
+  const [recommended, setRecommended] = useState<any[]>([]);
+  const [extrasLoaded, setExtrasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pageRef = useRef(0);
   const loadedIds = useRef(new Set<string>());
@@ -41,6 +48,24 @@ export default function Page() {
   useEffect(() => {
     loadMore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const fetchExtras = async () => {
+      try {
+        const [trend, rec] = await Promise.all([
+          getTrendingMovies(),
+          getRecommendedMovies(),
+        ]);
+        setTrending(trend);
+        setRecommended(rec);
+      } catch {
+        // ignore
+      } finally {
+        setExtrasLoaded(true);
+      }
+    };
+    fetchExtras();
   }, []);
 
   useEffect(() => {
@@ -117,6 +142,66 @@ export default function Page() {
             )}
           </div>
         )}
+
+        
+<div className="mt-12">
+  <h2 className="text-2xl font-bold mb-4 text-center">Trending</h2>
+  {trending.length > 0 ? (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {trending.map((m) => (
+        <div
+          key={m.id}
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest('a,button')) {
+              router.push(`/movies/${m.id}`);
+            }
+          }}
+          className="cursor-pointer"
+        >
+          <MovieCard movie={m} />
+        </div>
+      ))}
+    </div>
+  ) : (
+    extrasLoaded && (
+      <p className="text-center text-gray-600">
+        No trending movies yet.
+      </p>
+    )
+  )}
+</div>
+
+
+        
+<div className="mt-12">
+  <h2 className="text-2xl font-bold mb-4 text-center">Recommended for You</h2>
+  {recommended.length > 0 ? (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {recommended.map((m) => (
+        <div
+          key={m.id}
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest('a,button')) {
+              router.push(`/movies/${m.id}`);
+            }
+          }}
+          className="cursor-pointer"
+        >
+          <MovieCard movie={m} />
+        </div>
+      ))}
+    </div>
+  ) : (
+    extrasLoaded && (
+      <p className="text-center text-gray-600">
+        Sign in or like movies to see recommendations.
+      </p>
+    )
+  )}
+</div>
+
 
         {/* Call to Action */}
         <div className="flex justify-center mt-12 mb-6">

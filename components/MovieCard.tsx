@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { HeartIcon, TelevisionSimpleIcon } from '@phosphor-icons/react';
+import { HeartIcon, PlayIcon, TelevisionSimpleIcon } from '@phosphor-icons/react';
 import { ShareButton } from './ShareButton';
 import type {
   Animation,
@@ -12,7 +12,8 @@ import type {
   CompositeActor,
   TextActor,
 } from './AnimationTypes';
-import { likeMovie, getMovieLikes } from '../lib/supabaseClient';
+import { likeMovie, getMovieLikes, getMoviePlays } from '../lib/supabaseClient';
+import { formatCount } from '../lib/format';
 import { useEmojiFont } from '../lib/emojiFonts';
 
 function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string }) {
@@ -215,6 +216,7 @@ export function MovieCard({
   const firstScene = Array.isArray((animation as any)?.scenes)
     ? ((animation as any).scenes[0] as Scene)
     : undefined;
+  const [plays, setPlays] = useState(0);
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
   const emojiFont = animation?.emojiFont || (movie as any).emoji_font;
@@ -226,6 +228,7 @@ export function MovieCard({
       setLikes(count);
       setLiked(liked);
     });
+    getMoviePlays(movie.id).then(setPlays);
   }, [movie.id]);
 
   const toggleLike = async (e: React.MouseEvent) => {
@@ -268,6 +271,10 @@ export function MovieCard({
           </div>
         )}
         <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <PlayIcon size={14} />
+            <span>{formatCount(plays)}</span>
+          </div>
           <button
             onClick={toggleLike}
             className={`flex items-center gap-1 text-xs ${liked ? 'text-orange-400' : 'text-gray-500'}`}
