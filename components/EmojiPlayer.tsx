@@ -3,6 +3,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import type { Actor, Animation, Scene, Effect } from './AnimationTypes';
+import { useEmojiFont } from '../lib/emojiFonts';
 
 const EFFECT_VARIANTS: Record<Effect, { hidden: any; show: any }> = {
   'fade-in': {
@@ -111,6 +112,9 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   const totalScenes = animation.scenes.length;
   const scene = animation.scenes[sceneIndex];
   const duration = Math.max(1, scene?.duration_ms ?? 1);
+  const emojiStyle = animation.emojiFont ? { fontFamily: animation.emojiFont } : undefined;
+
+  useEmojiFont(animation.emojiFont);
 
   function clearRaf() {
     if (rafRef.current != null) {
@@ -263,6 +267,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
             width={width}
             height={height}
             progress={progress}
+            emojiStyle={emojiStyle}
           />
         )}
 
@@ -354,12 +359,14 @@ function SceneView({
   scene,
   width,
   height,
-  progress
+  progress,
+  emojiStyle
 }: {
   scene: Scene;
   width: number;
   height: number;
   progress: number;
+  emojiStyle?: React.CSSProperties;
 }) {
   const content = (
     <div style={{ position: 'relative', width, height }}>
@@ -374,6 +381,7 @@ function SceneView({
             h={height}
             duration={scene.duration_ms}
             progress={progress}
+            emojiStyle={emojiStyle}
           />
         ))}
       {scene.actors
@@ -387,6 +395,7 @@ function SceneView({
             h={height}
             duration={scene.duration_ms}
             progress={progress}
+            emojiStyle={emojiStyle}
           />
         ))}
       {scene.caption && (
@@ -406,13 +415,15 @@ function ActorView({
   w: _w,
   h: _h,
   duration,
-  progress
+  progress,
+  emojiStyle
 }: {
   actor: Actor;
   w: number;
   h: number;
   duration: number;
   progress: number;
+  emojiStyle?: React.CSSProperties;
 }) {
   const frames = [
     actor.start && {
@@ -450,7 +461,8 @@ function ActorView({
           top: `${y}%`,
           fontSize: size,
           transformOrigin: 'center center',
-          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`
+          transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`,
+          ...emojiStyle,
         }}
       >
         <span style={{ display: 'inline-block', transform: actor.flipX ? 'scaleX(-1)' : undefined }}>
@@ -546,7 +558,8 @@ function ActorView({
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
-                  transformOrigin: 'center center'
+                  transformOrigin: 'center center',
+                  ...emojiStyle,
                 }}
               >
                 <span style={{ display: 'inline-block', transform: p.flipX ? 'scaleX(-1)' : undefined }}>

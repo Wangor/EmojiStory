@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getClip } from '../../../../lib/supabaseServer';
+import { fetchEmojiFontData } from '../../../../lib/emojiFontData';
 import type { ReactNode } from 'react';
 import type {
   Scene,
@@ -8,7 +9,7 @@ import type {
   CompositeActor,
 } from '../../../../components/AnimationTypes';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET(request: Request, { params }: { params: { clipId: string } }) {
   const { clipId } = params;
@@ -18,6 +19,8 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
   } catch {}
 
   const scene: Scene | undefined = clip?.animation?.scenes?.[0];
+  const emojiFont = clip?.animation?.emojiFont || clip?.emoji_font;
+  const fonts = await fetchEmojiFontData(emojiFont);
   const width = 1200;
   const height = Math.round((width * 9) / 16);
   const baseUnit = width / 12.5;
@@ -40,6 +43,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
           left,
           top,
           fontSize: size,
+          fontFamily: emojiFont,
           ...(a.flipX ? { transform: 'scaleX(-1)' } : {}),
         }}
       >
@@ -107,6 +111,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
                   left: offsetX,
                   top: offsetY,
                   fontSize: partSize,
+                  fontFamily: emojiFont,
                   ...(p.flipX ? { transform: 'scaleX(-1)' } : {}),
                 }}
               >
@@ -141,6 +146,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
       {
         width,
         height,
+        fonts,
       }
     );
   }
@@ -179,6 +185,7 @@ export async function GET(request: Request, { params }: { params: { clipId: stri
     {
       width,
       height,
+      fonts,
     }
   );
 }

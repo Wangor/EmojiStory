@@ -69,4 +69,6 @@ export type Animation = {
   description: string;
   fps: number; // for time normalization if needed
   scenes: Scene[];
+  /** Optional font-family name for rendering emoji */
+  emojiFont?: string;
 };

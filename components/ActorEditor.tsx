@@ -27,14 +27,17 @@ export type ActorEditorProps = {
     onChange: (a: Actor) => void;
     onRemove: () => void;
     allowTypeChange?: boolean;
+    emojiFont?: string;
 };
 
-export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true }: ActorEditorProps) {
+export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true, emojiFont }: ActorEditorProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showEmojiCatalogue, setShowEmojiCatalogue] = useState(false);
     const [partCatalogueIndex, setPartCatalogueIndex] = useState<number | null>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+    const emojiStyle = emojiFont ? { fontFamily: emojiFont } : undefined;
 
     const update = (fields: any) => onChange({ ...actor, ...fields });
 
@@ -258,7 +261,8 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                                     position: 'absolute',
                                     left: x,
                                     top: y,
-                                    fontSize: partSize
+                                    fontSize: partSize,
+                                    fontFamily: emojiFont
                                 }}
                             >
                                 <span
@@ -310,7 +314,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                     >
                         <div className="flex items-center gap-2">
                             {getActorIcon()}
-                            <span className="text-lg">{getActorPreview()}</span>
+                            <span className="text-lg" style={emojiStyle}>{getActorPreview()}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                             <span>{actor.type}</span>
@@ -706,6 +710,7 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
                         setShowEmojiCatalogue(false);
                         setPartCatalogueIndex(null);
                     }}
+                    emojiFont={emojiFont}
                 />
             )}
         </>

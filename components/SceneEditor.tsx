@@ -27,12 +27,13 @@ export type SceneEditorProps = {
     onRemove: () => void;
     onDuplicate: () => void;
     sceneIndex: number;
+    emojiFont?: string;
 };
 
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 270;
 
-export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex }: SceneEditorProps) {
+export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex, emojiFont }: SceneEditorProps) {
     const [activeSection, setActiveSection] = useState<'canvas' | 'actors' | 'background'>('canvas');
 
     const update = (fields: Partial<Scene>) => onChange({ ...scene, ...fields });
@@ -217,6 +218,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         width={CANVAS_WIDTH}
                         height={CANVAS_HEIGHT}
                         onSceneChange={onChange}
+                        emojiFont={emojiFont}
                     />
                 </div>
             )}
@@ -244,6 +246,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                                 onChange={(ac) => updateBackground(i, ac as EmojiActor)}
                                 onRemove={() => removeBackground(i)}
                                 allowTypeChange={false}
+                                emojiFont={emojiFont}
                             />
                         ))}
                         {scene.backgroundActors.length === 0 && (
@@ -297,6 +300,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                                 actor={a}
                                 onChange={(ac) => updateActor(i, ac)}
                                 onRemove={() => removeActor(i)}
+                                emojiFont={emojiFont}
                             />
                         ))}
                         {scene.actors.length === 0 && (

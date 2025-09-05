@@ -10,7 +10,7 @@ import { ClipComments } from './ClipComments';
 import { ShareButton } from './ShareButton';
 import { likeMovie, getMovieLikes, getUserChannels } from '../lib/supabaseClient';
 
-export function MovieDetail({ movie }: { movie: any }) {
+export default function MovieDetail({ movie }: { movie: any }) {
   const router = useRouter();
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
@@ -40,6 +40,8 @@ export function MovieDetail({ movie }: { movie: any }) {
       console.error(err);
     }
   };
+
+  const emojiFont = movie.animation?.emojiFont || (movie as any).emoji_font;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -85,7 +87,7 @@ export function MovieDetail({ movie }: { movie: any }) {
         <div className="flex justify-center">
           <div className="w-full max-w-5xl">
             <EmojiPlayer
-              animation={movie.animation as Animation}
+              animation={{ ...(movie.animation as Animation), emojiFont }}
               width={1000}
               height={600}
             />

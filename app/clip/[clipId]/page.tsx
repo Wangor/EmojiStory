@@ -43,6 +43,7 @@ export default async function ClipPage({ params }: { params: { clipId: string } 
   if (!clip) {
     return <div className="p-8">Clip not found</div>;
   }
+  const emojiFont = clip.animation?.emojiFont || clip.emoji_font;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -51,7 +52,11 @@ export default async function ClipPage({ params }: { params: { clipId: string } 
           {clip.title || clip.story?.slice(0, 50)}
         </h1>
         <div className="flex justify-center mb-8">
-          <EmojiPlayer animation={clip.animation} width={1000} height={600} />
+          <EmojiPlayer
+            animation={{ ...clip.animation, emojiFont }}
+            width={1000}
+            height={600}
+          />
         </div>
         <ClipComments movieId={clip.id} movieOwnerId={clip.user_id} />
       </div>

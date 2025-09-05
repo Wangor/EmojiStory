@@ -85,7 +85,7 @@ export async function getUserChannels(userId?: string) {
   return data;
 }
 
-export async function insertMovie(movie: { channel_id: string; title: string; description: string; story: string; animation: any; }) {
+export async function insertMovie(movie: { channel_id: string; title: string; description: string; story: string; animation: any; emoji_font?: string | null; }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
@@ -96,6 +96,7 @@ export async function insertMovie(movie: { channel_id: string; title: string; de
       title: movie.title,
       description: movie.description,
       story: movie.story,
+      emoji_font: movie.emoji_font ?? null,
       animation: movie.animation,
     })
     .select()
@@ -104,7 +105,7 @@ export async function insertMovie(movie: { channel_id: string; title: string; de
   return data;
 }
 
-export async function updateMovie(movie: { id: string; channel_id?: string; title?: string; description?: string; story?: string; animation?: any; }) {
+export async function updateMovie(movie: { id: string; channel_id?: string; title?: string; description?: string; story?: string; animation?: any; emoji_font?: string | null; }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
@@ -115,6 +116,7 @@ export async function updateMovie(movie: { id: string; channel_id?: string; titl
       title: movie.title,
       description: movie.description,
       story: movie.story,
+      emoji_font: movie.emoji_font ?? null,
       animation: movie.animation,
     })
     .eq('id', movie.id)

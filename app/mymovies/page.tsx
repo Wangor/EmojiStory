@@ -119,38 +119,38 @@ function MoviesContent() {
                       </p>
 
                       {/* Action Buttons */}
-                      <div className="mt-auto flex gap-2 text-sm">
+                      <div className="mt-auto flex gap-2 justify-center">
                         <Link
                           href={`/movies/${movie.id}`}
-                          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-orange-400 text-white rounded"
+                          className="w-8 h-8 bg-orange-400 hover:bg-orange-500 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
+                          title="Watch"
                         >
-                          <PlayIcon weight="fill" size={12} className="text-white" />
-                          Watch
+                          <PlayIcon weight="fill" size={14} className="text-white" />
                         </Link>
                         {released ? (
                           <Link
                             href={`/editor?copy=${movie.id}`}
-                            className="flex items-center justify-center gap-1 px-3 py-1.5 border rounded"
+                            className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
+                            title="Copy"
                           >
-                            <PencilSimpleIcon weight="bold" size={12} />
-                            Copy
+                            <PencilSimpleIcon weight="bold" size={14} />
                           </Link>
                         ) : (
                           <>
                             <Link
                               href={`/editor?id=${movie.id}`}
-                              className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 border rounded"
+                              className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
+                              title="Edit"
                             >
-                              <PencilSimpleIcon weight="bold" size={12} />
-                              Edit
+                              <PencilSimpleIcon weight="bold" size={14} />
                             </Link>
-            <button
-              onClick={() => setReleaseMovie(movie)}
-              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded"
-            >
-              <UploadSimpleIcon weight="bold" size={12} className="text-white" />
-              Publish
-            </button>
+                            <button
+                              onClick={() => setReleaseMovie(movie)}
+                              className="w-8 h-8 bg-green-600 hover:bg-green-700 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
+                              title="Publish"
+                            >
+                              <UploadSimpleIcon weight="bold" size={14} className="text-white" />
+                            </button>
                           </>
                         )}
                       </div>
