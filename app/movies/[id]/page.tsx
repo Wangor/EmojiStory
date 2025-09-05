@@ -30,7 +30,7 @@ export default async function MoviePage({ params }: Props) {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Movie not found</h1>
-            <p className="text-gray-600">The movie you&#39;re looking for doesn't exist.</p>
+            <p className="text-gray-600">The movie you&#39;re looking for doesn&#39;t exist.</p>
           </div>
         </div>
       );

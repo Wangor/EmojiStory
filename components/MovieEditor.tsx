@@ -213,6 +213,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                             >
                                 <option value="">System default</option>
                                 <option value="Noto Color Emoji">Noto Color Emoji</option>
+                                <option value="Noto Emoji">Noto Emoji (Monochrome)</option>
                                 <option value="Twemoji">Twemoji</option>
                                 <option value="OpenMoji">OpenMoji</option>
                                 <option value="Blobmoji">Blobmoji</option>
