@@ -515,10 +515,10 @@ export async function getChannelWithMovies(name: string) {
   return { channel, movies: (movies || []).map((m) => ({ ...m, channels: channel })) };
 }
 
-export async function recordPlay(movieId: string) {
-  const user = await getUser();
+export const recordPlay = async (movieId: string) => {
+  const user = await getUser().catch(() => null);
   const { error } = await supabase
     .from('plays')
     .insert({ movie_id: movieId, user_id: user?.id ?? null });
   if (error) throw error;
-}
+};
