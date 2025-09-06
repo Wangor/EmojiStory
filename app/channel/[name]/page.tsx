@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getChannelWithMovies } from '../../../lib/supabaseClient';
+import {
+  getChannelWithMovies,
+  getUser,
+  followChannel,
+  unfollowChannel,
+  supabase,
+} from '../../../lib/supabaseClient';
 import { MovieCard } from '../../../components/MovieCard';
 
 export default function ChannelViewPage({ params }: { params: { name: string } }) {
@@ -11,13 +17,30 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
     if (!channelName) return;
     getChannelWithMovies(channelName)
-      .then(({ channel, movies }) => {
-        setChannel(channel);
-        setMovies(movies);
+      .then(async ({ channel: ch, movies: mv }) => {
+        setChannel(ch);
+        setMovies(mv);
+        try {
+          const u = await getUser().catch(() => null);
+          setCurrentUser(u);
+          if (u) {
+            const { data } = await supabase
+              .from('follows')
+              .select('*')
+              .eq('follower_id', u.id)
+              .eq('channel_id', ch.id)
+              .maybeSingle();
+            setIsFollowing(!!data);
+          }
+        } catch {
+          // ignore
+        }
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -42,6 +65,26 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
           <h1 className="text-4xl font-bold text-gray-900 mb-2">{channel.name}</h1>
           {channel.description && (
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">{channel.description}</p>
+          )}
+          {currentUser && currentUser.id !== channel.user_id && (
+            <button
+              onClick={async () => {
+                try {
+                  if (isFollowing) {
+                    await unfollowChannel(channel.id);
+                    setIsFollowing(false);
+                  } else {
+                    await followChannel(channel.id);
+                    setIsFollowing(true);
+                  }
+                } catch {
+                  // ignore
+                }
+              }}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+            >
+              {isFollowing ? 'Unfollow' : 'Follow'}
+            </button>
           )}
         </div>
 
