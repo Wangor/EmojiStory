@@ -186,3 +186,22 @@ create policy "Profiles are viewable by everyone" on public.profiles
 create policy "Users can update their own profile" on public.profiles
   for update using (auth.uid() = user_id);
 
+-- Follows table for user follows
+create table if not exists public.follows (
+  follower_id uuid references auth.users(id),
+  channel_id uuid references public.channels(id),
+  created_at timestamptz default now(),
+  primary key (follower_id, channel_id)
+);
+
+alter table public.follows enable row level security;
+
+create policy "Public read access" on public.follows
+  for select using (true);
+
+create policy "Users can insert their own follows" on public.follows
+  for insert with check (auth.uid() = follower_id);
+
+create policy "Users can delete their own follows" on public.follows
+  for delete using (auth.uid() = follower_id);
+
