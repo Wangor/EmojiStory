@@ -22,8 +22,10 @@ public class RenderController : ControllerBase
 
         // Preload fonts if available. `EmojiFont` is resolved relative to the `fonts` directory
         // so callers can simply pass the filename (e.g., "NotoColorEmoji.ttf").
-        var emojiTypeface = ResolveEmojiTypeface(request.Animation.EmojiFont);
-        var textTypeface = LoadTypefaceFromFile("NotoSans-Regular.ttf") ?? SKTypeface.Default;
+        var emojiTypeface = ResolveEmojiTypeface(request.Animation.EmojiFont)
+            ?? throw new InvalidOperationException("Emoji font not found. Place it in the fonts folder and reference it by filename.");
+        var textTypeface = LoadTypefaceFromFile("NotoSans-Regular.ttf")
+            ?? throw new InvalidOperationException("Text font 'NotoSans-Regular.ttf' not found in fonts folder.");
 
         for (int i = 0; i < totalFrames; i++)
         {
@@ -88,7 +90,7 @@ public class RenderController : ControllerBase
         return (animation.Scenes.Last(), accum - animation.Scenes.Last().DurationMs);
     }
 
-    private static void DrawActor(SKCanvas canvas, Actor actor, double tScene, AnimationRequest request, SKTypeface? emojiTypeface, SKTypeface textTypeface)
+    private static void DrawActor(SKCanvas canvas, Actor actor, double tScene, AnimationRequest request, SKTypeface emojiTypeface, SKTypeface textTypeface)
     {
         var (x, y, rot, scale) = Sample(actor, tScene);
         canvas.Save();
@@ -109,7 +111,7 @@ public class RenderController : ControllerBase
             case EmojiActor e:
                 using (var paint = new SKPaint
                 {
-                    Typeface = emojiTypeface ?? SKTypeface.Default,
+                    Typeface = emojiTypeface,
                     TextSize = 64f,
                     IsAntialias = true
                 })
@@ -211,34 +213,18 @@ public class RenderController : ControllerBase
         return null;
     }
 
-    private static SKTypeface ResolveEmojiTypeface(string? name)
+    private static SKTypeface? ResolveEmojiTypeface(string? name)
     {
-        // try explicit file or family name first
-        if (!string.IsNullOrEmpty(name))
-        {
-            var fileFace = LoadTypefaceFromFile(name);
-            if (fileFace != null) return fileFace;
+        var candidates = string.IsNullOrEmpty(name)
+            ? new[] { "NotoColorEmoji.ttf", "TwemojiMozilla.ttf", "EmojiOneColor.otf" }
+            : new[] { name };
 
-            var fm = SKFontManager.Default;
-            var familyFace = fm.MatchFamily(name);
-            if (familyFace != null) return familyFace;
+        foreach (var c in candidates)
+        {
+            var face = LoadTypefaceFromFile(c);
+            if (face != null) return face;
         }
 
-        var manager = SKFontManager.Default;
-        var families = new[]
-        {
-            "Apple Color Emoji", // macOS
-            "Noto Color Emoji", // Linux
-            "Segoe UI Emoji", // Windows
-            "Twemoji Mozilla",
-            "EmojiOne Color"
-        };
-        foreach (var fam in families)
-        {
-            var tf = manager.MatchFamily(fam);
-            if (tf != null) return tf;
-        }
-
-        return SKTypeface.Default;
+        return null;
     }
 }

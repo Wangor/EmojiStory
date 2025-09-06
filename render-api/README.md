@@ -43,6 +43,6 @@ POST `/render` with JSON body matching `AnimationRequest`:
 
 The service renders each actor to a frame using SkiaSharp and encodes the sequence with `ffmpeg`. The resulting MP4 is returned as `video/mp4`.
 
-Place any required font files in the `render-api/fonts` folder. When `emojiFont` is omitted, the renderer tries to locate a system color‑emoji typeface (Apple Color Emoji on macOS, Noto Color Emoji on Linux, Segoe UI Emoji on Windows). You can override this by supplying a filename like `TwemojiMozilla.ttf` in the request. Text rendering expects `NotoSans-Regular.ttf` to be present in the same folder. File names are resolved relative to the `fonts` directory, so you can omit the path. If no suitable font is found, SkiaSharp falls back to its built‑in typeface and emoji may render as empty rectangles.
+Place the required typefaces in the `render-api/fonts` folder—**system fonts are never used.** Set `emojiFont` to a filename in this directory (e.g., `NotoColorEmoji.ttf`); if omitted, the API looks for common emoji font names in the same folder. Text rendering expects `NotoSans-Regular.ttf` in this directory. File names are resolved relative to `fonts`, so you can omit the path. If a font cannot be found, the API returns an error instead of falling back to a default font.
 
 > Requires .NET 8 SDK and `ffmpeg` to be installed on the host.
