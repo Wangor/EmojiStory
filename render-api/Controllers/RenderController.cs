@@ -22,8 +22,8 @@ public class RenderController : ControllerBase
 
         // Preload fonts if available. `EmojiFont` is resolved relative to the `fonts` directory
         // so callers can simply pass the filename (e.g., "NotoColorEmoji.ttf").
-        var emojiTypeface = LoadTypeface(request.Animation.EmojiFont ?? "NotoColorEmoji.ttf");
-        var textTypeface = LoadTypeface("NotoSans-Regular.ttf") ?? SKTypeface.Default;
+        var emojiTypeface = ResolveEmojiTypeface(request.Animation.EmojiFont);
+        var textTypeface = LoadTypefaceFromFile("NotoSans-Regular.ttf") ?? SKTypeface.Default;
 
         for (int i = 0; i < totalFrames; i++)
         {
@@ -189,7 +189,7 @@ public class RenderController : ControllerBase
         return SKColor.TryParse(hex, out var c) ? c : null;
     }
 
-    private static SKTypeface? LoadTypeface(string name)
+    private static SKTypeface? LoadTypefaceFromFile(string name)
     {
         var baseDir = AppContext.BaseDirectory;
         var candidates = Path.IsPathRooted(name)
@@ -209,5 +209,36 @@ public class RenderController : ControllerBase
         }
 
         return null;
+    }
+
+    private static SKTypeface ResolveEmojiTypeface(string? name)
+    {
+        // try explicit file or family name first
+        if (!string.IsNullOrEmpty(name))
+        {
+            var fileFace = LoadTypefaceFromFile(name);
+            if (fileFace != null) return fileFace;
+
+            var fm = SKFontManager.Default;
+            var familyFace = fm.MatchFamily(name);
+            if (familyFace != null) return familyFace;
+        }
+
+        var manager = SKFontManager.Default;
+        var families = new[]
+        {
+            "Apple Color Emoji", // macOS
+            "Noto Color Emoji", // Linux
+            "Segoe UI Emoji", // Windows
+            "Twemoji Mozilla",
+            "EmojiOne Color"
+        };
+        foreach (var fam in families)
+        {
+            var tf = manager.MatchFamily(fam);
+            if (tf != null) return tf;
+        }
+
+        return SKTypeface.Default;
     }
 }
