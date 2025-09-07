@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import { FilmSlate, MagicWand, Warning } from '@phosphor-icons/react/dist/ssr';
 import { MovieCard } from '../components/MovieCard';
 
 export default async function Page() {
@@ -103,13 +104,7 @@ export default async function Page() {
         <div className="text-center mb-4">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-1">
             <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-xl shadow-lg">
-              <span
-                className="text-2xl"
-                role="img"
-                aria-label="clapper board"
-              >
-                🎬
-              </span>
+              <FilmSlate weight="bold" size={32} className="text-white" />
             </div>
             Emoji Movie Studio
           </h1>
@@ -121,7 +116,7 @@ export default async function Page() {
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-start gap-2">
-              <div className="w-5 h-5 text-red-500 mt-0.5">⚠️</div>
+              <Warning size={20} weight="fill" className="w-5 h-5 text-red-500 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-red-800 mb-1">Error</h3>
                 <p className="text-red-700">{error}</p>
@@ -199,13 +194,11 @@ export default async function Page() {
             href="/create"
             className="group flex items-center gap-2 px-6 py-3 bg-orange-400 hover:bg-orange-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
           >
-            <span
+            <MagicWand
+              weight="bold"
+              size={20}
               className="group-hover:scale-110 transition-transform"
-              role="img"
-              aria-label="magic wand"
-            >
-              🪄
-            </span>
+            />
             Create
           </Link>
         </div>
