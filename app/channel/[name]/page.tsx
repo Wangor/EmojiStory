@@ -1,8 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getChannelWithMovies } from '../../../lib/supabaseClient';
+import {
+  getChannelWithMovies,
+  getUser,
+  followChannel,
+  unfollowChannel,
+  supabase,
+  getChannelFollowers,
+} from '../../../lib/supabaseClient';
 import { MovieCard } from '../../../components/MovieCard';
+import Image from 'next/image';
 
 export default function ChannelViewPage({ params }: { params: { name: string } }) {
   const { name } = params;
@@ -11,13 +19,35 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followers, setFollowers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!channelName) return;
     getChannelWithMovies(channelName)
-      .then(({ channel, movies }) => {
-        setChannel(channel);
-        setMovies(movies);
+      .then(async ({ channel: ch, movies: mv }) => {
+        setChannel(ch);
+        setMovies(mv);
+        try {
+          const [u, fw] = await Promise.all([
+            getUser().catch(() => null),
+            getChannelFollowers(ch.id).catch(() => []),
+          ]);
+          setCurrentUser(u);
+          setFollowers(fw);
+          if (u) {
+            const { data } = await supabase
+              .from('follows')
+              .select('*')
+              .eq('follower_id', u.id)
+              .eq('channel_id', ch.id)
+              .maybeSingle();
+            setIsFollowing(!!data);
+          }
+        } catch {
+          // ignore
+        }
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -42,6 +72,50 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
           <h1 className="text-4xl font-bold text-gray-900 mb-2">{channel.name}</h1>
           {channel.description && (
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">{channel.description}</p>
+          )}
+          <p className="text-gray-500 mt-2">
+            {followers.length} follower{followers.length === 1 ? '' : 's'}
+          </p>
+          {currentUser && currentUser.id !== channel.user_id && (
+            <button
+              onClick={async () => {
+                try {
+                  if (isFollowing) {
+                    await unfollowChannel(channel.id);
+                    setIsFollowing(false);
+                  } else {
+                    await followChannel(channel.id);
+                    setIsFollowing(true);
+                  }
+                  setFollowers(await getChannelFollowers(channel.id));
+                } catch {
+                  // ignore
+                }
+              }}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+            >
+              {isFollowing ? 'Unfollow' : 'Follow'}
+            </button>
+          )}
+          {followers.length > 0 && (
+            <ul className="mt-6 flex flex-wrap justify-center gap-4">
+              {followers.map((f) => (
+                <li key={f.id} className="flex items-center space-x-2">
+                  {f.avatar_url && (
+                    <Image
+                      src={f.avatar_url}
+                      alt={f.display_name || 'Follower'}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="text-sm text-gray-700">
+                    {f.display_name || 'Unnamed'}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 

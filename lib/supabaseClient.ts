@@ -2,7 +2,7 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 
-const supabase = createBrowserClient(
+export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
@@ -462,6 +462,87 @@ export async function deleteComment(commentId: string) {
     .delete()
     .eq('id', commentId);
   if (error) throw error;
+}
+
+export async function followChannel(
+  channelId: string,
+  deps: { client?: typeof supabase; getUserFn?: typeof getUser } = {},
+) {
+  const { client = supabase, getUserFn = getUser } = deps;
+  const user = await getUserFn();
+  if (!user) throw new Error('Not authenticated');
+  const { error } = await client
+    .from('follows')
+    .insert({ follower_id: user.id, channel_id: channelId });
+  if (error) throw error;
+}
+
+export async function unfollowChannel(
+  channelId: string,
+  deps: { client?: typeof supabase; getUserFn?: typeof getUser } = {},
+) {
+  const { client = supabase, getUserFn = getUser } = deps;
+  const user = await getUserFn();
+  if (!user) throw new Error('Not authenticated');
+  const { error } = await client
+    .from('follows')
+    .delete()
+    .match({ follower_id: user.id, channel_id: channelId });
+  if (error) throw error;
+}
+
+export async function getChannelFollowers(
+  channelId: string,
+  deps: { client?: typeof supabase } = {},
+) {
+  const { client = supabase } = deps;
+  const { data: follows, error: followError } = await client
+    .from('follows')
+    .select('follower_id')
+    .eq('channel_id', channelId);
+  if (followError) throw followError;
+  const ids = (follows || []).map((f: any) => f.follower_id);
+  if (ids.length === 0) return [];
+  const { data: profiles, error: profileError } = await client
+    .from('profiles')
+    .select('user_id, display_name, avatar_url')
+    .in('user_id', ids);
+  if (profileError) throw profileError;
+  const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+  return ids.map((id: string) => {
+    const profile = profileMap.get(id) || {};
+    return {
+      id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+    };
+  });
+}
+
+export async function getFollowingMovies(
+  deps: { client?: typeof supabase; getUserFn?: typeof getUser } = {},
+) {
+  const { client = supabase, getUserFn = getUser } = deps;
+  const user = await getUserFn();
+  if (!user) return [];
+  const { data: follows, error: followError } = await client
+    .from('follows')
+    .select('channel_id')
+    .eq('follower_id', user.id);
+  if (followError) throw followError;
+  const ids = (follows || []).map((f: any) => f.channel_id);
+  if (ids.length === 0) return [];
+  const { data, error } = await client
+    .from('movies')
+    .select(
+      `*, channels!movies_channel_id_fkey(id, name, user_id)`,
+    )
+    .in('channel_id', ids)
+    .not('publish_datetime', 'is', null)
+    .lte('publish_datetime', new Date().toISOString())
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(parseAnimation);
 }
 
 export async function getChannel() {
