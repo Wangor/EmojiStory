@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost';
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { followChannel, unfollowChannel, getFollowingMovies } = require('./supabaseClient');
+const {
+  followChannel,
+  unfollowChannel,
+  getFollowingMovies,
+  getChannelFollowers,
+} = require('./supabaseClient');
 
 test('followChannel inserts follow record', async () => {
   const inserted: any[] = [];
@@ -77,4 +82,51 @@ test('getFollowingMovies returns movies from followed channels', async () => {
   const mockGetUser = async () => ({ id: 'u1' } as any);
   const result = await getFollowingMovies({ client: mockClient, getUserFn: mockGetUser });
   assert.deepEqual(result, mockMovies);
+});
+
+test('getChannelFollowers returns follower profiles', async () => {
+  const mockClient = {
+    from: (table: string) => {
+      if (table === 'follows') {
+        return {
+          select: () => ({
+            eq: async (col: string, val: any) => {
+              assert.equal(col, 'channel_id');
+              assert.equal(val, 'c1');
+              return {
+                data: [
+                  { follower_id: 'u1' },
+                  { follower_id: 'u2' },
+                ],
+                error: null,
+              };
+            },
+          }),
+        };
+      }
+      if (table === 'profiles') {
+        return {
+          select: () => ({
+            in: async (col: string, ids: any[]) => {
+              assert.equal(col, 'id');
+              assert.deepEqual(ids, ['u1', 'u2']);
+              return {
+                data: [
+                  { id: 'u1', display_name: 'A' },
+                  { id: 'u2', display_name: 'B' },
+                ],
+                error: null,
+              };
+            },
+          }),
+        };
+      }
+      throw new Error('unexpected table');
+    },
+  } as any;
+  const result = await getChannelFollowers('c1', { client: mockClient });
+  assert.deepEqual(result, [
+    { id: 'u1', display_name: 'A' },
+    { id: 'u2', display_name: 'B' },
+  ]);
 });

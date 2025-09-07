@@ -491,6 +491,26 @@ export async function unfollowChannel(
   if (error) throw error;
 }
 
+export async function getChannelFollowers(
+  channelId: string,
+  deps: { client?: typeof supabase } = {},
+) {
+  const { client = supabase } = deps;
+  const { data: follows, error: followError } = await client
+    .from('follows')
+    .select('follower_id')
+    .eq('channel_id', channelId);
+  if (followError) throw followError;
+  const ids = (follows || []).map((f: any) => f.follower_id);
+  if (ids.length === 0) return [];
+  const { data: profiles, error: profileError } = await client
+    .from('profiles')
+    .select('id, display_name, avatar_url')
+    .in('id', ids);
+  if (profileError) throw profileError;
+  return profiles || [];
+}
+
 export async function getFollowingMovies(
   deps: { client?: typeof supabase; getUserFn?: typeof getUser } = {},
 ) {

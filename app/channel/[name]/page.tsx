@@ -7,8 +7,10 @@ import {
   followChannel,
   unfollowChannel,
   supabase,
+  getChannelFollowers,
 } from '../../../lib/supabaseClient';
 import { MovieCard } from '../../../components/MovieCard';
+import Image from 'next/image';
 
 export default function ChannelViewPage({ params }: { params: { name: string } }) {
   const { name } = params;
@@ -19,6 +21,7 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followers, setFollowers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!channelName) return;
@@ -27,8 +30,12 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
         setChannel(ch);
         setMovies(mv);
         try {
-          const u = await getUser().catch(() => null);
+          const [u, fw] = await Promise.all([
+            getUser().catch(() => null),
+            getChannelFollowers(ch.id).catch(() => []),
+          ]);
           setCurrentUser(u);
+          setFollowers(fw);
           if (u) {
             const { data } = await supabase
               .from('follows')
@@ -66,6 +73,9 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
           {channel.description && (
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">{channel.description}</p>
           )}
+          <p className="text-gray-500 mt-2">
+            {followers.length} follower{followers.length === 1 ? '' : 's'}
+          </p>
           {currentUser && currentUser.id !== channel.user_id && (
             <button
               onClick={async () => {
@@ -77,6 +87,7 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
                     await followChannel(channel.id);
                     setIsFollowing(true);
                   }
+                  setFollowers(await getChannelFollowers(channel.id));
                 } catch {
                   // ignore
                 }
@@ -85,6 +96,26 @@ export default function ChannelViewPage({ params }: { params: { name: string } }
             >
               {isFollowing ? 'Unfollow' : 'Follow'}
             </button>
+          )}
+          {followers.length > 0 && (
+            <ul className="mt-6 flex flex-wrap justify-center gap-4">
+              {followers.map((f) => (
+                <li key={f.id} className="flex items-center space-x-2">
+                  {f.avatar_url && (
+                    <Image
+                      src={f.avatar_url}
+                      alt={f.display_name || 'Follower'}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="text-sm text-gray-700">
+                    {f.display_name || 'Unnamed'}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 
