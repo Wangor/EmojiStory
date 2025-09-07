@@ -108,12 +108,12 @@ test('getChannelFollowers returns follower profiles', async () => {
         return {
           select: () => ({
             in: async (col: string, ids: any[]) => {
-              assert.equal(col, 'id');
+              assert.equal(col, 'user_id');
               assert.deepEqual(ids, ['u1', 'u2']);
               return {
                 data: [
-                  { id: 'u1', display_name: 'A' },
-                  { id: 'u2', display_name: 'B' },
+                  { user_id: 'u1', display_name: 'A' },
+                  { user_id: 'u2', display_name: 'B' },
                 ],
                 error: null,
               };
@@ -126,7 +126,7 @@ test('getChannelFollowers returns follower profiles', async () => {
   } as any;
   const result = await getChannelFollowers('c1', { client: mockClient });
   assert.deepEqual(result, [
-    { id: 'u1', display_name: 'A' },
-    { id: 'u2', display_name: 'B' },
+    { id: 'u1', display_name: 'A', avatar_url: undefined },
+    { id: 'u2', display_name: 'B', avatar_url: undefined },
   ]);
 });

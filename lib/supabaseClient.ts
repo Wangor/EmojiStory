@@ -505,10 +505,14 @@ export async function getChannelFollowers(
   if (ids.length === 0) return [];
   const { data: profiles, error: profileError } = await client
     .from('profiles')
-    .select('id, display_name, avatar_url')
-    .in('id', ids);
+    .select('user_id, display_name, avatar_url')
+    .in('user_id', ids);
   if (profileError) throw profileError;
-  return profiles || [];
+  return (profiles || []).map((p: any) => ({
+    id: p.user_id,
+    display_name: p.display_name,
+    avatar_url: p.avatar_url,
+  }));
 }
 
 export async function getFollowingMovies(
