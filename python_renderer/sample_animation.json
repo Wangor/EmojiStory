@@ -1,0 +1,40 @@
+{
+  "animation": {
+    "title": "Sample Animation",
+    "description": "A demo animation to test the renderer",
+    "fps": 30,
+    "emojiFont": "Noto Color Emoji",
+    "scenes": [
+      {
+        "id": "scene-1",
+        "duration_ms": 1000,
+        "backgroundActors": [],
+        "actors": [
+          {
+            "id": "rocket",
+            "type": "emoji",
+            "emoji": "🚀",
+            "start": { "x": 0.1, "y": 0.8, "scale": 1 },
+            "tracks": [
+              { "t": 0, "x": 0.1, "y": 0.8 },
+              { "t": 1000, "x": 0.8, "y": 0.2 }
+            ]
+          },
+          {
+            "id": "caption",
+            "type": "text",
+            "text": "Lift-off!",
+            "start": { "x": 0.5, "y": 0.9, "scale": 1 },
+            "tracks": [
+              { "t": 0, "x": 0.5, "y": 0.9 }
+            ],
+            "fontSize": 48
+          }
+        ]
+      }
+    ]
+  },
+  "width": 512,
+  "height": 512,
+  "fps": 30
+}
