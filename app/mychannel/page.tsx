@@ -98,7 +98,13 @@ export default function ChannelPage() {
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={(e) => setPicture(e.target.files?.[0] || null)}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0] || null;
+                                            setPicture(file);
+                                            if (file) {
+                                                setPictureUrl(URL.createObjectURL(file));
+                                            }
+                                        }}
                                         className="hidden"
                                     />
                                 </label>
