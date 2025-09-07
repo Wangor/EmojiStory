@@ -508,11 +508,15 @@ export async function getChannelFollowers(
     .select('user_id, display_name, avatar_url')
     .in('user_id', ids);
   if (profileError) throw profileError;
-  return (profiles || []).map((p: any) => ({
-    id: p.user_id,
-    display_name: p.display_name,
-    avatar_url: p.avatar_url,
-  }));
+  const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+  return ids.map((id: string) => {
+    const profile = profileMap.get(id) || {};
+    return {
+      id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+    };
+  });
 }
 
 export async function getFollowingMovies(
