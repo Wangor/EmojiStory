@@ -1,5 +1,3 @@
-/* eslint-disable import/no-unresolved */
-import { FilmSlate, MagicWand } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
@@ -105,7 +103,13 @@ export default async function Page() {
         <div className="text-center mb-4">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-1">
             <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-xl shadow-lg">
-              <FilmSlate weight="bold" size={32} className="text-white" />
+              <span
+                className="text-2xl"
+                role="img"
+                aria-label="clapper board"
+              >
+                🎬
+              </span>
             </div>
             Emoji Movie Studio
           </h1>
@@ -195,11 +199,13 @@ export default async function Page() {
             href="/create"
             className="group flex items-center gap-2 px-6 py-3 bg-orange-400 hover:bg-orange-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
           >
-            <MagicWand
-              weight="bold"
-              size={20}
+            <span
               className="group-hover:scale-110 transition-transform"
-            />
+              role="img"
+              aria-label="magic wand"
+            >
+              🪄
+            </span>
             Create
           </Link>
         </div>
