@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { FilmSlate, MagicWand, Warning } from '@phosphor-icons/react/dist/ssr';
-import { MovieCard } from '../components/MovieCard';
+import ServerMovieCard from '../components/ServerMovieCard';
 
 export default async function Page() {
   const cookieStore = cookies();
@@ -130,9 +130,7 @@ export default async function Page() {
             <h2 className="text-2xl font-bold mb-4 text-center">Latest Movies</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {movies.map((m: any) => (
-                <Link key={m.id} href={`/movies/${m.id}`} className="cursor-pointer">
-                  <MovieCard movie={m} />
-                </Link>
+                <ServerMovieCard key={m.id} movie={m} />
               ))}
             </div>
           </div>
@@ -143,9 +141,7 @@ export default async function Page() {
           {following.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {following.map((m: any) => (
-                <Link key={m.id} href={`/movies/${m.id}`} className="cursor-pointer">
-                  <MovieCard movie={m} />
-                </Link>
+                <ServerMovieCard key={m.id} movie={m} />
               ))}
             </div>
           ) : (
@@ -160,9 +156,7 @@ export default async function Page() {
           {trending.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {trending.map((m: any) => (
-                <Link key={m.id} href={`/movies/${m.id}`} className="cursor-pointer">
-                  <MovieCard movie={m} />
-                </Link>
+                <ServerMovieCard key={m.id} movie={m} />
               ))}
             </div>
           ) : (
@@ -177,9 +171,7 @@ export default async function Page() {
           {recommended.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {recommended.map((m: any) => (
-                <Link key={m.id} href={`/movies/${m.id}`} className="cursor-pointer">
-                  <MovieCard movie={m} />
-                </Link>
+                <ServerMovieCard key={m.id} movie={m} />
               ))}
             </div>
           ) : (
