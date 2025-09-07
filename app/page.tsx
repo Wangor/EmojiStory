@@ -91,7 +91,7 @@ export default function Page() {
         {/* Header */}
         <div className="text-center mb-4">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-1">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+            <div className="p-2 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-xl shadow-lg">
               <FilmSlate weight="bold" size={32} className="text-white" />
             </div>
             Emoji Movie Studio
@@ -235,7 +235,7 @@ export default function Page() {
         <div className="flex justify-center mt-12 mb-6">
           <button
             onClick={() => router.push('/create')}
-            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+            className="group flex items-center gap-2 px-6 py-3 bg-orange-400 hover:bg-orange-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium"
           >
             <MagicWand weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
             Create

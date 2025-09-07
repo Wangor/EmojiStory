@@ -14,7 +14,7 @@ import Image from 'next/image';
 
 export default function ChannelViewPage({ params }: { params: { name: string } }) {
   const { name } = params;
-  const channelName = decodeURIComponent(name);
+  const channelName = name;
   const [channel, setChannel] = useState<any | null>(null);
   const [movies, setMovies] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
