@@ -165,10 +165,46 @@ insert into storage.buckets (id, name, public)
   values ('channel-pictures', 'channel-pictures', true)
   on conflict (id) do nothing;
 
+-- Storage policies for channel pictures
+create policy "Channel pictures are publicly accessible" on storage.objects
+  for select using (bucket_id = 'channel-pictures');
+create policy "Authenticated users can upload channel pictures" on storage.objects
+  for insert with check (
+    bucket_id = 'channel-pictures'
+    and exists (
+      select 1 from public.channels
+      where channels.id = split_part(name, '_', 1)::uuid
+        and channels.user_id = auth.uid()
+    )
+  );
+create policy "Authenticated users can update channel pictures" on storage.objects
+  for update using (
+    bucket_id = 'channel-pictures'
+    and exists (
+      select 1 from public.channels
+      where channels.id = split_part(name, '_', 1)::uuid
+        and channels.user_id = auth.uid()
+    )
+  );
+
 -- Storage bucket for profile pictures
 insert into storage.buckets (id, name, public)
   values ('profile-pictures', 'profile-pictures', true)
   on conflict (id) do nothing;
+
+-- Storage policies for profile pictures
+create policy "Profile pictures are publicly accessible" on storage.objects
+  for select using (bucket_id = 'profile-pictures');
+create policy "Authenticated users can upload their profile picture" on storage.objects
+  for insert with check (
+    bucket_id = 'profile-pictures'
+    and split_part(name, '_', 1)::uuid = auth.uid()
+  );
+create policy "Authenticated users can update their profile picture" on storage.objects
+  for update using (
+    bucket_id = 'profile-pictures'
+    and split_part(name, '_', 1)::uuid = auth.uid()
+  );
 
 -- Profiles table for user accounts
 create table if not exists public.profiles (

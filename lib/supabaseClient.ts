@@ -88,7 +88,10 @@ export async function updateProfile(params: { display_name?: string; avatar?: Fi
     const filePath = `${user.id}_picture.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from('profile-pictures')
-      .upload(filePath, params.avatar, { upsert: true });
+      .upload(filePath, params.avatar, {
+        upsert: true,
+        contentType: params.avatar.type,
+      });
     if (uploadError) throw uploadError;
     const { data } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
     avatar_url = data.publicUrl;
@@ -597,7 +600,10 @@ export async function upsertChannel(params: { name: string; description: string;
     const filePath = `${channel.id}_picture.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from('channel-pictures')
-      .upload(filePath, params.picture, { upsert: true });
+      .upload(filePath, params.picture, {
+        upsert: true,
+        contentType: params.picture.type,
+      });
     if (uploadError) throw uploadError;
     const { data } = supabase.storage.from('channel-pictures').getPublicUrl(filePath);
     const { data: updateData, error: updateError } = await supabase
