@@ -78,20 +78,35 @@ export async function getProfileById(userId: string) {
   return data;
 }
 
-export async function updateProfile(params: { display_name?: string; avatar_url?: string; metadata?: any }) {
+export async function updateProfile(params: { display_name?: string; avatar?: File; metadata?: any }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
+
+  let avatar_url: string | undefined;
+  if (params.avatar) {
+    const fileExt = params.avatar.name.split('.').pop();
+    const filePath = `${user.id}_picture.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from('profile-pictures')
+      .upload(filePath, params.avatar, { upsert: true });
+    if (uploadError) throw uploadError;
+    const { data } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+    avatar_url = data.publicUrl;
+  }
+
+  const updates: any = {
+    user_id: user.id,
+    display_name: params.display_name,
+    metadata: params.metadata,
+  };
+
+  if (avatar_url) {
+    updates.avatar_url = avatar_url;
+  }
+
   const { data, error } = await supabase
     .from('profiles')
-    .upsert(
-      {
-        user_id: user.id,
-        display_name: params.display_name,
-        avatar_url: params.avatar_url,
-        metadata: params.metadata,
-      },
-      { onConflict: 'user_id' }
-    )
+    .upsert(updates, { onConflict: 'user_id' })
     .select()
     .single();
   if (error) throw error;
@@ -560,29 +575,42 @@ export async function getChannel() {
 export async function upsertChannel(params: { name: string; description: string; picture?: File }) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
-  let picture_url: string | undefined;
+
+  const { data: channel, error } = await supabase
+    .from('channels')
+    .upsert(
+      {
+        user_id: user.id,
+        name: params.name,
+        description: params.description,
+      },
+      { onConflict: 'user_id' }
+    )
+    .select()
+    .single();
+  if (error) throw error;
+
+  let updatedChannel = channel;
+
   if (params.picture) {
     const fileExt = params.picture.name.split('.').pop();
-    const filePath = `${user.id}.${fileExt}`;
+    const filePath = `${channel.id}_picture.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from('channel-pictures')
       .upload(filePath, params.picture, { upsert: true });
     if (uploadError) throw uploadError;
     const { data } = supabase.storage.from('channel-pictures').getPublicUrl(filePath);
-    picture_url = data.publicUrl;
+    const { data: updateData, error: updateError } = await supabase
+      .from('channels')
+      .update({ picture_url: data.publicUrl })
+      .eq('id', channel.id)
+      .select()
+      .single();
+    if (updateError) throw updateError;
+    updatedChannel = updateData;
   }
-  const { data, error } = await supabase
-    .from('channels')
-    .upsert({
-      user_id: user.id,
-      name: params.name,
-      description: params.description,
-      picture_url,
-    })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+
+  return updatedChannel;
 }
 
 

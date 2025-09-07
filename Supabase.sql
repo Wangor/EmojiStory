@@ -165,6 +165,11 @@ insert into storage.buckets (id, name, public)
   values ('channel-pictures', 'channel-pictures', true)
   on conflict (id) do nothing;
 
+-- Storage bucket for profile pictures
+insert into storage.buckets (id, name, public)
+  values ('profile-pictures', 'profile-pictures', true)
+  on conflict (id) do nothing;
+
 -- Profiles table for user accounts
 create table if not exists public.profiles (
   id uuid primary key default gen_random_uuid(),

@@ -7,7 +7,8 @@ import { getProfile, updateProfile } from '../../lib/supabaseClient';
 
 export default function ProfilePage() {
   const [displayName, setDisplayName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export default function ProfilePage() {
       .then((profile) => {
         if (profile) {
           setDisplayName(profile.display_name || '');
-          setAvatarUrl(profile.avatar_url || '');
+          setAvatarUrl(profile.avatar_url || null);
         }
       })
       .catch((e) => setError(e.message));
@@ -29,7 +30,8 @@ export default function ProfilePage() {
     try {
       setError(null);
       setMessage(null);
-      await updateProfile({ display_name: displayName, avatar_url: avatarUrl });
+      const data = await updateProfile({ display_name: displayName, avatar: avatar || undefined });
+      if (data.avatar_url) setAvatarUrl(data.avatar_url);
       setMessage('Profile saved successfully');
     } catch (e: any) {
       setError(e.message);
@@ -74,7 +76,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Avatar Preview */}
+            {/* Avatar Upload */}
             <div className="text-center">
               <div className="relative inline-block">
                 {avatarUrl ? (
@@ -90,22 +92,23 @@ export default function ProfilePage() {
                     <CameraIcon size={24} className="text-gray-500" />
                   </div>
                 )}
+                <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-400 hover:bg-orange-500 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors duration-200">
+                  <CameraIcon size={16} className="text-white" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setAvatar(file);
+                      if (file) {
+                        setAvatarUrl(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
               </div>
-            </div>
-
-            {/* Avatar URL */}
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                <CameraIcon size={16} />
-                Avatar URL
-              </label>
-              <input
-                type="url"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="https://example.com/avatar.png"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white focus:bg-white"
-              />
+              <p className="text-sm text-gray-500 mt-3">Click the camera icon to upload an avatar</p>
             </div>
 
             {/* Display Name */}
