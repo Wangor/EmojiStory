@@ -12,10 +12,13 @@
     "generate:tailwind": "tailwindcss -i ./tailwind/main.css -o ./tailwind/output.css"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.55",
     "@phosphor-icons/react": "^2.1.6",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "emojibase-data": "latest",
+    "ffmpeg-static": "^5.1.0",
+    "fluent-ffmpeg": "^2.1.2",
     "framer-motion": "11.2.10",
     "next": "14.2.5",
     "openai": "^4.57.0",

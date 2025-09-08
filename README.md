@@ -16,3 +16,13 @@ Open http://localhost:3000 and click **Generate with AI**.
 - Emoji actors and backgrounds can use any Unicode emoji. The `lib/assets` module
   contains example emoji with suggested default scales, but the model is free to
   infer real-world size relationships when new emoji are used.
+
+## Video Endpoint
+Clients can request a rendered MP4 for any clip by calling:
+
+```
+GET /api/video/<clipId>
+```
+
+The server generates each frame on the fly using the clip's animation data and streams
+an H.264 MP4 response. The result can be downloaded or played directly by the client.
