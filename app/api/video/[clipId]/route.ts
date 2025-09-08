@@ -108,7 +108,11 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
   const command = ffmpeg()
     .input(frameStream)
     .inputOptions(['-f image2pipe', `-framerate ${fps}`, '-vcodec png'])
-    .outputOptions(['-c:v libx264', '-pix_fmt yuv420p'])
+    .outputOptions([
+      '-c:v libx264',
+      '-pix_fmt yuv420p',
+      '-movflags frag_keyframe+empty_moov',
+    ])
     .format('mp4');
 
   const output = new PassThrough();
