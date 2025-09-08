@@ -105,33 +105,40 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
     .inputOptions(['-framerate ' + fps])
     .outputOptions(['-c:v libx264', '-pix_fmt yuv420p'])
     .format('mp4');
+
   const output = new PassThrough();
+  const chunks: Buffer[] = [];
+  output.on('data', (c) => chunks.push(c as Buffer));
+  const done = new Promise<Buffer>((resolve, reject) => {
+    output.on('end', () => resolve(Buffer.concat(chunks)));
+    output.on('error', reject);
+  });
+
   command.pipe(output);
   command.on('error', (e) => output.destroy(e));
-  command.on('end', () => output.end());
+  command.run();
 
-  (async () => {
-    if (animation?.scenes) {
-      for (const scene of animation.scenes) {
-        const frames = Math.round((scene.duration_ms / 1000) * fps);
-        for (let i = 0; i < frames; i++) {
-          const t = (i / fps) * 1000;
-          ctx.fillStyle = scene.backgroundColor || '#fff';
-          ctx.fillRect(0, 0, width, height);
-          for (const a of scene.backgroundActors) drawActor(ctx, a, t, width, height, baseUnit, emojiFont);
-          for (const a of scene.actors) drawActor(ctx, a, t, width, height, baseUnit, emojiFont);
-          const buffer = canvas.toBuffer('image/png');
-          frameStream.write(buffer);
-        }
+  if (animation?.scenes) {
+    for (const scene of animation.scenes) {
+      const frames = Math.round((scene.duration_ms / 1000) * fps);
+      for (let i = 0; i < frames; i++) {
+        const t = (i / fps) * 1000;
+        ctx.fillStyle = scene.backgroundColor || '#fff';
+        ctx.fillRect(0, 0, width, height);
+        for (const a of scene.backgroundActors) drawActor(ctx, a, t, width, height, baseUnit, emojiFont);
+        for (const a of scene.actors) drawActor(ctx, a, t, width, height, baseUnit, emojiFont);
+        const buffer = canvas.toBuffer('image/png');
+        frameStream.write(buffer);
       }
     }
-    frameStream.end();
-    command.run();
-  })();
+  }
+  frameStream.end();
 
-  return new Response(output as any, {
+  const video = await done;
+  return new Response(video, {
     headers: {
       'Content-Type': 'video/mp4',
+      'Content-Disposition': `attachment; filename="${clipId}.mp4"`,
     },
   });
 }

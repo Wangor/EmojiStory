@@ -24,5 +24,5 @@ Clients can request a rendered MP4 for any clip by calling:
 GET /api/video/<clipId>
 ```
 
-The server generates each frame on the fly using the clip's animation data and streams
-an H.264 MP4 response. The result can be downloaded or played directly by the client.
+The server generates each frame on the fly using the clip's animation data and returns
+an H.264 MP4 file download.
