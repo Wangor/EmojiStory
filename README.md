@@ -25,4 +25,4 @@ GET /api/video/<clipId>
 ```
 
 The server generates each frame on the fly using the clip's animation data and returns
-an H.264 MP4 file download.
+an H.264 MP4 stream that clients can download or play directly.
