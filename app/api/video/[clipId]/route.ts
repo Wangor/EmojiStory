@@ -111,7 +111,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
     .outputOptions([
       '-c:v libx264',
       '-pix_fmt yuv420p',
-      '-movflags +faststart',
+      '-movflags frag_keyframe+empty_moov',
     ])
     .format('mp4');
 

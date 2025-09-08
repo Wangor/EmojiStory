@@ -25,6 +25,5 @@ GET /api/video/<clipId>
 ```
 
 The server generates each frame on the fly using the clip's animation data and returns
-an H.264 MP4 stream that clients can download or play directly. The file is encoded
-with `faststart` so it opens in players like QuickTime without needing the entire
-file to download first.
+an H.264 MP4 stream that clients can download or play directly. The file is produced
+using fragmented MP4 output so it can be served over a non-seekable HTTP stream.
