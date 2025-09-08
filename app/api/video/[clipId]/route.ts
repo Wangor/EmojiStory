@@ -77,10 +77,15 @@ function drawActor(ctx: any, actor: Actor, t: number, width: number, height: num
 
 export async function GET(_req: Request, { params }: { params: { clipId: string } }) {
   const { clipId } = params;
+  console.log('Video request received for', clipId);
   const clip = await getClip(clipId);
+  if (!clip) {
+    console.warn('No clip found for', clipId);
+  }
   const animation = clip?.animation as { scenes: Scene[]; fps?: number; emojiFont?: string } | undefined;
   const fps = animation?.fps ?? 30;
   const emojiFont = animation?.emojiFont || clip?.emoji_font || 'Noto Emoji';
+  console.log('Using font', emojiFont, 'at', fps, 'fps');
 
   // Register fonts
   const fontDir = path.join(process.cwd(), 'public', 'fonts');
@@ -88,6 +93,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
     const full = path.join(fontDir, file);
     try {
       GlobalFonts.register(full);
+      console.log('Registered font', full);
     } catch {}
   }
 
@@ -107,14 +113,20 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
     .format('mp4');
 
   const output = new PassThrough();
-  command.on('error', (e) => output.destroy(e));
+  command.on('start', (cmd) => console.log('FFmpeg started', cmd));
+  command.on('error', (e) => {
+    console.error('FFmpeg error', e);
+    output.destroy(e);
+  });
+  command.on('end', () => console.log('FFmpeg finished'));
   command.pipe(output);
   command.run();
 
   (async () => {
     if (animation?.scenes) {
-      for (const scene of animation.scenes) {
+      for (const [sceneIndex, scene] of animation.scenes.entries()) {
         const frames = Math.round((scene.duration_ms / 1000) * fps);
+        console.log(`Rendering scene ${sceneIndex} with ${frames} frames`);
         for (let i = 0; i < frames; i++) {
           const t = (i / fps) * 1000;
           ctx.fillStyle = scene.backgroundColor || '#fff';
@@ -123,12 +135,15 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
           for (const a of scene.actors) drawActor(ctx, a, t, width, height, baseUnit, emojiFont);
           const buffer = canvas.toBuffer('image/png');
           frameStream.write(buffer);
+          if (i % 10 === 0) console.log(`Scene ${sceneIndex} frame ${i}/${frames}`);
         }
       }
     }
     frameStream.end();
+    console.log('Finished writing frames to FFmpeg');
   })();
 
+  console.log('Streaming MP4 response for', clipId);
   return new Response(Readable.toWeb(output), {
     headers: {
       'Content-Type': 'video/mp4',
