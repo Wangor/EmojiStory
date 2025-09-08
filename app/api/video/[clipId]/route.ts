@@ -1,4 +1,4 @@
-import { PassThrough } from 'stream';
+import { PassThrough, Readable } from 'stream';
 import path from 'path';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
@@ -129,7 +129,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
     frameStream.end();
   })();
 
-  return new Response(output, {
+  return new Response(Readable.toWeb(output), {
     headers: {
       'Content-Type': 'video/mp4',
       'Content-Disposition': `attachment; filename="${clipId}.mp4"`,
