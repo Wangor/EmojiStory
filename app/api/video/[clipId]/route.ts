@@ -107,8 +107,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
   ffmpeg.setFfmpegPath(ffmpegPath as string);
   const command = ffmpeg()
     .input(frameStream)
-    .inputFormat('image2pipe')
-    .inputOptions(['-framerate ' + fps])
+    .inputOptions(['-f image2pipe', `-framerate ${fps}`, '-vcodec png'])
     .outputOptions(['-c:v libx264', '-pix_fmt yuv420p'])
     .format('mp4');
 
@@ -118,6 +117,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
     console.error('FFmpeg error', e);
     output.destroy(e);
   });
+  command.on('stderr', (line) => console.log('FFmpeg stderr:', line));
   command.on('end', () => console.log('FFmpeg finished'));
   command.pipe(output);
   command.run();
