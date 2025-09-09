@@ -335,7 +335,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                     .videoCodec('libx264')
                     .outputOptions([
                         '-pix_fmt yuv420p',
-                        '-vf scale=640:360:flags=lanczos',
+                        `-vf scale=${width}:${height}:flags=lanczos`,
                         '-movflags +faststart'
                     ])
                     .fps(fps)
