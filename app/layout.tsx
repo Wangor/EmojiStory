@@ -18,7 +18,11 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50 text-gray-900">
+    <head>
+        <meta name="google-adsense-account" content="ca-pub-6062140948853666" />
+    </head>
+
+    <body className="min-h-screen bg-gray-50 text-gray-900">
         <Navbar />
         {children}
       </body>

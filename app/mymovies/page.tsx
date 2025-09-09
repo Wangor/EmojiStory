@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { PlayIcon, FilmSlateIcon, ClockIcon, PencilSimpleIcon, UploadSimpleIcon } from '@phosphor-icons/react';
+import { PlayIcon, FilmSlateIcon, ClockIcon, PencilSimpleIcon, UploadSimpleIcon, DownloadSimpleIcon } from '@phosphor-icons/react';
 import { getMoviesByUser, publishMovie } from '../../lib/supabaseClient';
 import { MovieCard } from '../../components/MovieCard';
 import ReleaseModal from '../../components/ReleaseModal';
@@ -128,13 +128,22 @@ function MoviesContent() {
                           <PlayIcon weight="fill" size={14} className="text-white" />
                         </Link>
                         {released ? (
-                          <Link
-                            href={`/editor?copy=${movie.id}`}
-                            className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
-                            title="Copy"
-                          >
-                            <PencilSimpleIcon weight="bold" size={14} />
-                          </Link>
+                            <>
+                              <Link
+                                href={`/editor?copy=${movie.id}`}
+                                className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
+                                title="Copy"
+                              >
+                                <PencilSimpleIcon weight="bold" size={14} />
+                              </Link>
+                                <Link
+                                    href={`/api/video/${movie.id}`}
+                                    className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
+                                    title="Download"
+                                >
+                                    <DownloadSimpleIcon weight="bold" size={14} />
+                                </Link>
+                            </>
                         ) : (
                           <>
                             <Link
