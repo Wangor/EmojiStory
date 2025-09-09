@@ -2,34 +2,41 @@
 
 import React, { useState } from 'react';
 import {
-    FilmSlateIcon,
-    ClockIcon,
     ChatTextIcon,
-    UserIcon,
+    ClockIcon,
+    CopyIcon,
+    FilmSlateIcon,
     MountainsIcon,
     PaletteIcon,
-    UsersIcon,
     PlusIcon,
     SmileyWinkIcon,
     TextTIcon,
-    CopyIcon,
-    TrashIcon
+    TrashIcon,
+    UserIcon,
+    UsersIcon
 } from '@phosphor-icons/react';
-import { Scene, Actor, EmojiActor, TextActor, CompositeActor, AspectRatio } from './AnimationTypes';
-import SceneCanvas from './SceneCanvas';
+import {
+    Actor,
+    AspectRatio,
+    CompositeActor,
+    EmojiActor,
+    Scene,
+    TextActor
+} from './AnimationTypes';
 import ActorEditor from './ActorEditor';
-import { uuid } from '../lib/uuid';
+import SceneCanvas from './SceneCanvas';
 import { getCanvasDimensions } from '../lib/aspectRatio';
+import { uuid } from '../lib/uuid';
 
 export type SceneEditorProps = {
-    scene: Scene;
+    aspectRatio: AspectRatio;
+    emojiFont?: string;
     fps: number;
     onChange: (s: Scene) => void;
-    onRemove: () => void;
     onDuplicate: () => void;
+    onRemove: () => void;
+    scene: Scene;
     sceneIndex: number;
-    emojiFont?: string;
-    aspectRatio: AspectRatio;
 };
 
 export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex, emojiFont, aspectRatio }: SceneEditorProps) {
