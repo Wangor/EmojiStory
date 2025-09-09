@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
-import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
+import { createCanvas, GlobalFonts, loadImage } from '@napi-rs/canvas';
 import { getClip } from '../../../../lib/supabaseServer';
 import type { Scene, Actor, EmojiActor, CompositeActor } from '../../../../components/AnimationTypes';
 
@@ -216,6 +216,15 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
         const testBuffer = canvas.toBuffer('image/png');
         console.log('Canvas test - buffer size:', testBuffer.length, 'bytes');
 
+        // Load watermark image
+        const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+        let watermark: any = null;
+        try {
+            watermark = await loadImage(logoPath);
+        } catch (e) {
+            console.warn('Failed to load watermark:', e);
+        }
+
         // Calculate total frames needed
         let totalExpectedFrames = 0;
         for (const scene of animation.scenes) {
@@ -277,6 +286,14 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                         } catch (e) {
                             console.warn(`Error drawing actor:`, e);
                         }
+                    }
+
+                    // Draw watermark
+                    if (watermark) {
+                        ctx.save();
+                        ctx.globalAlpha = 0.5;
+                        ctx.drawImage(watermark, 0, 0);
+                        ctx.restore();
                     }
 
                     // Save frame to temp file
