@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
-import { Scene, Actor, Keyframe, TextActor, CompositeActor } from './AnimationTypes';
+import { Scene, Actor, Keyframe, TextActor, CompositeActor, AspectRatio } from './AnimationTypes';
 
 import SceneCanvasToolbar from './SceneCanvasToolbar';
 
@@ -11,11 +11,12 @@ type SceneCanvasProps = {
     fps: number;
     width: number;
     height: number;
+    aspectRatio: AspectRatio;
     onSceneChange: (s: Scene) => void;
     emojiFont?: string;
 };
 
-export default function SceneCanvas({ scene, fps, width, height, onSceneChange, emojiFont }: SceneCanvasProps) {
+export default function SceneCanvas({ scene, fps, width, height, aspectRatio, onSceneChange, emojiFont }: SceneCanvasProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ w: 0, h: 0 });
     const [currentFrame, setCurrentFrame] = useState(0);
@@ -490,8 +491,10 @@ export default function SceneCanvas({ scene, fps, width, height, onSceneChange, 
                 ref={containerRef}
                 className="relative border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                 style={{
-                    aspectRatio: `${width}/${height}`,
-                    width: '100%',
+                    width,
+                    height,
+                    aspectRatio: aspectRatio.replace(':', '/'),
+                    maxWidth: '100%',
                     maxHeight: '400px',
                     backgroundColor: scene.backgroundColor ?? defaultBg
                 }}

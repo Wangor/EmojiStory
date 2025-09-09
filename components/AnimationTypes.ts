@@ -7,6 +7,8 @@ export type Keyframe = {
   ease?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 };
 
+export type AspectRatio = '16:9' | '9:16';
+
 export type Effect = 'fade-in' | 'bounce';
 
 export type EmojiActor = {
@@ -63,6 +65,7 @@ export type Scene = {
   actors: Actor[];
   effects?: Effect[];
   sfx?: { at_ms: number; type: 'pop' | 'whoosh' | 'ding' }[];
+  aspectRatio?: AspectRatio;
 };
 
 export type Animation = {
@@ -73,4 +76,5 @@ export type Animation = {
   scenes: Scene[];
   /** Optional font-family name for rendering emoji */
   emojiFont?: string;
+  aspectRatio?: AspectRatio;
 };

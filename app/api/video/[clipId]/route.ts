@@ -174,7 +174,12 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
             animationType: typeof clip.animation
         });
 
-        const animation = clip?.animation as { scenes: Scene[]; fps?: number; emojiFont?: string } | undefined;
+        const animation = clip?.animation as {
+            scenes: Scene[];
+            fps?: number;
+            emojiFont?: string;
+            aspectRatio?: '16:9' | '9:16';
+        } | undefined;
         if (!animation) {
             console.error('No animation data found for clip', clipId);
             return new Response('No animation data found', { status: 400 });
@@ -202,10 +207,15 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
         // Register fonts with improved error handling
         await registerFonts();
 
-        const width = 640;
-        const height = Math.round((width * 9) / 16);
+        let width = 640;
+        let height = Math.round((width * 9) / 16);
+        const aspect = animation.aspectRatio ?? '16:9';
+        if (aspect === '9:16') {
+            height = 640;
+            width = Math.round((height * 9) / 16);
+        }
         const baseUnit = width / 10;
-        console.log('Canvas dimensions:', { width, height, baseUnit });
+        console.log('Canvas dimensions:', { width, height, baseUnit, aspect });
 
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
@@ -325,7 +335,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                     .videoCodec('libx264')
                     .outputOptions([
                         '-pix_fmt yuv420p',
-                        '-vf scale=640:360:flags=lanczos',
+                        `-vf scale=${width}:${height}:flags=lanczos`,
                         '-movflags +faststart'
                     ])
                     .fps(fps)

@@ -10,6 +10,7 @@ import type {
 
 function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string }) {
   const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
+  const ratio = scene.aspectRatio ?? '16:9';
 
   const renderEmoji = (a: EmojiActor) => {
     const first = a.tracks?.[0];
@@ -156,8 +157,11 @@ function SceneThumbnail({ scene, emojiFont }: { scene: Scene; emojiFont?: string
 
   return (
     <div
-      className="relative w-full aspect-video rounded-md overflow-hidden border"
-      style={{ backgroundColor: scene.backgroundColor ?? defaultBg }}
+      className="relative w-full rounded-md overflow-hidden border"
+      style={{
+        backgroundColor: scene.backgroundColor ?? defaultBg,
+        aspectRatio: ratio.replace(':', '/'),
+      }}
     >
       {(Array.isArray(scene.backgroundActors)
         ? scene.backgroundActors
@@ -208,6 +212,7 @@ export function ServerMovieCard({
   const firstScene = Array.isArray((animation as any)?.scenes)
     ? ((animation as any).scenes[0] as Scene)
     : undefined;
+  const ratio = firstScene?.aspectRatio || animation?.aspectRatio || '16:9';
   const emojiFont = animation?.emojiFont || (movie as any).emoji_font;
 
   return (
@@ -216,7 +221,10 @@ export function ServerMovieCard({
         {firstScene ? (
           <SceneThumbnail scene={firstScene} emojiFont={emojiFont} />
         ) : (
-          <div className="w-full aspect-video rounded-md bg-gray-200" />
+          <div
+            className="w-full rounded-md bg-gray-200"
+            style={{ aspectRatio: ratio.replace(':', '/') }}
+          />
         )}
         <div className="mt-2 flex flex-col gap-1">
           <div className="text-sm font-semibold leading-tight line-clamp-2">

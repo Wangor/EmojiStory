@@ -10,15 +10,13 @@ import {
     MagicWandIcon,
     FloppyDiskIcon
 } from '@phosphor-icons/react';
-import { Animation, Scene } from './AnimationTypes';
+import { Animation, Scene, AspectRatio } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import SceneEditor from './SceneEditor';
 import { uuid } from '../lib/uuid';
 import { insertMovie, updateMovie, getUserChannels } from '../lib/supabaseClient';
 import { useEmojiFont } from '../lib/emojiFonts';
-
-const CANVAS_WIDTH = 480;
-const CANVAS_HEIGHT = 270;
+import { getCanvasDimensions } from '../lib/aspectRatio';
 
 interface MovieEditorProps {
     movie?: any;
@@ -30,7 +28,8 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
         description: '',
         fps: 30,
         scenes: [],
-        emojiFont: undefined
+        emojiFont: undefined,
+        aspectRatio: '16:9'
     });
     const [activeSceneIndex, setActiveSceneIndex] = useState(0);
     const [showGenerator, setShowGenerator] = useState(false);
@@ -45,10 +44,18 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
 
     useEmojiFont(animation.emojiFont);
 
+    const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions(animation.aspectRatio ?? '16:9');
+
     useEffect(() => {
         if (movie?.animation) {
+            const aspect = movie.animation.aspectRatio ?? '16:9';
             setAnimation({
                 ...movie.animation,
+                aspectRatio: aspect,
+                scenes: movie.animation.scenes.map((s: Scene) => ({
+                    ...s,
+                    aspectRatio: s.aspectRatio ?? aspect,
+                })),
                 emojiFont: movie.emoji_font || movie.animation.emojiFont,
                 title: movie.title ?? movie.animation.title ?? 'Untitled Movie',
                 description:
@@ -85,7 +92,8 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
             id: uuid(),
             duration_ms: 2000,
             backgroundActors: [],
-            actors: []
+            actors: [],
+            aspectRatio: animation.aspectRatio || '16:9'
         };
         setAnimation((a) => {
             const newScenes = [...a.scenes, scene];
@@ -166,7 +174,16 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data?.error || 'Failed to generate');
-            setAnimation(data.animation as Animation);
+            const aspect = (data.animation as Animation).aspectRatio ?? '16:9';
+            const anim: Animation = {
+                ...(data.animation as Animation),
+                aspectRatio: aspect,
+                scenes: (data.animation as Animation).scenes.map((s: Scene) => ({
+                    ...s,
+                    aspectRatio: s.aspectRatio ?? aspect,
+                })),
+            };
+            setAnimation(anim);
             setActiveSceneIndex(0);
             setShowGenerator(false);
         } catch (e: any) {
@@ -198,6 +215,24 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 value={animation.fps}
                                 onChange={(e) => setAnimation((a) => ({ ...a, fps: Number(e.target.value) || 30 }))}
                             />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700">Aspect:</label>
+                            <select
+                                className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-orange-300 focus:border-transparent"
+                                value={animation.aspectRatio || '16:9'}
+                                onChange={(e) => {
+                                    const ratio = e.target.value as AspectRatio;
+                                    setAnimation((a) => ({
+                                        ...a,
+                                        aspectRatio: ratio,
+                                        scenes: a.scenes.map((s) => ({ ...s, aspectRatio: ratio }))
+                                    }));
+                                }}
+                            >
+                                <option value="16:9">16:9</option>
+                                <option value="9:16">9:16</option>
+                            </select>
                         </div>
                         <div className="flex items-center gap-2">
                             <label className="text-sm font-medium text-gray-700">Emoji Font:</label>
@@ -341,6 +376,7 @@ export default function MovieEditor({ movie }: MovieEditorProps) {
                                 onDuplicate={() => duplicateScene(activeSceneIndex)}
                                 sceneIndex={activeSceneIndex}
                                 emojiFont={animation.emojiFont}
+                                aspectRatio={animation.aspectRatio || '16:9'}
                             />
                         ) : (
                             <div className="flex items-center justify-center h-64 text-gray-500">

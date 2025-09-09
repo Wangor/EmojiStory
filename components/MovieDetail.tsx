@@ -8,6 +8,7 @@ import type { Animation } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import { ClipComments } from './ClipComments';
 import { ShareButton } from './ShareButton';
+import { getCanvasDimensions } from '../lib/aspectRatio';
 import {
   likeMovie,
   getMovieLikes,
@@ -59,6 +60,11 @@ export default function MovieDetail({ movie }: { movie: any }) {
   };
 
   const emojiFont = movie.animation?.emojiFont || (movie as any).emoji_font;
+  const firstScene = Array.isArray(movie.animation?.scenes)
+    ? movie.animation.scenes[0]
+    : undefined;
+  const ratio = firstScene?.aspectRatio || movie.animation?.aspectRatio || '16:9';
+  const { width, height } = getCanvasDimensions(ratio, 1000);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -109,8 +115,8 @@ export default function MovieDetail({ movie }: { movie: any }) {
           <div className="w-full max-w-5xl">
             <EmojiPlayer
               animation={{ ...(movie.animation as Animation), emojiFont }}
-              width={1000}
-              height={600}
+              width={width}
+              height={height}
             />
             <ClipComments movieId={movie.id} movieOwnerId={movie.user_id} />
           </div>

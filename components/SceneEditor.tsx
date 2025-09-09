@@ -16,10 +16,11 @@ import {
     CopyIcon,
     TrashIcon
 } from '@phosphor-icons/react';
-import { Scene, Actor, EmojiActor, TextActor, CompositeActor } from './AnimationTypes';
+import { Scene, Actor, EmojiActor, TextActor, CompositeActor, AspectRatio } from './AnimationTypes';
 import SceneCanvas from './SceneCanvas';
 import ActorEditor from './ActorEditor';
 import { uuid } from '../lib/uuid';
+import { getCanvasDimensions } from '../lib/aspectRatio';
 
 export type SceneEditorProps = {
     scene: Scene;
@@ -29,13 +30,13 @@ export type SceneEditorProps = {
     onDuplicate: () => void;
     sceneIndex: number;
     emojiFont?: string;
+    aspectRatio: AspectRatio;
 };
 
-const CANVAS_WIDTH = 480;
-const CANVAS_HEIGHT = 270;
-
-export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex, emojiFont }: SceneEditorProps) {
+export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex, emojiFont, aspectRatio }: SceneEditorProps) {
     const [activeSection, setActiveSection] = useState<'canvas' | 'actors' | 'background'>('canvas');
+
+    const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions(aspectRatio);
 
     const update = (fields: Partial<Scene>) => onChange({ ...scene, ...fields });
     const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
@@ -239,6 +240,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         fps={fps}
                         width={CANVAS_WIDTH}
                         height={CANVAS_HEIGHT}
+                        aspectRatio={aspectRatio}
                         onSceneChange={onChange}
                         emojiFont={emojiFont}
                     />
