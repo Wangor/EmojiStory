@@ -5,7 +5,6 @@ import {
     FilmSlateIcon,
     ClockIcon,
     ChatTextIcon,
-    ArrowsOutCardinalIcon,
     UserIcon,
     MountainsIcon,
     PaletteIcon,
@@ -34,7 +33,7 @@ export type SceneEditorProps = {
 };
 
 export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex, emojiFont, aspectRatio }: SceneEditorProps) {
-    const [activeSection, setActiveSection] = useState<'canvas' | 'actors' | 'background'>('canvas');
+    const [activeSection, setActiveSection] = useState<'actors' | 'background'>('actors');
 
     const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions(aspectRatio);
 
@@ -193,48 +192,9 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                 </div>
             </div>
 
-            {/* Section Navigation */}
-            <div className="mb-6">
-                <div className="flex border-b border-gray-200">
-                    {[
-                        {
-                            key: 'canvas',
-                            label: 'Canvas',
-                            icon: <ArrowsOutCardinalIcon size={16} />,
-                            count: ''
-                        },
-                        {
-                            key: 'actors',
-                            label: 'Actors',
-                            icon: <UserIcon size={16} />,
-                            count: scene.actors.length > 0 ? `(${scene.actors.length})` : ''
-                        },
-                        {
-                            key: 'background',
-                            label: 'Background',
-                            icon: <MountainsIcon size={16} />,
-                            count: scene.backgroundActors.length > 0 ? `(${scene.backgroundActors.length})` : ''
-                        }
-                    ].map(({ key, label, icon, count }) => (
-                        <button
-                            key={key}
-                            className={`flex items-center gap-2 px-4 py-3 text-sm transition-colors ${
-                                activeSection === key
-                                    ? 'border-b-2 border-b-orange-300 text-orange-400 font-medium'
-                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                            }`}
-                            onClick={() => setActiveSection(key as any)}
-                        >
-                            {icon}
-                            {label} {count}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Section Content */}
-            {activeSection === 'canvas' && (
-                <div>
+            {/* Main Content */}
+            <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex-1">
                     <SceneCanvas
                         scene={scene}
                         fps={fps}
@@ -245,100 +205,134 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         emojiFont={emojiFont}
                     />
                 </div>
-            )}
-
-            {activeSection === 'background' && (
-                <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <MountainsIcon size={20} className="text-gray-500" />
-                            <h4 className="font-medium text-gray-900">Background Actors</h4>
+                <div className="w-full lg:w-1/3">
+                    <div className="mb-4">
+                        <div className="flex border-b border-gray-200">
+                            {[
+                                {
+                                    key: 'actors',
+                                    label: 'Actors',
+                                    icon: <UserIcon size={16} />,
+                                    count: scene.actors.length > 0 ? `(${scene.actors.length})` : ''
+                                },
+                                {
+                                    key: 'background',
+                                    label: 'Background',
+                                    icon: <MountainsIcon size={16} />,
+                                    count:
+                                        scene.backgroundActors.length > 0
+                                            ? `(${scene.backgroundActors.length})`
+                                            : ''
+                                }
+                            ].map(({ key, label, icon, count }) => (
+                                <button
+                                    key={key}
+                                    className={`flex items-center gap-2 px-4 py-3 text-sm transition-colors ${
+                                        activeSection === key
+                                            ? 'border-b-2 border-b-orange-300 text-orange-400 font-medium'
+                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                    }`}
+                                    onClick={() => setActiveSection(key as any)}
+                                >
+                                    {icon}
+                                    {label} {count}
+                                </button>
+                            ))}
                         </div>
-                        <button
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors shadow-sm"
-                            onClick={addBackground}
-                        >
-                            <PlusIcon size={16} />
-                            Add Background
-                        </button>
                     </div>
-                    <div className="space-y-3">
-                        {scene.backgroundActors.map((a, i) => (
-                            <ActorEditor
-                                key={a.id}
-                                actor={a}
-                                onChange={(ac) => updateBackground(i, ac as EmojiActor)}
-                                onRemove={() => removeBackground(i)}
-                                allowTypeChange={false}
-                                emojiFont={emojiFont}
-                            />
-                        ))}
-                        {scene.backgroundActors.length === 0 && (
-                            <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                                <div className="w-12 h-12 mx-auto mb-3 bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <MountainsIcon size={20} className="text-gray-400" />
+                    {activeSection === 'background' && (
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <MountainsIcon size={20} className="text-gray-500" />
+                                    <h4 className="font-medium text-gray-900">Background Actors</h4>
                                 </div>
-                                <p className="text-gray-500 font-medium">No background actors yet</p>
-                                <p className="text-gray-400 text-sm mt-1">Add landscape or scenery elements</p>
+                                <button
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors shadow-sm"
+                                    onClick={addBackground}
+                                >
+                                    <PlusIcon size={16} />
+                                    Add Background
+                                </button>
                             </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {activeSection === 'actors' && (
-                <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <UsersIcon size={20} className="text-gray-500" />
-                            <h4 className="font-medium text-gray-900">Actors</h4>
+                            <div className="space-y-3">
+                                {scene.backgroundActors.map((a, i) => (
+                                    <ActorEditor
+                                        key={a.id}
+                                        actor={a}
+                                        onChange={(ac) => updateBackground(i, ac as EmojiActor)}
+                                        onRemove={() => removeBackground(i)}
+                                        allowTypeChange={false}
+                                        emojiFont={emojiFont}
+                                    />
+                                ))}
+                                {scene.backgroundActors.length === 0 && (
+                                    <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                                        <div className="w-12 h-12 mx-auto mb-3 bg-gray-200 rounded-lg flex items-center justify-center">
+                                            <MountainsIcon size={20} className="text-gray-400" />
+                                        </div>
+                                        <p className="text-gray-500 font-medium">No background actors yet</p>
+                                        <p className="text-gray-400 text-sm mt-1">Add landscape or scenery elements</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-                                onClick={addActor}
-                            >
-                                <SmileyWinkIcon size={16} />
-                                Add Emoji
-                            </button>
-                            <button
-                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-                                onClick={addTextActor}
-                            >
-                                <TextTIcon size={16} />
-                                Add Text
-                            </button>
-                            <button
-                                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-                                onClick={addCompositeActor}
-                            >
-                                <UsersIcon size={16} />
-                                Add Composite
-                            </button>
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        {scene.actors.map((a, i) => (
-                            <ActorEditor
-                                key={a.id}
-                                actor={a}
-                                onChange={(ac) => updateActor(i, ac)}
-                                onRemove={() => removeActor(i)}
-                                emojiFont={emojiFont}
-                            />
-                        ))}
-                        {scene.actors.length === 0 && (
-                            <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                                <div className="w-12 h-12 mx-auto mb-3 bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <UsersIcon size={20} className="text-gray-400" />
+                    )}
+                    {activeSection === 'actors' && (
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <UsersIcon size={20} className="text-gray-500" />
+                                    <h4 className="font-medium text-gray-900">Actors</h4>
                                 </div>
-                                <p className="text-gray-500 font-medium">No actors yet</p>
-                                <p className="text-gray-400 text-sm mt-1">Add characters to bring your scene to life</p>
+                                <div className="flex gap-2">
+                                    <button
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                                        onClick={addActor}
+                                    >
+                                        <SmileyWinkIcon size={16} />
+                                        Add Emoji
+                                    </button>
+                                    <button
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                                        onClick={addTextActor}
+                                    >
+                                        <TextTIcon size={16} />
+                                        Add Text
+                                    </button>
+                                    <button
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                                        onClick={addCompositeActor}
+                                    >
+                                        <UsersIcon size={16} />
+                                        Add Composite
+                                    </button>
+                                </div>
                             </div>
-                        )}
-                    </div>
+                            <div className="space-y-3">
+                                {scene.actors.map((a, i) => (
+                                    <ActorEditor
+                                        key={a.id}
+                                        actor={a}
+                                        onChange={(ac) => updateActor(i, ac)}
+                                        onRemove={() => removeActor(i)}
+                                        emojiFont={emojiFont}
+                                    />
+                                ))}
+                                {scene.actors.length === 0 && (
+                                    <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                                        <div className="w-12 h-12 mx-auto mb-3 bg-gray-200 rounded-lg flex items-center justify-center">
+                                            <UsersIcon size={20} className="text-gray-400" />
+                                        </div>
+                                        <p className="text-gray-500 font-medium">No actors yet</p>
+                                        <p className="text-gray-400 text-sm mt-1">Add characters to bring your scene to life</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 }
