@@ -25,6 +25,7 @@ import {
 } from './AnimationTypes';
 import ActorEditor from './ActorEditor';
 import SceneCanvas from './SceneCanvas';
+import { SceneView } from './EmojiPlayer';
 import { getCanvasDimensions } from '../lib/aspectRatio';
 import { uuid } from '../lib/uuid';
 
@@ -47,6 +48,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
 
     const update = (fields: Partial<Scene>) => onChange({ ...scene, ...fields });
     const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
+    const emojiStyle = emojiFont ? { fontFamily: emojiFont } : undefined;
 
     const updateActor = (idx: number, actor: Actor) => {
         const actors = [...scene.actors];
@@ -179,6 +181,19 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                     </div>
                     <div>
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                            <TextTIcon size={14} />
+                            Caption Size
+                        </label>
+                        <input
+                            type="number"
+                            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-orange-300 focus:border-transparent"
+                            value={scene.captionFontSize ?? ''}
+                            placeholder="18"
+                            onChange={(e) => update({ captionFontSize: e.target.value ? Number(e.target.value) : undefined })}
+                        />
+                    </div>
+                    <div>
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                             <PaletteIcon size={14} />
                             Background
                         </label>
@@ -202,6 +217,16 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
 
             {/* Main Content */}
             <div className="flex flex-col gap-6">
+                <div className="flex justify-center">
+                    <SceneView
+                        scene={scene}
+                        width={CANVAS_WIDTH}
+                        height={CANVAS_HEIGHT}
+                        progress={0}
+                        emojiStyle={emojiStyle}
+                        backgroundColor={scene.backgroundColor ?? defaultBg}
+                    />
+                </div>
                 <div className="flex justify-center">
                     <SceneCanvas
                         scene={scene}

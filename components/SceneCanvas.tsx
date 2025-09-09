@@ -501,6 +501,24 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
                 {/* Foreground Actors */}
                 {scene.actors.map((a) => renderActor(a, false))}
 
+                {/* Caption Preview */}
+                {scene.caption && (
+                    <div
+                        className="absolute left-0 right-0 text-center text-white font-medium text-lg pointer-events-none"
+                        style={{
+                            fontSize: scene.captionFontSize,
+                            bottom: '1em',
+                        }}
+                    >
+                        <div
+                            className="inline-block bg-black/40 backdrop-blur-sm rounded-lg"
+                            style={{ padding: '0.25em 0.75em' }}
+                        >
+                            {scene.caption}
+                        </div>
+                    </div>
+                )}
+
                 {/* Animation Paths */}
                 {allActors.length > 0 && (
                     <svg

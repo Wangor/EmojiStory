@@ -357,7 +357,7 @@ export const EmojiPlayer = forwardRef(function EmojiPlayer(
   );
 });
 
-function SceneView({
+export function SceneView({
   scene,
   width,
   height,
@@ -403,8 +403,17 @@ function SceneView({
           />
         ))}
       {scene.caption && (
-        <div className="absolute bottom-4 left-0 right-0 text-center text-white font-medium text-lg px-4">
-          <div className="inline-block bg-black/40 backdrop-blur-sm px-3 py-1 rounded-lg">
+        <div
+          className="absolute left-0 right-0 text-center text-white font-medium text-lg"
+          style={{
+            fontSize: scene.captionFontSize,
+            bottom: '1em',
+          }}
+        >
+          <div
+            className="inline-block bg-black/40 backdrop-blur-sm rounded-lg"
+            style={{ padding: '0.25em 0.75em' }}
+          >
             {scene.caption}
           </div>
         </div>
