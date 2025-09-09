@@ -21,7 +21,7 @@ export default function SceneCanvasActorInfo({ actor, currentFrame, frameMs, sam
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                         <UserIcon size={12} className="text-blue-600" />
                     </div>
-                    <span className="font-medium text-blue-900">Selected: {actor.type}</span>
+                    <span className="font-medium text-blue-900">Selected: {actor.type} ({actor.id})</span>
                 </div>
                 <div className="text-sm text-blue-700">
                     Frame {currentFrame} ({Math.round(currentFrame * frameMs)}ms)

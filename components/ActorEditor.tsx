@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     SmileyWinkIcon,
     TextTIcon,
@@ -28,16 +28,26 @@ export type ActorEditorProps = {
     onRemove: () => void;
     allowTypeChange?: boolean;
     emojiFont?: string;
+    isSelected?: boolean;
+    onSelect?: () => void;
 };
 
-export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true, emojiFont }: ActorEditorProps) {
+export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange = true, emojiFont, isSelected = false, onSelect }: ActorEditorProps) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [showEmojiCatalogue, setShowEmojiCatalogue] = useState(false);
     const [partCatalogueIndex, setPartCatalogueIndex] = useState<number | null>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
     const emojiStyle = emojiFont ? { fontFamily: emojiFont } : undefined;
+
+    useEffect(() => {
+        if (isSelected) {
+            setIsExpanded(true);
+            containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [isSelected]);
 
     const update = (fields: any) => onChange({ ...actor, ...fields });
 
@@ -305,12 +315,18 @@ export default function ActorEditor({ actor, onChange, onRemove, allowTypeChange
 
     return (
         <>
-            <div className="border border-gray-200 rounded-lg shadow-sm bg-white overflow-hidden">
+            <div
+                ref={containerRef}
+                className={`border border-gray-200 rounded-lg shadow-sm bg-white overflow-hidden ${isSelected ? 'ring-2 ring-orange-300' : ''}`}
+            >
                 {/* Actor Header */}
                 <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                     <button
                         className="flex items-center gap-3 flex-1 text-left"
-                        onClick={() => setIsExpanded(!isExpanded)}
+                        onClick={() => {
+                            onSelect?.();
+                            setIsExpanded(!isExpanded);
+                        }}
                     >
                         <div className="flex items-center gap-2">
                             {getActorIcon()}

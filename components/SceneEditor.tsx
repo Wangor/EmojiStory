@@ -41,6 +41,7 @@ export type SceneEditorProps = {
 
 export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicate, sceneIndex, emojiFont, aspectRatio }: SceneEditorProps) {
     const [activeSection, setActiveSection] = useState<'actors' | 'background'>('actors');
+    const [selectedActorId, setSelectedActorId] = useState<string | null>(null);
 
     const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions(aspectRatio);
 
@@ -210,6 +211,8 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         aspectRatio={aspectRatio}
                         onSceneChange={onChange}
                         emojiFont={emojiFont}
+                        selectedActorId={selectedActorId}
+                        onSelect={setSelectedActorId}
                     />
                 </div>
                 <div className="w-full">
@@ -271,6 +274,8 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                                         onRemove={() => removeBackground(i)}
                                         allowTypeChange={false}
                                         emojiFont={emojiFont}
+                                        isSelected={a.id === selectedActorId}
+                                        onSelect={() => setSelectedActorId(a.id)}
                                     />
                                 ))}
                                 {scene.backgroundActors.length === 0 && (
@@ -324,6 +329,8 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                                         onChange={(ac) => updateActor(i, ac)}
                                         onRemove={() => removeActor(i)}
                                         emojiFont={emojiFont}
+                                        isSelected={a.id === selectedActorId}
+                                        onSelect={() => setSelectedActorId(a.id)}
                                     />
                                 ))}
                                 {scene.actors.length === 0 && (
