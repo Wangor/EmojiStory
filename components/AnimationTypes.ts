@@ -60,6 +60,8 @@ export type Scene = {
   duration_ms: number; // scene duration
   backgroundActors: EmojiActor[]; // actors rendered behind foreground
   caption?: string;
+  /** Optional font size for the caption in pixels */
+  captionFontSize?: number;
   /** Optional solid background color for the scene */
   backgroundColor?: string;
   actors: Actor[];

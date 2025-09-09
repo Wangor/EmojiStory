@@ -403,7 +403,10 @@ function SceneView({
           />
         ))}
       {scene.caption && (
-        <div className="absolute bottom-4 left-0 right-0 text-center text-white font-medium text-lg px-4">
+        <div
+          className="absolute bottom-4 left-0 right-0 text-center text-white font-medium text-lg px-4"
+          style={{ fontSize: scene.captionFontSize }}
+        >
           <div className="inline-block bg-black/40 backdrop-blur-sm px-3 py-1 rounded-lg">
             {scene.caption}
           </div>

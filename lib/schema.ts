@@ -56,6 +56,7 @@ export const sceneSchema = z.object({
   duration_ms: z.number().positive(),
   backgroundActors: z.array(emojiActorSchema).default([]),
   caption: z.string().optional(),
+  captionFontSize: z.number().positive().optional(),
   actors: z.array(actorSchema),
   effects: z.array(effectSchema).optional(),
   sfx: z.array(z.object({ at_ms: z.number().nonnegative(), type: z.enum(['pop','whoosh','ding']) })).optional()
