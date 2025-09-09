@@ -292,7 +292,9 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                     if (watermark) {
                         ctx.save();
                         ctx.globalAlpha = 0.5;
-                        ctx.drawImage(watermark, 0, 0);
+                        const wmWidth = watermark.width * 0.5;
+                        const wmHeight = watermark.height * 0.5;
+                        ctx.drawImage(watermark, 0, 0, wmWidth, wmHeight);
                         ctx.restore();
                     }
 
