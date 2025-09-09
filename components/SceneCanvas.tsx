@@ -14,13 +14,14 @@ type SceneCanvasProps = {
     aspectRatio: AspectRatio;
     onSceneChange: (s: Scene) => void;
     emojiFont?: string;
+    selectedActorId?: string | null;
+    onSelect?: (id: string | null) => void;
 };
 
-export default function SceneCanvas({ scene, fps, width, height, aspectRatio, onSceneChange, emojiFont }: SceneCanvasProps) {
+export default function SceneCanvas({ scene, fps, width, height, aspectRatio, onSceneChange, emojiFont, selectedActorId, onSelect }: SceneCanvasProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ w: 0, h: 0 });
     const [currentFrame, setCurrentFrame] = useState(0);
-    const [selected, setSelected] = useState<string | null>(null);
     const [tool, setTool] = useState<'move' | 'scale' | 'rotate'>('move');
     const [layer, setLayer] = useState<'actors' | 'background'>('actors');
 
@@ -150,7 +151,7 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
         if (!containerRef.current) return;
         e.preventDefault();
         e.stopPropagation();
-        setSelected(actorId);
+        onSelect?.(actorId);
         const rect = containerRef.current.getBoundingClientRect();
         const t = Math.round(currentFrame * frameMs);
         const actor = findActor(actorId);
@@ -187,7 +188,7 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
     const handleScaleStart = (e: React.PointerEvent, actorId: string) => {
         e.preventDefault();
         e.stopPropagation();
-        setSelected(actorId);
+        onSelect?.(actorId);
         const t = Math.round(currentFrame * frameMs);
         const actor = findActor(actorId);
         if (!actor) return; // Safety check
@@ -226,7 +227,7 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
         if (!containerRef.current) return;
         e.preventDefault();
         e.stopPropagation();
-        setSelected(actorId);
+        onSelect?.(actorId);
         const t = Math.round(currentFrame * frameMs);
         const actor = findActor(actorId);
         if (!actor) return; // Safety check
@@ -287,8 +288,8 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
     }
 
     useEffect(() => {
-        setSelected(null);
-    }, [layer]);
+        onSelect?.(null);
+    }, [layer, onSelect]);
 
     const renderActor = (a: Actor, isBg: boolean) => {
         const t = Math.round(currentFrame * frameMs);
@@ -332,7 +333,7 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
             };
 
             const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
-            const isSelected = selected === a.id;
+            const isSelected = selectedActorId === a.id;
 
             return (
                 <div
@@ -342,7 +343,7 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
                             ? (e) => handleMoveStart(a.id, e)
                             : interactive && tool === 'rotate'
                                 ? (e) => handleRotateStart(e, a.id)
-                                : () => interactive && setSelected(a.id)
+                                : () => interactive && onSelect?.(a.id)
                     }
                     className={`absolute select-none ${
                         interactive && tool === 'move' ? 'cursor-move' :
@@ -410,7 +411,7 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
         };
 
         const interactive = (layer === 'background' && isBg) || (layer === 'actors' && !isBg);
-        const isSelected = selected === a.id;
+        const isSelected = selectedActorId === a.id;
 
         return (
             <div
@@ -420,7 +421,7 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
                         ? (e) => handleMoveStart(a.id, e)
                         : interactive && tool === 'rotate'
                             ? (e) => handleRotateStart(e, a.id)
-                            : () => interactive && setSelected(a.id)
+                            : () => interactive && onSelect?.(a.id)
                 }
                 className={`absolute select-none ${
                     interactive && tool === 'move' ? 'cursor-move' :
@@ -452,11 +453,6 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
     };
 
     const allActors: Actor[] = [...(scene.backgroundActors as Actor[]), ...scene.actors];
-
-    const handleLayerChange = (newLayer: 'actors' | 'background') => {
-        setLayer(newLayer);
-        setSelected(null); // Clear selection when switching layers
-    };
 
     return (
         <div className="space-y-4">
@@ -531,9 +527,9 @@ export default function SceneCanvas({ scene, fps, width, height, aspectRatio, on
             </div>
 
             {/* Actor Info Panel */}
-            {selected && findActor(selected) && (
+            {selectedActorId && findActor(selectedActorId) && (
                 <SceneCanvasActorInfo
-                    actor={findActor(selected)!}
+                    actor={findActor(selectedActorId)!}
                     currentFrame={currentFrame}
                     frameMs={frameMs}
                     sample={sample}
