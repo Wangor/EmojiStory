@@ -200,8 +200,8 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
             </div>
 
             {/* Main Content */}
-            <div className="flex flex-col lg:flex-row gap-6">
-                <div className="flex-1">
+            <div className="flex flex-col gap-6">
+                <div className="flex justify-center">
                     <SceneCanvas
                         scene={scene}
                         fps={fps}
@@ -212,7 +212,7 @@ export default function SceneEditor({ scene, fps, onChange, onRemove, onDuplicat
                         emojiFont={emojiFont}
                     />
                 </div>
-                <div className="w-full lg:w-1/3">
+                <div className="w-full">
                     <div className="mb-4">
                         <div className="flex border-b border-gray-200">
                             {[
