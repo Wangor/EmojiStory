@@ -118,6 +118,11 @@ export default function MovieDetail({ movie }: { movie: any }) {
               width={width}
               height={height}
             />
+            {movie.description && (
+              <article className="mt-8 whitespace-pre-line text-gray-800">
+                {movie.description}
+              </article>
+            )}
             <ClipComments movieId={movie.id} movieOwnerId={movie.user_id} />
           </div>
         </div>
