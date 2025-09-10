@@ -16,7 +16,7 @@ import {
   getMoviePlays,
   getUser,
 } from '../lib/supabaseClient';
-import { submitReport } from '../lib/report';
+import ReportModal from './ReportModal';
 import { formatCount } from '../lib/format';
 
 export default function MovieDetail({ movie }: { movie: any }) {
@@ -25,6 +25,7 @@ export default function MovieDetail({ movie }: { movie: any }) {
   const [liked, setLiked] = useState(false);
   const [authorChannel, setAuthorChannel] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const hasRecorded = useRef(false);
 
@@ -58,23 +59,6 @@ export default function MovieDetail({ movie }: { movie: any }) {
       setLikes((c) => c + (newLiked ? 1 : -1));
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const reportMovie = async () => {
-    const reason = prompt('Why are you reporting this movie?');
-    if (!reason) return;
-    try {
-      await submitReport({
-        targetId: movie.id,
-        targetType: 'movie',
-        reason,
-        reporterId: user?.id,
-      });
-      alert('Report submitted');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to submit report');
     }
   };
 
@@ -159,12 +143,14 @@ export default function MovieDetail({ movie }: { movie: any }) {
               <span>{likes}</span>
             </button>
             <ShareButton movieId={movie.id} url={`/movies/${movie.id}`} />
-            <button
-              onClick={reportMovie}
-              className="px-4 py-2 rounded-lg border text-red-600 border-red-600 hover:bg-red-50"
-            >
-              Report
-            </button>
+            {user && (
+              <button
+                onClick={() => setReportOpen(true)}
+                className="px-4 py-2 rounded-lg border text-red-600 border-red-600 hover:bg-red-50"
+              >
+                Report
+              </button>
+            )}
           </div>
         </div>
 
@@ -184,6 +170,15 @@ export default function MovieDetail({ movie }: { movie: any }) {
           </div>
         </div>
       </div>
+      {user && (
+        <ReportModal
+          isOpen={reportOpen}
+          targetId={movie.id}
+          targetType="movie"
+          reporterId={user.id}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
     </div>
   );
 }

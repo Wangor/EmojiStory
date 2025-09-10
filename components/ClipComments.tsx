@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getComments, postComment, deleteComment, getUser } from '../lib/supabaseClient';
-import { submitReport } from '../lib/report';
+import ReportModal from './ReportModal';
 
 interface Comment {
   id: string;
@@ -18,6 +18,7 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState('');
   const [user, setUser] = useState<any>(null);
+  const [reportId, setReportId] = useState<string | null>(null);
 
   useEffect(() => {
     getComments(movieId).then(setComments).catch(console.error);
@@ -42,24 +43,6 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
       setComments((c) => c.filter((cm) => cm.id !== id));
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const report = async (id: string) => {
-    if (!user) return;
-    const reason = prompt('Why are you reporting this comment?');
-    if (!reason) return;
-    try {
-      await submitReport({
-        targetId: id,
-        targetType: 'comment',
-        reason,
-        reporterId: user.id,
-      });
-      alert('Report submitted');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to submit report');
     }
   };
 
@@ -99,7 +82,7 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
                   </button>
                 )}
                 <button
-                  onClick={() => report(c.id)}
+                  onClick={() => setReportId(c.id)}
                   className="text-orange-600 hover:underline"
                 >
                   Report
@@ -128,6 +111,15 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
             Post
           </button>
         </form>
+      )}
+      {user && reportId && (
+        <ReportModal
+          isOpen={!!reportId}
+          targetId={reportId}
+          targetType="comment"
+          reporterId={user.id}
+          onClose={() => setReportId(null)}
+        />
       )}
     </div>
   );
