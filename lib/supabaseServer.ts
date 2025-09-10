@@ -47,9 +47,14 @@ export async function getClip(id: string) {
   return data;
 }
 
-export async function getAllMovies(range?: { from?: number; to?: number }) {
+export async function getAllMovies(range?: {
+  from?: number;
+  to?: number;
+  categories?: string[];
+  tags?: string[];
+}) {
   const supabase = getClient();
-  const { from = 0, to } = range || {};
+  const { from = 0, to, categories, tags } = range || {};
 
   let query = supabase
     .from('movies')
@@ -65,6 +70,13 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
     .lte('publish_datetime', new Date().toISOString())
     .order('created_at', { ascending: false });
 
+  if (categories && categories.length > 0) {
+    query = query.contains('categories', categories);
+  }
+  if (tags && tags.length > 0) {
+    query = query.contains('tags', tags);
+  }
+
   if (typeof to === 'number') {
     query = query.range(from, to);
   }
@@ -79,6 +91,13 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
       .not('publish_datetime', 'is', null)
       .lte('publish_datetime', new Date().toISOString())
       .order('created_at', { ascending: false });
+
+    if (categories && categories.length > 0) {
+      moviesQuery = moviesQuery.contains('categories', categories);
+    }
+    if (tags && tags.length > 0) {
+      moviesQuery = moviesQuery.contains('tags', tags);
+    }
 
     if (typeof to === 'number') {
       moviesQuery = moviesQuery.range(from, to);
