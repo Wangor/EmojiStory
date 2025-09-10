@@ -321,3 +321,27 @@ create policy "Users can insert their own follows" on public.follows
 create policy "Users can delete their own follows" on public.follows
   for delete using (auth.uid() = follower_id);
 
+-- Moderation reports table for user-submitted content reports
+create table if not exists public.moderation_reports (
+  id uuid primary key default gen_random_uuid(),
+  reporter_id uuid references auth.users(id),
+  target_id uuid not null,
+  target_type text not null check (target_type in ('movie', 'comment')),
+  reason text not null,
+  details text default '',
+  created_at timestamptz default now()
+);
+
+alter table public.moderation_reports enable row level security;
+
+create policy "Users can insert their own reports" on public.moderation_reports
+  for insert with check (auth.uid() = reporter_id);
+
+create policy "Admins can view reports" on public.moderation_reports
+  for select using (
+    exists (
+      select 1 from public.user_roles
+      where user_roles.user_id = auth.uid() and user_roles.role = 'admin'
+    )
+  );
+

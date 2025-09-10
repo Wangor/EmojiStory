@@ -27,3 +27,24 @@ GET /api/video/<clipId>
 The server generates each frame on the fly using the clip's animation data and returns
 an H.264 MP4 stream that clients can download or play directly. The file is produced
 using fragmented MP4 output so it can be served over a non-seekable HTTP stream.
+
+## Moderation Endpoint
+
+Users can report inappropriate content via:
+
+```
+POST /api/moderation
+```
+
+Send a JSON body containing:
+
+```
+{
+  "targetId": "<id of item>",
+  "targetType": "movie | comment",
+  "reason": "<short reason>",
+  "details": "<optional details>"
+}
+```
+
+You must be logged in; the reporter is determined from your session. Reports are stored for later review by moderators.

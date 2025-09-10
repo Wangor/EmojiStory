@@ -14,7 +14,9 @@ import {
   getUserChannels,
   recordPlay,
   getMoviePlays,
+  getUser,
 } from '../lib/supabaseClient';
+import ReportModal from './ReportModal';
 import { formatCount } from '../lib/format';
 
 export default function MovieDetail({ movie }: { movie: any }) {
@@ -22,6 +24,8 @@ export default function MovieDetail({ movie }: { movie: any }) {
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
   const [authorChannel, setAuthorChannel] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const hasRecorded = useRef(false);
 
@@ -44,6 +48,7 @@ export default function MovieDetail({ movie }: { movie: any }) {
         .then((chs) => setAuthorChannel(chs?.[0]?.name || null))
         .catch(() => setAuthorChannel(null));
     }
+    getUser().then(setUser).catch(() => setUser(null));
   }, [movie?.id, movie?.user_id]);
 
   const toggleLike = async () => {
@@ -138,6 +143,14 @@ export default function MovieDetail({ movie }: { movie: any }) {
               <span>{likes}</span>
             </button>
             <ShareButton movieId={movie.id} url={`/movies/${movie.id}`} />
+            {user && (
+              <button
+                onClick={() => setReportOpen(true)}
+                className="px-4 py-2 rounded-lg border text-red-600 border-red-600 hover:bg-red-50"
+              >
+                Report
+              </button>
+            )}
           </div>
         </div>
 
@@ -157,6 +170,14 @@ export default function MovieDetail({ movie }: { movie: any }) {
           </div>
         </div>
       </div>
+      {user && (
+        <ReportModal
+          isOpen={reportOpen}
+          targetId={movie.id}
+          targetType="movie"
+          onClose={() => setReportOpen(false)}
+        />
+      )}
     </div>
   );
 }
