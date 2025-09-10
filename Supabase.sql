@@ -13,9 +13,30 @@ alter table public.blog_posts enable row level security;
 create policy "Blog posts are viewable by everyone" on public.blog_posts
   for select using (true);
 
+-- User roles table for admin permissions
+create table if not exists public.user_roles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  role text not null
+);
+
 create policy "Only admins can manage blog posts" on public.blog_posts
-  for all using (auth.jwt() ->> 'role' = 'admin')
-  with check (auth.jwt() ->> 'role' = 'admin');
+  for all using (
+    exists (
+      select 1 from public.user_roles
+      where user_roles.user_id = auth.uid() and user_roles.role = 'admin'
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.user_roles
+      where user_roles.user_id = auth.uid() and user_roles.role = 'admin'
+    )
+  );
+
+-- Example: assign admin role to a user by email
+insert into public.user_roles (user_id, role)
+select id, 'admin' from auth.users where email = 'admin@example.com'
+on conflict (user_id) do update set role = excluded.role;
 
 insert into public.blog_posts (slug, title, description, content)
   values
