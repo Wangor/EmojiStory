@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { z } from 'zod';
+import { getClient } from './client';
 
 const ReportSchema = z.object({
   targetId: z.string(),
@@ -10,33 +9,12 @@ const ReportSchema = z.object({
   details: z.string().optional(),
 });
 
-function getClient() {
-  const cookieStore = cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: '', ...options });
-        },
-      },
-    },
-  );
-}
-
 /**
  * Accepts content moderation reports from users.
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = _test.getClient();
+    const supabase = getClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -65,6 +43,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-// for tests
-export const _test = { getClient };
