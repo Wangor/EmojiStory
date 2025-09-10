@@ -68,6 +68,18 @@ export async function getProfile() {
   return data;
 }
 
+export async function isAdmin() {
+  const user = await getUser();
+  if (!user) return false;
+  const { data } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('role', 'admin')
+    .maybeSingle();
+  return !!data;
+}
+
 export async function getProfileById(userId: string) {
   const { data, error } = await supabase
     .from('profiles')

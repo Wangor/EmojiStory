@@ -1,3 +1,70 @@
+-- Blog posts table
+create table if not exists public.blog_posts (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  title text not null,
+  description text default '',
+  content text not null,
+  created_at timestamptz default now()
+);
+
+alter table public.blog_posts enable row level security;
+
+create policy "Blog posts are viewable by everyone" on public.blog_posts
+  for select using (true);
+
+-- User roles table for admin permissions
+create table if not exists public.user_roles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  role text not null
+);
+
+create policy "Only admins can manage blog posts" on public.blog_posts
+  for all using (
+    exists (
+      select 1 from public.user_roles
+      where user_roles.user_id = auth.uid() and user_roles.role = 'admin'
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.user_roles
+      where user_roles.user_id = auth.uid() and user_roles.role = 'admin'
+    )
+  );
+
+-- Example: assign admin role to a user by email
+insert into public.user_roles (user_id, role)
+select id, 'admin' from auth.users where email = 'admin@example.com'
+on conflict (user_id) do update set role = excluded.role;
+
+insert into public.blog_posts (slug, title, description, content)
+  values
+  (
+    'getting-started-with-emojis',
+    'Getting Started with Emoji Storytelling',
+    'Tips for crafting simple stories using emojis.',
+    '# Getting Started with Emoji Storytelling
+
+Emojis can convey emotion quickly. Begin by choosing characters like 😀 or 🐱 and place them in a setting 🌳.
+
+Use arrows ➡️ to show action and end your tale with a surprise 🎉.
+
+Happy storytelling!'
+  ),
+  (
+    'advanced-emoji-techniques',
+    'Advanced Emoji Techniques',
+    'Level up your emoji narratives with pacing and symbolism.',
+    '# Advanced Emoji Techniques
+
+Combine emojis to build scenes like 🏔️🌅 for dramatic effect. Use repetition for pacing: 🐢🐢🐢 to slow down or 🚀🚀 to speed up.
+
+Symbolism adds depth—let 🌧️ mirror sadness or 🌞 signal hope.'
+  )
+  on conflict (slug) do nothing;
+
+-- Existing movies table
 create table if not exists public.movies (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id),

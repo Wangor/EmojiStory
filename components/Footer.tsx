@@ -7,6 +7,7 @@ export function Footer() {
         <p className="mb-4 sm:mb-0">&copy; {new Date().getFullYear()} EmojiStory</p>
         <div className="flex gap-4">
           <Link href="/about" className="hover:text-gray-900">About</Link>
+          <Link href="/blog" className="hover:text-gray-900">Blog</Link>
           <Link href="/contact" className="hover:text-gray-900">Contact</Link>
           <Link href="/privacy" className="hover:text-gray-900">Privacy</Link>
           <Link href="/terms" className="hover:text-gray-900">Terms</Link>
