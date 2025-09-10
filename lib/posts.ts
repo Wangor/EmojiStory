@@ -1,55 +1,34 @@
-import fs from 'fs/promises';
-import path from 'path';
-
-export type PostMeta = {
-  title: string;
-  description: string;
-  date: string;
-};
+import { createClient } from '@supabase/supabase-js';
 
 export type Post = {
   slug: string;
-  metadata: PostMeta;
+  title: string;
+  description: string;
   content: string;
+  created_at: string;
 };
 
-const postsDir = path.join(process.cwd(), 'content', 'blog');
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(url, key);
 
-async function parseFile(filePath: string, slug: string): Promise<Post> {
-  const file = await fs.readFile(filePath, 'utf8');
-  const match = /^---\n([\s\S]+?)\n---\n([\s\S]*)/m.exec(file);
-  let metadata: Record<string, string> = {};
-  let content = file;
-  if (match) {
-    const yaml = match[1];
-    content = match[2];
-    yaml.split('\n').forEach((line) => {
-      const [key, ...rest] = line.split(':');
-      if (key) {
-        metadata[key.trim()] = rest.join(':').trim().replace(/^"|"$/g, '');
-      }
-    });
-  }
-  return { slug, metadata: metadata as PostMeta, content };
-}
-
-export async function getPostSlugs() {
-  const files = await fs.readdir(postsDir);
-  return files.filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''));
+export async function getAllPosts(): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('slug, title, description, content, created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []) as Post[];
 }
 
 export async function getPostBySlug(slug: string): Promise<Post> {
-  const filePath = path.join(postsDir, `${slug}.md`);
-  return parseFile(filePath, slug);
-}
-
-export async function getAllPosts(): Promise<Post[]> {
-  const slugs = await getPostSlugs();
-  const posts = await Promise.all(slugs.map((slug) => getPostBySlug(slug)));
-  posts.sort(
-    (a, b) => new Date(b.metadata.date).getTime() - new Date(a.metadata.date).getTime(),
-  );
-  return posts;
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('slug, title, description, content, created_at')
+    .eq('slug', slug)
+    .single();
+  if (error) throw error;
+  return data as Post;
 }
 
 export function markdownToHtml(markdown: string): string {

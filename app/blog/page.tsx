@@ -5,6 +5,8 @@ export const metadata = {
   title: 'Blog',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function BlogPage() {
   const posts = await getAllPosts();
   return (
@@ -17,11 +19,11 @@ export default async function BlogPage() {
               href={`/blog/${post.slug}`}
               className="text-2xl font-semibold text-brand-600 hover:underline"
             >
-              {post.metadata.title}
+              {post.title}
             </Link>
-            <p className="text-gray-600">{post.metadata.description}</p>
+            <p className="text-gray-600">{post.description}</p>
             <p className="text-sm text-gray-500">
-              {new Date(post.metadata.date).toLocaleDateString()}
+              {new Date(post.created_at).toLocaleDateString()}
             </p>
           </li>
         ))}
