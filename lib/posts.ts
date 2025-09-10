@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 export type Post = {
+  id: string;
   slug: string;
   title: string;
   description: string;
@@ -15,7 +16,7 @@ const supabase = createClient(url, key);
 export async function getAllPosts(): Promise<Post[]> {
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('slug, title, description, content, created_at')
+    .select('id, slug, title, description, content, created_at')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data || []) as Post[];
@@ -24,7 +25,7 @@ export async function getAllPosts(): Promise<Post[]> {
 export async function getPostBySlug(slug: string): Promise<Post> {
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('slug, title, description, content, created_at')
+    .select('id, slug, title, description, content, created_at')
     .eq('slug', slug)
     .single();
   if (error) throw error;

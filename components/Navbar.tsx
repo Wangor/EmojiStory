@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getUser, signOut, getProfile } from '../lib/supabaseClient';
+import { getUser, signOut, getProfile, isAdmin as checkAdmin } from '../lib/supabaseClient';
 import {
     FilmSlateIcon,
     SignOut,
@@ -23,6 +23,7 @@ export function Navbar() {
     const [search, setSearch] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -36,6 +37,12 @@ export function Navbar() {
                     setProfile(profileData);
                 } catch (error) {
                     console.log('No profile found');
+                }
+                try {
+                    const admin = await checkAdmin();
+                    setIsAdmin(admin);
+                } catch {
+                    setIsAdmin(false);
                 }
             }
         }
@@ -213,6 +220,16 @@ export function Navbar() {
                                             <FilmSlateIcon size={16} weight="fill" />
                                             My Clips
                                         </Link>
+                                        {isAdmin && (
+                                            <Link
+                                                href="/blog/admin"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                                className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors duration-200"
+                                            >
+                                                <List size={16} weight="bold" />
+                                                Blog Admin
+                                            </Link>
+                                        )}
                                         <hr className="my-1 border-gray-200" />
                                         <button
                                             onClick={handleSignOut}
@@ -343,6 +360,16 @@ export function Navbar() {
                                         <FilmSlateIcon size={20} weight="fill" />
                                         My Clips
                                     </Link>
+                                    {isAdmin && (
+                                        <Link
+                                            href="/blog/admin"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors duration-200 ml-6"
+                                        >
+                                            <List size={20} weight="bold" />
+                                            Blog Admin
+                                        </Link>
+                                    )}
                                     <button
                                         onClick={handleSignOut}
                                         className="flex items-center gap-3 text-accent-300 hover:bg-accent-500/20 px-3 py-2 rounded-md transition-colors duration-200 ml-6 w-full text-left"
