@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FilmSlateIcon } from '@phosphor-icons/react';
+import { FilmSlateIcon } from '@phosphor-icons/react/dist/ssr';
 import { getAllMovies } from '../../lib/supabaseServer';
 import { MovieCard } from '../../components/MovieCard';
 
