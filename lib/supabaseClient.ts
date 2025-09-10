@@ -143,7 +143,16 @@ export async function getUserChannels(userId?: string) {
   return data;
 }
 
-export async function insertMovie(movie: { channel_id: string; title: string; description: string; story: string; animation: any; emoji_font?: string | null; }) {
+export async function insertMovie(movie: {
+  channel_id: string;
+  title: string;
+  description: string;
+  story: string;
+  animation: any;
+  emoji_font?: string | null;
+  categories?: string[];
+  tags?: string[];
+}) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
@@ -156,6 +165,8 @@ export async function insertMovie(movie: { channel_id: string; title: string; de
       story: movie.story,
       emoji_font: movie.emoji_font ?? null,
       animation: movie.animation,
+      categories: movie.categories ?? [],
+      tags: movie.tags ?? [],
     })
     .select()
     .single();
@@ -163,7 +174,17 @@ export async function insertMovie(movie: { channel_id: string; title: string; de
   return data;
 }
 
-export async function updateMovie(movie: { id: string; channel_id?: string; title?: string; description?: string; story?: string; animation?: any; emoji_font?: string | null; }) {
+export async function updateMovie(movie: {
+  id: string;
+  channel_id?: string;
+  title?: string;
+  description?: string;
+  story?: string;
+  animation?: any;
+  emoji_font?: string | null;
+  categories?: string[];
+  tags?: string[];
+}) {
   const user = await getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
@@ -176,6 +197,8 @@ export async function updateMovie(movie: { id: string; channel_id?: string; titl
       story: movie.story,
       emoji_font: movie.emoji_font ?? null,
       animation: movie.animation,
+      categories: movie.categories,
+      tags: movie.tags,
     })
     .eq('id', movie.id)
     .select()
@@ -228,8 +251,13 @@ export async function publishMovie(id: string, channelId: string, publishDateTim
   return data;
 }
 
-export async function getAllMovies(range?: { from?: number; to?: number }) {
-  const { from = 0, to } = range || {};
+export async function getAllMovies(range?: {
+  from?: number;
+  to?: number;
+  categories?: string[];
+  tags?: string[];
+}) {
+  const { from = 0, to, categories, tags } = range || {};
   let query = supabase
     .from('movies')
     .select(`
@@ -243,6 +271,13 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
     .not('publish_datetime', 'is', null)
     .lte('publish_datetime', new Date().toISOString())
     .order('created_at', { ascending: false });
+
+  if (categories && categories.length > 0) {
+    query = query.contains('categories', categories);
+  }
+  if (tags && tags.length > 0) {
+    query = query.contains('tags', tags);
+  }
 
   if (typeof to === 'number') {
     query = query.range(from, to);
@@ -258,6 +293,13 @@ export async function getAllMovies(range?: { from?: number; to?: number }) {
       .not('publish_datetime', 'is', null)
       .lte('publish_datetime', new Date().toISOString())
       .order('created_at', { ascending: false });
+
+    if (categories && categories.length > 0) {
+      moviesQuery = moviesQuery.contains('categories', categories);
+    }
+    if (tags && tags.length > 0) {
+      moviesQuery = moviesQuery.contains('tags', tags);
+    }
 
     if (typeof to === 'number') {
       moviesQuery = moviesQuery.range(from, to);

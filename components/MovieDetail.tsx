@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon, HeartIcon, PlayIcon } from '@phosphor-icons/react';
+import { HeartIcon, PlayIcon } from '@phosphor-icons/react';
 import type { Animation } from './AnimationTypes';
 import { EmojiPlayer } from './EmojiPlayer';
 import { ClipComments } from './ClipComments';
@@ -19,7 +18,6 @@ import {
 import { formatCount } from '../lib/format';
 
 export default function MovieDetail({ movie }: { movie: any }) {
-  const router = useRouter();
   const [plays, setPlays] = useState(0);
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
@@ -69,13 +67,25 @@ export default function MovieDetail({ movie }: { movie: any }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <button
-          onClick={() => router.push('/movies')}
-          className="group flex items-center gap-2 mb-6 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200"
-        >
-          <ArrowLeftIcon weight="bold" size={20} className="group-hover:scale-110 transition-transform" />
-          Back to Movies
-        </button>
+        <nav className="mb-6 text-sm text-gray-600">
+          <ol className="flex items-center gap-2">
+            <li>
+              <Link href="/" className="hover:underline">
+                Home
+              </Link>
+            </li>
+            <li>→</li>
+            <li>
+              <Link href="/movies" className="hover:underline">
+                Movies
+              </Link>
+            </li>
+            <li>→</li>
+            <li className="text-gray-900">
+              {movie.title || movie.story.slice(0, 50)}
+            </li>
+          </ol>
+        </nav>
 
         <div className="text-center mb-6">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
@@ -95,6 +105,26 @@ export default function MovieDetail({ movie }: { movie: any }) {
               {authorChannel ? `@${authorChannel}` : 'Unknown'}
             </Link>
           </div>
+          {(movie.categories?.length || movie.tags?.length) && (
+            <div className="mt-2 flex flex-wrap justify-center gap-2">
+              {movie.categories?.map((cat: string) => (
+                <span
+                  key={`cat-${cat}`}
+                  className="px-2 py-1 text-xs bg-gray-200 rounded"
+                >
+                  {cat}
+                </span>
+              ))}
+              {movie.tags?.map((tag: string) => (
+                <span
+                  key={`tag-${tag}`}
+                  className="px-2 py-1 text-xs bg-orange-100 text-orange-600 rounded"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="mt-4 flex justify-center gap-2">
             <div className="flex items-center gap-2 px-4 py-2 rounded-lg border text-gray-600 border-gray-300">
               <PlayIcon />

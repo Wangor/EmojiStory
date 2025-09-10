@@ -73,6 +73,8 @@ create table if not exists public.movies (
   description text,
   story text,
   emoji_font text,
+  categories text[] default array[]::text[],
+  tags text[] default array[]::text[],
   animation jsonb,
   publish_datetime timestamptz,
   created_at timestamptz default now()
@@ -124,6 +126,12 @@ alter table public.movies
 
 alter table public.movies
   add column if not exists emoji_font text;
+
+alter table public.movies
+  add column if not exists categories text[] default array[]::text[];
+
+alter table public.movies
+  add column if not exists tags text[] default array[]::text[];
 
 update public.movies
 set channel_id = channels.id

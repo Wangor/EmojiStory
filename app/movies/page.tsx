@@ -8,19 +8,35 @@ const PAGE_SIZE = 24;
 interface MoviesPageProps {
   searchParams?: {
     page?: string;
+    category?: string;
+    tag?: string;
   };
 }
 
 export default async function MoviesPage({ searchParams }: MoviesPageProps) {
   const page = Math.max(1, Number(searchParams?.page) || 1);
+  const category = searchParams?.category || '';
+  const tag = searchParams?.tag || '';
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE;
 
   try {
-    // TODO: Add category/tag filters when these fields are available
-    const movies = await getAllMovies({ from, to });
+    const movies = await getAllMovies({
+      from,
+      to,
+      categories: category ? [category] : undefined,
+      tags: tag ? [tag] : undefined,
+    });
     const hasMore = movies.length > PAGE_SIZE;
     const visible = movies.slice(0, PAGE_SIZE);
+
+    const baseParams = new URLSearchParams();
+    if (category) baseParams.set('category', category);
+    if (tag) baseParams.set('tag', tag);
+    const prevQuery = new URLSearchParams(baseParams);
+    prevQuery.set('page', String(page - 1));
+    const nextQuery = new URLSearchParams(baseParams);
+    nextQuery.set('page', String(page + 1));
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -34,6 +50,29 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
             </h1>
             <p className="text-gray-600 text-lg">Browse publicly released emoji movies</p>
           </div>
+
+          <form method="get" className="mb-8 flex flex-wrap items-center justify-center gap-4">
+            <input
+              type="text"
+              name="category"
+              placeholder="Category"
+              defaultValue={category}
+              className="px-3 py-2 border rounded-md text-sm"
+            />
+            <input
+              type="text"
+              name="tag"
+              placeholder="Tag"
+              defaultValue={tag}
+              className="px-3 py-2 border rounded-md text-sm"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 text-sm bg-white border rounded-md hover:bg-gray-50"
+            >
+              Filter
+            </button>
+          </form>
 
           {visible.length === 0 ? (
             <div className="text-center py-16">
@@ -55,7 +94,7 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
               <div className="flex justify-between mt-8">
                 {page > 1 ? (
                   <Link
-                    href={`/movies?page=${page - 1}`}
+                    href={`/movies?${prevQuery.toString()}`}
                     className="px-4 py-2 text-sm bg-white border rounded-md hover:bg-gray-50"
                   >
                     Previous
@@ -65,7 +104,7 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
                 )}
                 {hasMore && (
                   <Link
-                    href={`/movies?page=${page + 1}`}
+                    href={`/movies?${nextQuery.toString()}`}
                     className="px-4 py-2 text-sm bg-white border rounded-md hover:bg-gray-50"
                   >
                     Next
