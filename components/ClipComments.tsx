@@ -117,7 +117,6 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
           isOpen={!!reportId}
           targetId={reportId}
           targetType="comment"
-          reporterId={user.id}
           onClose={() => setReportId(null)}
         />
       )}

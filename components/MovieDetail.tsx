@@ -175,7 +175,6 @@ export default function MovieDetail({ movie }: { movie: any }) {
           isOpen={reportOpen}
           targetId={movie.id}
           targetType="movie"
-          reporterId={user.id}
           onClose={() => setReportOpen(false)}
         />
       )}

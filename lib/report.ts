@@ -3,7 +3,6 @@ export type ReportPayload = {
   targetType: 'movie' | 'comment';
   reason: string;
   details?: string;
-  reporterId?: string;
 };
 
 export async function submitReport(payload: ReportPayload) {

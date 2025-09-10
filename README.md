@@ -47,4 +47,4 @@ Send a JSON body containing:
 }
 ```
 
-Reports are stored for later review by moderators.
+You must be logged in; the reporter is determined from your session. Reports are stored for later review by moderators.

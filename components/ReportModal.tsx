@@ -7,7 +7,6 @@ interface ReportModalProps {
   isOpen: boolean;
   targetId: string;
   targetType: 'movie' | 'comment';
-  reporterId: string;
   onClose: () => void;
 }
 
@@ -15,7 +14,6 @@ export default function ReportModal({
   isOpen,
   targetId,
   targetType,
-  reporterId,
   onClose,
 }: ReportModalProps) {
   const [reason, setReason] = useState('');
@@ -32,7 +30,6 @@ export default function ReportModal({
         targetId,
         targetType,
         reason: reason.trim(),
-        reporterId,
       });
       onClose();
       alert('Report submitted');

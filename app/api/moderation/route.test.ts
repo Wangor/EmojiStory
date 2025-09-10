@@ -9,6 +9,9 @@ import { POST, _test } from './route';
 test('POST inserts moderation report', async () => {
   let inserted: any = null;
   _test.getClient = () => ({
+    auth: {
+      getUser: async () => ({ data: { user: { id: '00000000-0000-0000-0000-000000000000' } } }),
+    },
     from: (table: string) => {
       assert.equal(table, 'moderation_reports');
       return {
@@ -24,7 +27,6 @@ test('POST inserts moderation report', async () => {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      reporterId: '00000000-0000-0000-0000-000000000000',
       targetId: 'm1',
       targetType: 'movie',
       reason: 'spam',
@@ -45,6 +47,10 @@ test('POST inserts moderation report', async () => {
 });
 
 test('POST rejects unknown targetType', async () => {
+  _test.getClient = () => ({
+    auth: { getUser: async () => ({ data: { user: { id: '1' } } }) },
+  }) as any;
+
   const req = new Request('http://localhost/api/moderation', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

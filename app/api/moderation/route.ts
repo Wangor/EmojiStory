@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { z } from 'zod';
 
 const ReportSchema = z.object({
@@ -7,14 +8,27 @@ const ReportSchema = z.object({
   targetType: z.enum(['movie', 'comment']),
   reason: z.string().min(1),
   details: z.string().optional(),
-  reporterId: z.string().uuid().optional(),
 });
 
 function getClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error('Missing Supabase configuration');
-  return createClient(url, key);
+  const cookieStore = cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: '', ...options });
+        },
+      },
+    },
+  );
 }
 
 /**
@@ -22,12 +36,19 @@ function getClient() {
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { reporterId, targetId, targetType, reason, details } = ReportSchema.parse(body);
+    const supabase = _test.getClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
 
-    const supabase = getClient();
+    const body = await req.json();
+    const { targetId, targetType, reason, details } = ReportSchema.parse(body);
+
     const { error } = await supabase.from('moderation_reports').insert({
-      reporter_id: reporterId ?? null,
+      reporter_id: user.id,
       target_id: targetId,
       target_type: targetType,
       reason,
