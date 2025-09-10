@@ -32,7 +32,8 @@ export async function getPostBySlug(slug: string): Promise<Post> {
 }
 
 export function markdownToHtml(markdown: string): string {
-  const html = markdown
+  const normalized = markdown.replace(/\\n/g, '\n');
+  const html = normalized
     .replace(/^### (.*$)/gim, '<h3>$1</h3>')
     .replace(/^## (.*$)/gim, '<h2>$1</h2>')
     .replace(/^# (.*$)/gim, '<h1>$1</h1>')

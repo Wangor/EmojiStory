@@ -15,8 +15,28 @@ create policy "Blog posts are viewable by everyone" on public.blog_posts
 
 insert into public.blog_posts (slug, title, description, content)
   values
-  ('getting-started-with-emojis', 'Getting Started with Emoji Storytelling', 'Tips for crafting simple stories using emojis.', '# Getting Started with Emoji Storytelling\n\nEmojis can convey emotion quickly. Begin by choosing characters like 😀 or 🐱 and place them in a setting 🌳.\n\nUse arrows ➡️ to show action and end your tale with a surprise 🎉.\n\nHappy storytelling!'),
-  ('advanced-emoji-techniques', 'Advanced Emoji Techniques', 'Level up your emoji narratives with pacing and symbolism.', '# Advanced Emoji Techniques\n\nCombine emojis to build scenes like 🏔️🌅 for dramatic effect. Use repetition for pacing: 🐢🐢🐢 to slow down or 🚀🚀 to speed up.\n\nSymbolism adds depth—let 🌧️ mirror sadness or 🌞 signal hope.')
+  (
+    'getting-started-with-emojis',
+    'Getting Started with Emoji Storytelling',
+    'Tips for crafting simple stories using emojis.',
+    '# Getting Started with Emoji Storytelling
+
+Emojis can convey emotion quickly. Begin by choosing characters like 😀 or 🐱 and place them in a setting 🌳.
+
+Use arrows ➡️ to show action and end your tale with a surprise 🎉.
+
+Happy storytelling!'
+  ),
+  (
+    'advanced-emoji-techniques',
+    'Advanced Emoji Techniques',
+    'Level up your emoji narratives with pacing and symbolism.',
+    '# Advanced Emoji Techniques
+
+Combine emojis to build scenes like 🏔️🌅 for dramatic effect. Use repetition for pacing: 🐢🐢🐢 to slow down or 🚀🚀 to speed up.
+
+Symbolism adds depth—let 🌧️ mirror sadness or 🌞 signal hope.'
+  )
   on conflict (slug) do nothing;
 
 -- Existing movies table
