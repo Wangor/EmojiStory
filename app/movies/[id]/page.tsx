@@ -9,7 +9,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const movie = await getClip(params.id).catch(() => null);
   const title = movie?.title || 'Emoji Clip';
-  const description = movie?.description || movie?.story?.slice(0, 100) || undefined;
+  const excerpt = movie?.description || movie?.story?.slice(0, 100) || undefined;
+  const description = excerpt;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   return {
     title,
@@ -35,7 +36,27 @@ export default async function MoviePage({ params }: Props) {
         </div>
       );
     }
-    return <MovieDetail movie={movie} />;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: movie.title || 'Emoji Clip',
+      description:
+        movie.description || movie.story?.slice(0, 160) || '',
+      thumbnailUrl: [`${baseUrl}/api/og/${movie.id}`],
+      uploadDate: movie.publish_datetime || undefined,
+      contentUrl: `${baseUrl}/api/video/${movie.id}`,
+      embedUrl: `${baseUrl}/movies/${movie.id}`,
+    };
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <MovieDetail movie={movie} />
+      </>
+    );
   } catch (error) {
     console.error('Error loading movie:', error);
     return (
