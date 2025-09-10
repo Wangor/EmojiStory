@@ -1,27 +1,32 @@
-import { test } from 'node:test';
+import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost';
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon';
 
-import { POST, _test } from './route';
-
 test('POST inserts moderation report', async () => {
   let inserted: any = null;
-  _test.getClient = () => ({
-    auth: {
-      getUser: async () => ({ data: { user: { id: '00000000-0000-0000-0000-000000000000' } } }),
-    },
-    from: (table: string) => {
-      assert.equal(table, 'moderation_reports');
-      return {
-        insert: async (row: any) => {
-          inserted = row;
-          return { error: null };
-        },
-      };
-    },
-  }) as any;
+
+  (mock as any).module('./client', () => ({
+    getClient: () => ({
+      auth: {
+        getUser: async () => ({
+          data: { user: { id: '00000000-0000-0000-0000-000000000000' } },
+        }),
+      },
+      from: (table: string) => {
+        assert.equal(table, 'moderation_reports');
+        return {
+          insert: async (row: any) => {
+            inserted = row;
+            return { error: null };
+          },
+        };
+      },
+    }),
+  }));
+
+  const { POST } = await import('./route');
 
   const req = new Request('http://localhost/api/moderation', {
     method: 'POST',
@@ -47,9 +52,13 @@ test('POST inserts moderation report', async () => {
 });
 
 test('POST rejects unknown targetType', async () => {
-  _test.getClient = () => ({
-    auth: { getUser: async () => ({ data: { user: { id: '1' } } }) },
-  }) as any;
+  (mock as any).module('./client', () => ({
+    getClient: () => ({
+      auth: { getUser: async () => ({ data: { user: { id: '1' } } }) },
+    }),
+  }));
+
+  const { POST } = await import('./route');
 
   const req = new Request('http://localhost/api/moderation', {
     method: 'POST',
