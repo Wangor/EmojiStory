@@ -72,6 +72,13 @@ export default function RegisterPage() {
           </Link>
         </div>
       </form>
+      <p className="text-center text-xs text-gray-600 mt-4">
+        By registering, you agree to our{' '}
+        <Link href="/guidelines" className="text-orange-400 hover:underline">
+          Content Guidelines
+        </Link>
+        .
+      </p>
     </div>
   );
 }

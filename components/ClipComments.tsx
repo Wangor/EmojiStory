@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getComments, postComment, deleteComment, getUser } from '../lib/supabaseClient';
+import { submitReport } from '../lib/report';
 
 interface Comment {
   id: string;
@@ -44,9 +45,34 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
     }
   };
 
+  const report = async (id: string) => {
+    if (!user) return;
+    const reason = prompt('Why are you reporting this comment?');
+    if (!reason) return;
+    try {
+      await submitReport({
+        targetId: id,
+        targetType: 'comment',
+        reason,
+        reporterId: user.id,
+      });
+      alert('Report submitted');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to submit report');
+    }
+  };
+
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Comments</h2>
+      <p className="text-sm text-gray-600 mb-4">
+        Please follow our{' '}
+        <Link href="/guidelines" className="text-orange-400 hover:underline">
+          Content Guidelines
+        </Link>
+        .
+      </p>
       <ul className="space-y-4 mb-6">
         {comments.map((c) => (
           <li key={c.id} className="p-4 bg-white border border-gray-200 rounded-lg">
@@ -62,13 +88,23 @@ export function ClipComments({ movieId, movieOwnerId }: { movieId: string; movie
             <div className="text-xs text-gray-500 mt-1">
               {new Date(c.created_at).toLocaleString()}
             </div>
-            {user && (c.user_id === user.id || user.id === movieOwnerId) && (
-              <button
-                onClick={() => remove(c.id)}
-                className="mt-2 text-xs text-red-600 hover:underline"
-              >
-                Delete
-              </button>
+            {user && (
+              <div className="mt-2 flex gap-4 text-xs">
+                {(c.user_id === user.id || user.id === movieOwnerId) && (
+                  <button
+                    onClick={() => remove(c.id)}
+                    className="text-red-600 hover:underline"
+                  >
+                    Delete
+                  </button>
+                )}
+                <button
+                  onClick={() => report(c.id)}
+                  className="text-orange-600 hover:underline"
+                >
+                  Report
+                </button>
+              </div>
             )}
           </li>
         ))}
