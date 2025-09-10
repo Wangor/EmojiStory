@@ -13,6 +13,10 @@ alter table public.blog_posts enable row level security;
 create policy "Blog posts are viewable by everyone" on public.blog_posts
   for select using (true);
 
+create policy "Only admins can manage blog posts" on public.blog_posts
+  for all using (auth.jwt() ->> 'role' = 'admin')
+  with check (auth.jwt() ->> 'role' = 'admin');
+
 insert into public.blog_posts (slug, title, description, content)
   values
   (
