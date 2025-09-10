@@ -158,6 +158,18 @@ export function Navbar() {
                             <span>Clips</span>
                         </Link>
                         <Link
+                            href="/about"
+                            className="text-black hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
+                        >
+                            About
+                        </Link>
+                        <Link
+                            href="/contact"
+                            className="text-black hover:text-gray-200 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-white/10"
+                        >
+                            Contact
+                        </Link>
+                        <Link
                             href={user ? '/editor' : '/auth/login'}
                             className="flex items-center gap-2 bg-white text-brand-600 hover:bg-gray-100 transition-colors duration-200 px-4 py-2 rounded-md font-medium shadow-sm"
                         >
@@ -275,6 +287,20 @@ export function Navbar() {
                             >
                                 <FilmSlateIcon size={20} weight="fill" />
                                 Clips
+                            </Link>
+                            <Link
+                                href="/about"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors duration-200"
+                            >
+                                About
+                            </Link>
+                            <Link
+                                href="/contact"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors duration-200"
+                            >
+                                Contact
                             </Link>
                             <Link
                                 href={user ? '/editor' : '/auth/login'}

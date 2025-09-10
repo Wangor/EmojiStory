@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import '../tailwind/output.css';
 import { Navbar } from '../components/Navbar';
+import { Footer } from '../components/Footer';
 
 export const metadata = {
   title: 'Emojiclips.com - Tell your story with emojis',
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <body className="min-h-screen bg-gray-50 text-gray-900">
         <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );
