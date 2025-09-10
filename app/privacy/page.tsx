@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - EmojiStory',
-  description: 'Read about how EmojiStory respects and protects your privacy.'
+  title: 'Privacy Policy - EmojiClips',
+  description: 'Read about how EmojiClips respects and protects your privacy.'
 };
 
 export default function PrivacyPage() {
@@ -16,20 +16,20 @@ export default function PrivacyPage() {
       </p>
       <h2 className="text-2xl font-semibold">Information We Collect</h2>
       <p>
-        When you create an account or use EmojiStory, we may collect basic information such as your
+        When you create an account or use EmojiClips, we may collect basic information such as your
         email address and usage statistics. This data helps us maintain your account and improve the
         service.
       </p>
       <h2 className="text-2xl font-semibold">How We Use Information</h2>
       <p>
-        The information we gather allows us to operate, maintain, and enhance EmojiStory. We do not
+        The information we gather allows us to operate, maintain, and enhance EmojiClips. We do not
         sell your data to third parties and only share information when necessary to provide the service
         or comply with legal obligations.
       </p>
       <h2 className="text-2xl font-semibold">Cookies and Tracking</h2>
       <p>
         We may use cookies to remember your preferences and keep you logged in. You can disable cookies
-        in your browser settings, but some features of EmojiStory may not work properly without them.
+        in your browser settings, but some features of EmojiClips may not work properly without them.
       </p>
       <h2 className="text-2xl font-semibold">Data Security</h2>
       <p>
@@ -39,8 +39,8 @@ export default function PrivacyPage() {
       <h2 className="text-2xl font-semibold">Contact</h2>
       <p>
         If you have questions about this policy, email us at{' '}
-        <Link href="mailto:privacy@emojistory.com" className="text-blue-600 hover:underline">
-          privacy@emojistory.com
+        <Link href="mailto:hello@emojiclips.com" className="text-blue-600 hover:underline">
+          hello@emojiclips.com
         </Link>
         .
       </p>

@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About EmojiStory',
-  description: 'Learn about EmojiStory and how we turn stories into emoji movies.'
+  title: 'About EmojiClips',
+  description: 'Learn about EmojiClips and how we turn stories into emoji movies.'
 };
 
 export default function AboutPage() {
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">About EmojiStory</h1>
+      <h1 className="text-3xl font-bold">About EmojiClips</h1>
       <p>
-        EmojiStory is an experimental studio that transforms short stories into playful emoji movies.
+        EmojiClips is an experimental studio that transforms short stories into playful emoji movies.
         We aim to make storytelling simple, creative, and fun for everyone.
       </p>
       <p>
@@ -25,7 +25,7 @@ export default function AboutPage() {
       </p>
       <h2 className="text-2xl font-semibold">How It Works</h2>
       <p>
-        Using a mix of OpenAI tools and open-source animation libraries, EmojiStory converts your
+        Using a mix of OpenAI tools and open-source animation libraries, EmojiClips converts your
         written prompts into short emoji scenes. The system chooses characters, sets backgrounds,
         and animates emotions to match the script.
       </p>
@@ -37,7 +37,7 @@ export default function AboutPage() {
       <h2 className="text-2xl font-semibold">What&apos;s Next</h2>
       <p>
         We are continually experimenting with new features such as collaborative story building,
-        sound effects, and export options. Follow along and help shape the future of EmojiStory.
+        sound effects, and export options. Follow along and help shape the future of EmojiClips.
       </p>
     </main>
   );

@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Contact EmojiStory',
-  description: 'Get in touch with the EmojiStory team.'
+  title: 'Contact EmojiClips',
+  description: 'Get in touch with the EmojiClips team.'
 };
 
 export default function ContactPage() {
@@ -16,8 +16,8 @@ export default function ContactPage() {
       </p>
       <p>
         Send us an email at{' '}
-        <Link href="mailto:hello@emojistory.com" className="text-blue-600 hover:underline">
-          hello@emojistory.com
+        <Link href="mailto:hello@emojiclips.com" className="text-blue-600 hover:underline">
+          hello@emojiclips.com
         </Link>{' '}
         and we will get back to you.
       </p>
