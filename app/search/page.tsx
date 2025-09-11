@@ -11,6 +11,8 @@ function SearchContent() {
   const [movies, setMovies] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orientationFilter, setOrientationFilter] =
+    useState<'landscape' | 'portrait'>('landscape');
 
   useEffect(() => {
     if (!query) {
@@ -37,12 +39,36 @@ function SearchContent() {
         {!loading && movies.length === 0 && query && (
           <p className="text-gray-600">No movies found.</p>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
-          {movies.map(movie => (
-            <div key={movie.id}>
-              <MovieCard movie={movie} />
-            </div>
-          ))}
+        <div className="flex justify-center mb-6 gap-4 mt-6">
+          <button
+            onClick={() => setOrientationFilter('landscape')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              orientationFilter === 'landscape'
+                ? 'bg-orange-400 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Landscape
+          </button>
+          <button
+            onClick={() => setOrientationFilter('portrait')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              orientationFilter === 'portrait'
+                ? 'bg-orange-400 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Portrait
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {movies
+            .filter((m) => m.orientation === orientationFilter)
+            .map((movie) => (
+              <div key={movie.id}>
+                <MovieCard movie={movie} />
+              </div>
+            ))}
         </div>
       </div>
     </div>

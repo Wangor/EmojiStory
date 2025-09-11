@@ -30,9 +30,21 @@ const deepParse = (value: any): any => {
 
 const parseAnimation = (movie: any) => {
   const parsed = deepParse(movie.animation);
+  let orientation: 'landscape' | 'portrait' | undefined;
+  try {
+    const aspect =
+      parsed?.scenes?.[0]?.aspectRatio || parsed?.aspectRatio || '16:9';
+    const [w, h] = String(aspect)
+      .split(':')
+      .map((n) => Number(n));
+    orientation = w && h && w < h ? 'portrait' : 'landscape';
+  } catch {
+    orientation = undefined;
+  }
   return {
     ...movie,
     animation: typeof parsed === 'object' ? parsed : null,
+    orientation,
   };
 };
 

@@ -193,6 +193,7 @@ export function MovieCard({
       name: string;
       user_id: string;
     };
+    orientation?: 'landscape' | 'portrait';
   };
 }) {
   const deepParse = (value: any): any => {
@@ -249,14 +250,16 @@ export function MovieCard({
 
   return (
     <div className="flex flex-col">
-      {firstScene ? (
-        <SceneThumbnail scene={firstScene} emojiFont={emojiFont} />
-      ) : (
-        <div
-          className="w-full rounded-md bg-gray-200"
-          style={{ aspectRatio: ratio.replace(':', '/') }}
-        />
-      )}
+      <div className="relative">
+        {firstScene ? (
+          <SceneThumbnail scene={firstScene} emojiFont={emojiFont} />
+        ) : (
+          <div
+            className="w-full rounded-md bg-gray-200"
+            style={{ aspectRatio: ratio.replace(':', '/') }}
+          />
+        )}
+      </div>
       <div className="mt-2 flex flex-col gap-1">
         <div className="text-sm font-semibold leading-tight line-clamp-2">
           {movie.title || movie.story.slice(0, 30)}

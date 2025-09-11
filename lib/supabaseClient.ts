@@ -29,9 +29,21 @@ const deepParse = (value: any): any => {
 
 const parseAnimation = (movie: any) => {
   const parsed = deepParse(movie.animation);
+  let orientation: 'landscape' | 'portrait' | undefined;
+  try {
+    const aspect =
+      parsed?.scenes?.[0]?.aspectRatio || parsed?.aspectRatio || '16:9';
+    const [w, h] = String(aspect)
+      .split(':')
+      .map((n) => Number(n));
+    orientation = w && h && w < h ? 'portrait' : 'landscape';
+  } catch {
+    orientation = undefined;
+  }
   return {
     ...movie,
     animation: typeof parsed === 'object' ? parsed : null,
+    orientation,
   };
 };
 
@@ -220,7 +232,7 @@ export async function getMoviesByUser(userId?: string) {
     .eq('channels.user_id', targetId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data;
+  return (data || []).map(parseAnimation);
 }
 
 export async function getMovieById(id: string, opts: { allowReleased?: boolean } = {}) {
@@ -432,13 +444,15 @@ export async function searchMovies(query: string) {
       (channelsData || []).map(channel => [channel.id, channel])
     );
 
-    return moviesData.map(movie => ({
-      ...movie,
-      channels: channelsMap.get(movie.channel_id) || null,
-    }));
+    return moviesData.map(movie =>
+      parseAnimation({
+        ...movie,
+        channels: channelsMap.get(movie.channel_id) || null,
+      }),
+    );
   }
 
-  return data;
+  return (data || []).map(parseAnimation);
 }
 
 export async function likeMovie(movieId: string) {

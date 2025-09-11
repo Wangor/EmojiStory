@@ -4,7 +4,11 @@ import { createServerClient } from '@supabase/ssr';
 import { FilmSlate, MagicWand, Warning } from '@phosphor-icons/react/dist/ssr';
 import ServerMovieCard from '../components/ServerMovieCard';
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: { orientation?: string };
+}) {
   const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,6 +29,8 @@ export default async function Page() {
   );
 
   const pageSize = 8;
+  const orientationFilter =
+    searchParams?.orientation === 'portrait' ? 'portrait' : 'landscape';
   let error: string | null = null;
 
   const [
@@ -53,11 +59,32 @@ export default async function Page() {
   if (moviesError) error = moviesError.message;
   if (trendingError && !error) error = trendingError.message;
 
-  const movies = moviesData || [];
+  const withOrientation = (m: any) => {
+    let anim = m.animation;
+    if (typeof anim === 'string') {
+      try {
+        anim = JSON.parse(anim);
+      } catch {
+        // ignore
+      }
+    }
+    const aspect =
+      anim?.scenes?.[0]?.aspectRatio || anim?.aspectRatio || '16:9';
+    const [w, h] = String(aspect)
+      .split(':')
+      .map((n) => Number(n));
+    const orientation = w && h && w < h ? 'portrait' : 'landscape';
+    return { ...m, animation: anim, orientation };
+  };
 
-  let trending = (trendingData || []).slice();
+  const filterOrientation = (arr: any[]) =>
+    arr.filter((m) => m.orientation === orientationFilter);
+
+  const movies = filterOrientation((moviesData || []).map(withOrientation));
+
+  let trending = (trendingData || []).map(withOrientation);
   trending.sort((a: any, b: any) => (b.likes?.length || 0) - (a.likes?.length || 0));
-  trending = trending.slice(0, 8);
+  trending = filterOrientation(trending.slice(0, 8));
 
   const user = userData?.user;
   let recommended: any[] = [];
@@ -73,13 +100,13 @@ export default async function Page() {
       .lte('publish_datetime', new Date().toISOString())
       .neq('user_id', user.id)
       .limit(50);
-    const recMovies = (recData || []).filter(
+    const recMovies = (recData || []).map(withOrientation).filter(
       (m: any) => !(m.likes || []).some((l: any) => l.user_id === user.id),
     );
     recMovies.sort(
       (a: any, b: any) => (b.likes?.length || 0) - (a.likes?.length || 0),
     );
-    recommended = recMovies.slice(0, 8);
+    recommended = filterOrientation(recMovies.slice(0, 8));
 
     const { data: follows } = await supabase
       .from('follows')
@@ -94,7 +121,9 @@ export default async function Page() {
         .not('publish_datetime', 'is', null)
         .lte('publish_datetime', new Date().toISOString())
         .order('created_at', { ascending: false });
-      following = followingData || [];
+      following = filterOrientation(
+        (followingData || []).map(withOrientation),
+      );
     }
   }
 
@@ -124,6 +153,29 @@ export default async function Page() {
             </div>
           </div>
         )}
+
+        <div className="flex justify-center mb-6 gap-4">
+          <Link
+            href={`?orientation=landscape`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              orientationFilter === 'landscape'
+                ? 'bg-orange-400 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Landscape
+          </Link>
+          <Link
+            href={`?orientation=portrait`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              orientationFilter === 'portrait'
+                ? 'bg-orange-400 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Portrait
+          </Link>
+        </div>
 
         {movies.length > 0 && (
           <div className="mt-8">
