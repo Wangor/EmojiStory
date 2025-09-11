@@ -36,11 +36,11 @@ function interpolateKeyframes(kfs: any[], t: number) {
 function getEmojiFont(emojiFont?: string): string {
     // Map frontend font names to system-available fonts
     const fontMappings: Record<string, string> = {
-        'Twemoji': 'Twemoji, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"',
-        'Noto Color Emoji': '"Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji"',
-        'Noto Emoji': '"Noto Emoji", "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji"',
-        'OpenMoji': 'OpenMoji, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"',
-        'Blobmoji': 'Blobmoji, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"'
+        'Twemoji': 'Twemoji, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
+        'Noto Color Emoji': '"Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif',
+        'Noto Emoji': '"Noto Emoji", "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif',
+        'OpenMoji': 'OpenMoji, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
+        'Blobmoji': 'Blobmoji, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
     };
 
     if (emojiFont && fontMappings[emojiFont]) {
@@ -306,7 +306,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                         const paddingY = captionFontSize * 0.25; // 0.25em vertical padding
 
                         const fontStack = getEmojiFont(emojiFont);
-                        ctx.font = `${captionFontSize}px ${fontStack}`;
+                        ctx.font = `500 ${captionFontSize}px ${fontStack}`;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
 
