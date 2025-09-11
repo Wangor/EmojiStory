@@ -153,6 +153,28 @@ async function registerFonts() {
         }
     }
 
+    // Ensure we have at least one standard sans-serif font for caption text
+    const systemFonts = [
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+        '/Library/Fonts/Arial.ttf',
+        '/System/Library/Fonts/SFNS.ttf'
+    ];
+
+    for (const sysPath of systemFonts) {
+        if (fs.existsSync(sysPath)) {
+            try {
+                const buffer = fs.readFileSync(sysPath);
+                GlobalFonts.register(buffer, 'System Sans');
+                registeredFonts++;
+                console.log(`Registered system font: ${sysPath}`);
+                break;
+            } catch (error) {
+                console.warn(`Failed to register system font: ${sysPath}`, (error as Error).message);
+            }
+        }
+    }
+
     console.log(`Successfully registered ${registeredFonts} fonts`);
 }
 
@@ -307,8 +329,8 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                         const paddingY = captionFontSize * 0.25; // 0.25em vertical padding
 
                         const emojiStack = getEmojiFont(emojiFont);
-                        // Prefer system fonts for text and fall back to generic sans-serif before emoji fonts
-                        const captionFontStack = `system-ui, sans-serif, ${emojiStack}`;
+                        // Prefer the registered system font for text before generic fallbacks and emoji fonts
+                        const captionFontStack = `"System Sans", system-ui, sans-serif, ${emojiStack}`;
                         ctx.font = `500 ${captionFontSize}px ${captionFontStack}`;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
