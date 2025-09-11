@@ -10,6 +10,7 @@ interface MoviesPageProps {
     page?: string;
     category?: string;
     tag?: string;
+    orientation?: 'portrait' | 'landscape';
   };
 }
 
