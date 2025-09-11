@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-6">
+    <main className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       <h1 className="text-3xl font-bold">About EmojiClips</h1>
       <p>
         EmojiClips is an experimental studio that transforms short stories into playful emoji movies.
@@ -34,6 +34,11 @@ export default function AboutPage() {
         <li>Pick from a library of emoji characters and locations.</li>
         <li>Share your finished emoji movie with friends or the community.</li>
       </ul>
+      <h2 className="text-2xl font-semibold">About the Developer</h2>
+      <p className="text-sm text-gray-700">
+        EmojiClips is built by a developer with over 20 years of experience who loves exploring
+        new topics, technologies, and fresh experiences.
+      </p>
       <h2 className="text-2xl font-semibold">What&apos;s Next</h2>
       <p>
         We are continually experimenting with new features such as collaborative story building,
