@@ -305,8 +305,9 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                         const paddingX = captionFontSize * 0.75; // 0.75em horizontal padding
                         const paddingY = captionFontSize * 0.25; // 0.25em vertical padding
 
-                        const fontStack = getEmojiFont(emojiFont);
-                        ctx.font = `500 ${captionFontSize}px ${fontStack}`;
+                        const emojiStack = getEmojiFont(emojiFont);
+                        const captionFontStack = `system-ui, sans-serif, ${emojiStack}`;
+                        ctx.font = `500 ${captionFontSize}px ${captionFontStack}`;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
 
