@@ -192,6 +192,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
 
         const fps = animation?.fps ?? 30;
         const emojiFont = animation?.emojiFont || clip?.emoji_font;
+        const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
         console.log('Animation config:', {
             fps,
             emojiFont,
@@ -277,7 +278,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                     const t = (i / fps) * 1000;
 
                     // Clear canvas
-                    ctx.fillStyle = scene.backgroundColor || '#ffffff';
+                    ctx.fillStyle = scene.backgroundColor ?? defaultBg;
                     ctx.fillRect(0, 0, width, height);
 
                     // Draw background actors
