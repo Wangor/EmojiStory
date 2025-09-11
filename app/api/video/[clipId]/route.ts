@@ -298,6 +298,34 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                         }
                     }
 
+                    // Draw caption if present
+                    if (scene.caption) {
+                        const captionFontSize = scene.captionFontSize ?? 18;
+                        const bottomMargin = captionFontSize; // approx 1em
+                        const paddingX = captionFontSize * 0.75; // 0.75em horizontal padding
+                        const paddingY = captionFontSize * 0.25; // 0.25em vertical padding
+
+                        const fontStack = getEmojiFont(emojiFont);
+                        ctx.font = `${captionFontSize}px ${fontStack}`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        const metrics = ctx.measureText(scene.caption);
+                        const textWidth = metrics.width;
+                        const rectWidth = textWidth + paddingX * 2;
+                        const rectHeight = captionFontSize + paddingY * 2;
+                        const rectX = (width - rectWidth) / 2;
+                        const rectY = height - bottomMargin - rectHeight;
+
+                        // Background box
+                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                        ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+                        // Caption text
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(scene.caption, width / 2, rectY + rectHeight / 2);
+                    }
+
                     // Draw watermark
                     if (watermark) {
                         ctx.save();
