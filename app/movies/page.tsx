@@ -17,6 +17,8 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
   const page = Math.max(1, Number(searchParams?.page) || 1);
   const category = searchParams?.category || '';
   const tag = searchParams?.tag || '';
+  const orientationFilter =
+    searchParams?.orientation === 'portrait' ? 'portrait' : 'landscape';
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE;
 
@@ -28,11 +30,14 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
       tags: tag ? [tag] : undefined,
     });
     const hasMore = movies.length > PAGE_SIZE;
-    const visible = movies.slice(0, PAGE_SIZE);
+    const visible = movies
+      .slice(0, PAGE_SIZE)
+      .filter((m) => m.orientation === orientationFilter);
 
     const baseParams = new URLSearchParams();
     if (category) baseParams.set('category', category);
     if (tag) baseParams.set('tag', tag);
+    if (orientationFilter) baseParams.set('orientation', orientationFilter);
     const prevQuery = new URLSearchParams(baseParams);
     prevQuery.set('page', String(page - 1));
     const nextQuery = new URLSearchParams(baseParams);
@@ -66,6 +71,7 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
               defaultValue={tag}
               className="px-3 py-2 border rounded-md text-sm"
             />
+            <input type="hidden" name="orientation" value={orientationFilter} />
             <button
               type="submit"
               className="px-4 py-2 text-sm bg-white border rounded-md hover:bg-gray-50"
@@ -73,6 +79,37 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
               Filter
             </button>
           </form>
+
+          <div className="flex justify-center mb-6 gap-4">
+            <Link
+              href={`/movies?${new URLSearchParams({
+                ...(category && { category }),
+                ...(tag && { tag }),
+                orientation: 'landscape',
+              }).toString()}`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                orientationFilter === 'landscape'
+                  ? 'bg-orange-400 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Landscape
+            </Link>
+            <Link
+              href={`/movies?${new URLSearchParams({
+                ...(category && { category }),
+                ...(tag && { tag }),
+                orientation: 'portrait',
+              }).toString()}`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                orientationFilter === 'portrait'
+                  ? 'bg-orange-400 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Portrait
+            </Link>
+          </div>
 
           {visible.length === 0 ? (
             <div className="text-center py-16">

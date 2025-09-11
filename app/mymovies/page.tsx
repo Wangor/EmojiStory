@@ -12,6 +12,7 @@ function MoviesContent() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [releaseMovie, setReleaseMovie] = useState<any | null>(null);
+  const [orientationFilter, setOrientationFilter] = useState<'landscape' | 'portrait'>('landscape');
 
   useEffect(() => {
     getMoviesByUser()
@@ -19,6 +20,8 @@ function MoviesContent() {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const filtered = movies.filter(m => m.orientation === orientationFilter);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -31,9 +34,7 @@ function MoviesContent() {
             </div>
             My Movie Collection
           </h1>
-          <p className="text-gray-600 text-lg">
-            Your personal collection of emoji clips
-          </p>
+          <p className="text-gray-600 text-lg">Your personal collection of emoji clips</p>
         </div>
 
         {/* Loading State */}
@@ -67,7 +68,7 @@ function MoviesContent() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-700 mb-3">No Movies Yet</h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              You haven&#39;t created any movies yet. Head back to the studio to create your first emoji movie!
+              You haven&apos;t created any movies yet. Head back to the studio to create your first emoji movie!
             </p>
             <a
               href="/"
@@ -84,12 +85,31 @@ function MoviesContent() {
           <>
             <div className="text-center mb-6">
               <p className="text-gray-600">
-                {movies.length} {movies.length === 1 ? 'movie' : 'movies'} in your collection
+                {filtered.length} {filtered.length === 1 ? 'movie' : 'movies'} in your collection
               </p>
             </div>
 
+            <div className="flex justify-center mb-6 gap-4">
+              <button
+                onClick={() => setOrientationFilter('landscape')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  orientationFilter === 'landscape' ? 'bg-orange-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Landscape
+              </button>
+              <button
+                onClick={() => setOrientationFilter('portrait')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  orientationFilter === 'portrait' ? 'bg-orange-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Portrait
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {movies.map(movie => {
+              {filtered.map(movie => {
                 const released = movie.publish_datetime && new Date(movie.publish_datetime) <= new Date();
                 return (
                   <div
@@ -108,15 +128,11 @@ function MoviesContent() {
                           <ClockIcon size={12} />
                           {movie.animation?.scenes?.length || 0} scenes
                         </span>
-                        {movie.created_at && (
-                          <span>{new Date(movie.created_at).toLocaleDateString()}</span>
-                        )}
+                        {movie.created_at && <span>{new Date(movie.created_at).toLocaleDateString()}</span>}
                       </div>
 
                       {/* Story Preview */}
-                      <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">
-                        {movie.story}
-                      </p>
+                      <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">{movie.story}</p>
 
                       {/* Action Buttons */}
                       <div className="mt-auto flex gap-2 justify-center">
@@ -128,22 +144,22 @@ function MoviesContent() {
                           <PlayIcon weight="fill" size={14} className="text-white" />
                         </Link>
                         {released ? (
-                            <>
-                              <Link
-                                href={`/editor?copy=${movie.id}`}
-                                className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
-                                title="Copy"
-                              >
-                                <PencilSimpleIcon weight="bold" size={14} />
-                              </Link>
-                                <Link
-                                    href={`/api/video/${movie.id}`}
-                                    className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
-                                    title="Download"
-                                >
-                                    <DownloadSimpleIcon weight="bold" size={14} />
-                                </Link>
-                            </>
+                          <>
+                            <Link
+                              href={`/editor?copy=${movie.id}`}
+                              className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
+                              title="Copy"
+                            >
+                              <PencilSimpleIcon weight="bold" size={14} />
+                            </Link>
+                            <Link
+                              href={`/api/video/${movie.id}`}
+                              className="w-8 h-8 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 rounded-full flex items-center justify-center transition-colors"
+                              title="Download"
+                            >
+                              <DownloadSimpleIcon weight="bold" size={14} />
+                            </Link>
+                          </>
                         ) : (
                           <>
                             <Link
@@ -226,3 +242,4 @@ export default function MoviesPage() {
     </Suspense>
   );
 }
+
