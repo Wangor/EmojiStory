@@ -48,7 +48,7 @@ function getEmojiFont(emojiFont?: string): string {
     }
 
     // Default comprehensive font stack
-    return '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "Symbola", sans-serif';
+    return '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "Symbola"';
 }
 
 function drawEmoji(ctx: any, actor: EmojiActor, t: number, width: number, height: number, baseUnit: number, emojiFont?: string) {
@@ -153,6 +153,28 @@ async function registerFonts() {
         }
     }
 
+    // Ensure we have at least one standard sans-serif font for caption text
+    const systemFonts = [
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+        '/Library/Fonts/Arial.ttf',
+        '/System/Library/Fonts/SFNS.ttf'
+    ];
+
+    for (const sysPath of systemFonts) {
+        if (fs.existsSync(sysPath)) {
+            try {
+                const buffer = fs.readFileSync(sysPath);
+                GlobalFonts.register(buffer, 'System Sans');
+                registeredFonts++;
+                console.log(`Registered system font: ${sysPath}`);
+                break;
+            } catch (error) {
+                console.warn(`Failed to register system font: ${sysPath}`, (error as Error).message);
+            }
+        }
+    }
+
     console.log(`Successfully registered ${registeredFonts} fonts`);
 }
 
@@ -192,6 +214,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
 
         const fps = animation?.fps ?? 30;
         const emojiFont = animation?.emojiFont || clip?.emoji_font;
+        const defaultBg = emojiFont === 'Noto Emoji' ? '#ffffff' : '#000000';
         console.log('Animation config:', {
             fps,
             emojiFont,
@@ -277,7 +300,7 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                     const t = (i / fps) * 1000;
 
                     // Clear canvas
-                    ctx.fillStyle = scene.backgroundColor || '#ffffff';
+                    ctx.fillStyle = scene.backgroundColor ?? defaultBg;
                     ctx.fillRect(0, 0, width, height);
 
                     // Draw background actors
@@ -296,6 +319,36 @@ export async function GET(_req: Request, { params }: { params: { clipId: string 
                         } catch (e) {
                             console.warn(`Error drawing actor:`, e);
                         }
+                    }
+
+                    // Draw caption if present
+                    if (scene.caption) {
+                        const captionFontSize = scene.captionFontSize ?? 18;
+                        const bottomMargin = captionFontSize; // approx 1em
+                        const paddingX = captionFontSize * 0.75; // 0.75em horizontal padding
+                        const paddingY = captionFontSize * 0.25; // 0.25em vertical padding
+
+                        const emojiStack = getEmojiFont(emojiFont);
+                        // Prefer the registered system font for text before generic fallbacks and emoji fonts
+                        const captionFontStack = `"System Sans", system-ui, sans-serif, ${emojiStack}`;
+                        ctx.font = `500 ${captionFontSize}px ${captionFontStack}`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        const metrics = ctx.measureText(scene.caption);
+                        const textWidth = metrics.width;
+                        const rectWidth = textWidth + paddingX * 2;
+                        const rectHeight = captionFontSize + paddingY * 2;
+                        const rectX = (width - rectWidth) / 2;
+                        const rectY = height - bottomMargin - rectHeight;
+
+                        // Background box
+                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                        ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+                        // Caption text
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(scene.caption, width / 2, rectY + rectHeight / 2);
                     }
 
                     // Draw watermark
