@@ -35,7 +35,7 @@ export default function AboutPage() {
         <li>Share your finished emoji movie with friends or the community.</li>
       </ul>
       <h2 className="text-2xl font-semibold">About the Developer</h2>
-      <p className="text-sm text-gray-700">
+      <p>
         EmojiClips is built by a developer with over 20 years of experience who loves exploring
         new topics, technologies, and fresh experiences.
       </p>
